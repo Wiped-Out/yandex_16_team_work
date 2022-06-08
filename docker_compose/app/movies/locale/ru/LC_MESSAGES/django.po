@@ -1,0 +1,84 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-05-01 05:03+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
+"%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: .\movies\apps.py:8
+msgid "movies"
+msgstr "Фильмы"
+
+#: .\movies\models.py:9
+msgid "movie"
+msgstr "Фильм"
+
+#: .\movies\models.py:10
+msgid "tv_show"
+msgstr "Тв шоу"
+
+#: .\movies\models.py:14
+msgid "director"
+msgstr "Режиссер"
+
+#: .\movies\models.py:15
+msgid "actor"
+msgstr "Актёр"
+
+#: .\movies\models.py:16
+msgid "writer"
+msgstr "Сценарист"
+
+#: .\movies\models.py:20 .\movies\models.py:75
+msgid "created"
+msgstr "Создано"
+
+#: .\movies\models.py:21
+msgid "modified"
+msgstr "Изменено"
+
+#: .\movies\models.py:35 .\movies\models.py:60 .\movies\models.py:85
+msgid "name"
+msgstr "Имя"
+
+#: .\movies\models.py:36 .\movies\models.py:86
+msgid "description"
+msgstr "Описание"
+
+#: .\movies\models.py:74
+msgid "role"
+msgstr "Роль"
+
+#: .\movies\models.py:87
+msgid "creation date"
+msgstr "Дата создания"
+
+#: .\movies\models.py:88
+msgid "rating"
+msgstr "Рейтинг"
+
+#: .\movies\models.py:91
+msgid "file"
+msgstr "Файл"
+
+#: .\movies\models.py:93
+msgid "type"
+msgstr "Тип"
+
+#~ msgid "certificate"
+#~ msgstr "Сертификат"
