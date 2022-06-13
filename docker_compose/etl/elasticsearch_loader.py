@@ -1,8 +1,9 @@
 from dataclasses import dataclass, asdict
-from typing import Tuple
+from typing import Tuple, Union
 
 from elasticsearch import Elasticsearch
-from models import ElasticIndexModel
+
+from models import Movies, Persons
 from state_controller import StateController
 
 
@@ -13,12 +14,13 @@ class ElasticsearchLoader:
     es_sc: StateController
     page_size: int = 500
 
-    def load(self, data: Tuple[ElasticIndexModel]):
+    def load(self, index: str,
+             data: Tuple):
         ready_data = []
         self.es_sc.get_state()
 
         for i in range(len(data)):
-            ready_data += [{'index': {'_index': 'movies',
+            ready_data += [{'index': {'_index': index,
                                       '_id': str(data[i].id)}},
                            asdict(data[i])]
 

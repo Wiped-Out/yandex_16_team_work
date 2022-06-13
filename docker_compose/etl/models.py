@@ -15,14 +15,23 @@ class BaseDataclass:
 
 @validate_arguments
 @dataclass
-class ElasticIndexModel(BaseDataclass):
+class Movies(BaseDataclass):
     id: uuid.UUID
     imdb_rating: Union[float, None]
-    genre: List[str]
+    genre: List[Dict]
     title: str
     description: Union[str, None]
-    director: List[str]
+    directors: List[Dict]
     actors_names: List[str]
     writers_names: List[str]
+    directors_names: List[str]
     actors: List[Dict]
     writers: List[Dict]
+
+@validate_arguments
+@dataclass
+class Persons(BaseDataclass):
+    id: uuid.UUID
+    full_name: str
+    role: str
+    film_ids: List[uuid.UUID]

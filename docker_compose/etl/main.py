@@ -3,15 +3,16 @@ import logging
 import os
 import time
 
-import psycopg2
+import psycopg2 as psycopg2
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
+from psycopg2.extensions import connection as _connection
+from pydantic import BaseSettings
+
 from elasticsearch_db import ElasticSearchManager
 from elasticsearch_loader import ElasticsearchLoader
 from postgres_extractor import PostgresExtractor
 from postgresql_db import PostgreSQLManager
-from psycopg2.extensions import connection as _connection
-from pydantic import BaseSettings
 from state_controller import StateController
 
 load_dotenv()
@@ -42,22 +43,49 @@ def load_data(pgconn: _connection, esconn: Elasticsearch) -> bool:
     postgres_extractor = PostgresExtractor(pgconn,
                                            pg_sc,
                                            PG_PAGE_SIZE)
+
     es_sc = StateController('elasticsearch.state')
     elasticsearch_loader = ElasticsearchLoader(esconn,
                                                es_sc,
                                                ELASTIC_PAGE_SIZE)
-    for data in postgres_extractor.extract():
-        elasticsearch_loader.load(data)
 
-        pg_sc.get_state()
-        pg_sc.state += PG_PAGE_SIZE
+    indexes = ('movies',
+               'actors',
+               'directors',
+               'writers')
+
+    methods_args = (
+        ('extract_movies', ()),
+        ('extract_persons', ('actor',)),
+        ('extract_persons', ('director',)),
+        ('extract_persons', ('writer',))
+    )
+
+    state_files = (
+        ('pg_movies.state', 'es_movies.state'),
+        ('pg_actors.state', 'es_actors.state'),
+        ('pg_directors.state', 'es_directors.state'),
+        ('pg_writers.state', 'es_writers.state')
+    )
+
+    for index, files, method_args in zip(indexes, state_files, methods_args):
+        pg_sc.file_path, es_sc.file_path = files
+        method, args = method_args
+        extract_method = getattr(postgres_extractor,
+                                 method)
+
+        for data in extract_method(*args):
+            elasticsearch_loader.load(index, data)
+
+            pg_sc.get_state()
+            pg_sc.state += PG_PAGE_SIZE
+            pg_sc.set_state()
+
+            es_sc.state = 0
+            es_sc.set_state()
+        pg_sc.state = 0
+        pg_sc.timestamp = START_TIMESTAMP
         pg_sc.set_state()
-
-        es_sc.state = 0
-        es_sc.set_state()
-    pg_sc.state = 0
-    pg_sc.timestamp = START_TIMESTAMP
-    pg_sc.set_state()
     return True
 
 
