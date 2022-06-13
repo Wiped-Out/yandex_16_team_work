@@ -44,6 +44,7 @@ services:
       - 9200:9200
     volumes:
       - esdata:/usr/share/elasticsearch/data
+
   etl:
     build:
       context: ./etl
@@ -52,8 +53,27 @@ services:
       - elastic
       - backend
 
+  redis:
+    image: redis:7.0
+    ports:
+      - 6379:6379
+    volumes:
+      - redisdata:/data
+
+  fastapi:
+    build:
+      context: ./fastapi
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+      - elastic
+      - backend
+      - redis
+
 # Указываем Docker, какие именованные тома потребуются сервисам
 volumes:
   backend_static:
   movies_db:
   esdata:
+  redisdata:
