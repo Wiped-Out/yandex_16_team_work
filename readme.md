@@ -4,6 +4,7 @@
 - docker_compose
 - docker_compose/app/config
 - docker_compose/etl
+- docker_compose/fastapi
 - sqlite_to_postgres
 ````
 cd docker_compose
