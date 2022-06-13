@@ -8,6 +8,8 @@ class Actor(BaseModel):
     id: UUID4
     name: str
 
+    role = "actor"
+
     class Config:
         json_loads = orjson.loads
         json_dumps = utils.orjson_dumps
