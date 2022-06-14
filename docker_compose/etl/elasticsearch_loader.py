@@ -1,8 +1,9 @@
+import uuid
 from dataclasses import dataclass, asdict
 from typing import Tuple
 
 from elasticsearch import Elasticsearch
-from models import ElasticIndexModel
+
 from state_controller import StateController
 
 
@@ -13,13 +14,14 @@ class ElasticsearchLoader:
     es_sc: StateController
     page_size: int = 500
 
-    def load(self, data: Tuple[ElasticIndexModel]):
+    def load(self, index: str,
+             data: Tuple):
         ready_data = []
         self.es_sc.get_state()
 
         for i in range(len(data)):
-            ready_data += [{'index': {'_index': 'movies',
-                                      '_id': str(data[i].id)}},
+            ready_data += [{'index': {'_index': index,
+                                      '_id': str(uuid.uuid4())}},
                            asdict(data[i])]
 
         ready_data = ready_data[self.es_sc.state * 2:]
