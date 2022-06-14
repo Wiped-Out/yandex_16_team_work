@@ -50,9 +50,9 @@ def load_data(pgconn: _connection, esconn: Elasticsearch) -> bool:
                                                ELASTIC_PAGE_SIZE)
 
     indexes = ('movies',
-               'actors',
-               'directors',
-               'writers')
+               'persons',
+               'persons',
+               'persons')
 
     methods_args = (
         ('extract_movies', ()),

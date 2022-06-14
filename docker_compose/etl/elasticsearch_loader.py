@@ -1,9 +1,9 @@
+import uuid
 from dataclasses import dataclass, asdict
-from typing import Tuple, Union
+from typing import Tuple
 
 from elasticsearch import Elasticsearch
 
-from models import Movies, Persons
 from state_controller import StateController
 
 
@@ -21,7 +21,7 @@ class ElasticsearchLoader:
 
         for i in range(len(data)):
             ready_data += [{'index': {'_index': index,
-                                      '_id': str(data[i].id)}},
+                                      '_id': str(uuid.uuid4())}},
                            asdict(data[i])]
 
         ready_data = ready_data[self.es_sc.state * 2:]
