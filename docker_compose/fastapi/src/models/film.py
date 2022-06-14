@@ -3,10 +3,8 @@ from pydantic import BaseModel
 from pydantic.types import UUID4
 from utils import utils
 from models.genre import Genre
-from models.actor import Actor
-from models.director import Director
-from models.screenwriter import Screenwriter
 from typing import Optional
+from models.person import Person
 
 
 class Film(BaseModel):
@@ -18,12 +16,12 @@ class Film(BaseModel):
 
     genres: list[Genre]
 
-    actors: list[Actor]
-    screenwriters: list[Screenwriter]
-    director: Director
+    actors: list[Person]
+    screenwriters: list[Person]
+    director: Person
 
-    actors_names: list[str]
-    screenwriters_names: list[str]
+    actors_names: list[Person]
+    screenwriters_names: list[Person]
 
     class Config:
         json_loads = orjson.loads
