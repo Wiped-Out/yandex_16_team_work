@@ -10,6 +10,7 @@
 cd docker_compose
 docker-compose up -d
 ````
+После этого лучше всего сразу выключить контейнер с ETL и запустить его только после загрузки данных в Postgres
 <!-- Лично у меня curl без minified json не выполнялся, смотрится так себе конечно -->
 Стоит подождать секунд 20 после запуска контейнеров чтобы elasticsearch правильно ответил на следующую команду
 ````
@@ -19,7 +20,7 @@ curl -XPUT 127.0.0.1:9200/persons -H 'Content-Type: application/json' -d '{"sett
 ````
 ````
 cd ..
-cd sqlite_to_postgres
+cd fake_data_to_postgres
 pip install -r requirements.txt
 python3 load_data.py
 ````
