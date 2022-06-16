@@ -76,21 +76,36 @@ class FilmsService(ServiceMixin):
     ) -> list[Film]:
         # todo здесь я не уверен в запросе + не знаю как встроить поиск по жанру
 
-        # todo также не знаю как добавить search
-        query = {
-            "query": {
-                "nested": {
-                    "path": "genre",
-                    "query": {
-                        "bool": {
-                            "must": [
-                                {"match_all": {}}
-                            ]
+        if search:
+            query = {
+                "query": {
+                    "nested": {
+                        "path": "genre",
+                        "query": {
+                            "bool": {
+                                "must": [
+                                    {"match_all": {"title": search}}
+                                ]
+                            }
                         }
                     }
                 }
             }
-        }
+        else:
+            query = {
+                "query": {
+                    "nested": {
+                        "path": "genre",
+                        "query": {
+                            "bool": {
+                                "must": [
+                                    {"match_all": {}}
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
 
         count_rows = await self.elastic.count(index="movies")
         try:
