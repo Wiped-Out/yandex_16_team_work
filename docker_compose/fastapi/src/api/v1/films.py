@@ -1,32 +1,25 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
-from pydantic.types import UUID4
 
 from services.films import (
     FilmService, get_film_service, get_films_service, FilmsService
 )
 from typing import Optional
-from models import genre, person
+from schemas.v1_schemas import FilmPage, FilmMainPage
 
 router = APIRouter()
 
 
-class FilmPage(BaseModel):
-    title: str
-    imdb_rating: Optional[float] = 0.01
-    description: str
-    genres: Optional[list[genre.Genre]]
-    actors: Optional[list[person.Person]]
-    screenwriters: Optional[list[person.Person]]
-    director: Optional[person.Person]
+@router.get("/films/search")
+async def search_for_films(
+        query: str, films_service: FilmsService = Depends(get_films_service),
+) -> list[FilmMainPage]:
+    films = await films_service.get_films(search=query)
+    if not films:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="films not found")
 
-
-class FilmMainPage(BaseModel):
-    id: UUID4
-    title: str
-    imdb_rating: Optional[float] = 0.01
+    return [FilmMainPage(**film.dict()) for film in films]
 
 
 @router.get('/films/{film_id}', response_model=FilmPage)
@@ -61,14 +54,3 @@ async def get_films_for_main_page(
     if genre_id:
         return genre_id
         pass
-
-
-@router.get("/films/search")
-async def search_for_films(
-        query: str, films_service: FilmsService = Depends(get_films_service),
-) -> list[FilmMainPage]:
-    films = await films_service.get_films(search=query)
-    if not films:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="films not found")
-
-    return [FilmMainPage(**film.dict()) for film in films]

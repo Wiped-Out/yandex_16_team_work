@@ -68,7 +68,7 @@ if __name__ == '__main__':
            'user': os.environ.get('DB_USER'),
            'password': os.environ.get('DB_PASSWORD'),
            'host': os.environ.get('DB_HOST', '127.0.0.1'),
-           'port': os.environ.get('DB_PORT', 5432)}
+           'port': os.environ.get('DB_PORT', 5434)}
     with SQLiteManager('db.sqlite') as sqlite_conn, \
             pg_manager(psycopg2.connect(**dsl,
                                         cursor_factory=DictCursor)) as pg_conn:

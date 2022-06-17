@@ -18,6 +18,12 @@ class ServiceMixin:
         self.redis = redis
         self.elastic = elastic
 
+    async def _put_film_to_cache(self, film: Film):
+        await self.redis.set(
+            key=film.id, value=film.json(),
+            expire=FILM_CACHE_EXPIRE_IN_SECONDS,
+        )
+
 
 class FilmService(ServiceMixin):
     async def get_by_id(self, film_id: str) -> Optional[Film]:
@@ -46,13 +52,6 @@ class FilmService(ServiceMixin):
 
         film = Film.parse_raw(data)
         return film
-
-    async def _put_film_to_cache(self, film: Film):
-        # Сохраняем данные о фильме, используя команду set
-        # Выставляем время жизни кеша — 5 минут
-        # https://redis.io/commands/set
-        # pydantic позволяет сериализовать модель в json
-        await self.redis.set(film.id, film.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
 
 class FilmsService(ServiceMixin):
@@ -123,12 +122,11 @@ class FilmsService(ServiceMixin):
             self, sort_param: Optional[str],
             search: Optional[str]
     ) -> list[Film]:
-        # todo возможно, можно оптимизировать запросы к redis
         data = []
 
         # Если есть поисковой запрос
         if search:
-            for key in self.redis.scan_iter("*"):
+            for key in self.redis.keys(pattern="*"):
                 film = Film(**self.redis.get(key))
                 # Проверяем совпадение строк. Коэффициент больше 80
                 # говорит о том, что этот фильм нам подходит
@@ -137,7 +135,7 @@ class FilmsService(ServiceMixin):
 
             return data
 
-        for key in self.redis.scan_iter("*"):
+        for key in self.redis.keys(pattern="*"):
             data.append(Film(**self.redis.get(key)))
 
         # Если добавлен запрос на сортировку
@@ -149,12 +147,8 @@ class FilmsService(ServiceMixin):
         return data
 
     async def _put_films_to_cache(self, films: list[Film]):
-        # todo возможно, это можно сделать лучше
         for film in films:
-            await self.redis.set(
-                key=film.id, value=film.json(),
-                expire=FILM_CACHE_EXPIRE_IN_SECONDS,
-            )
+            await self._put_film_to_cache(film=film)
 
 
 @lru_cache()
