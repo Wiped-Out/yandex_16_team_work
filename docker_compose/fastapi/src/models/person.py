@@ -13,7 +13,7 @@ class PersonType(str, Enum):
 
 class Person(BaseModel):
     id: UUID4
-    name: str
+    full_name: str
     role: PersonType
 
     class Config:
