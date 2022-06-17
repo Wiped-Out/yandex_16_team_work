@@ -16,9 +16,9 @@ load_dotenv()
 PG_PAGE_SIZE = 500
 DATA_FAKER_PAGE_SIZE = 500
 # Переменные для определения количества фейковых записей
-FILMWORKS_AMOUNT = 200_000
+FILMWORKS_AMOUNT = 25_000
 GENRES_AMOUNT = 120
-PERSONS_AMOUNT = 100_000
+PERSONS_AMOUNT = 10_000
 
 
 class PostgresDSL(BaseSettings):
