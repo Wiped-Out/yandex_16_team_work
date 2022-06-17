@@ -28,6 +28,7 @@ class Movies(BaseDataclass):
     actors: List[Dict]
     writers: List[Dict]
 
+
 @validate_arguments
 @dataclass
 class Persons(BaseDataclass):
@@ -35,3 +36,10 @@ class Persons(BaseDataclass):
     full_name: str
     role: str
     film_ids: List[uuid.UUID]
+
+
+@validate_arguments
+@dataclass
+class Genres(BaseDataclass):
+    id: uuid.UUID
+    name: str

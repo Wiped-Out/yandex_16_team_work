@@ -3,7 +3,7 @@ from typing import Tuple
 
 from psycopg2.extensions import connection as _connection
 
-from models import Movies, Persons
+from models import Movies, Persons, Genres
 from state_controller import StateController
 
 
@@ -135,4 +135,23 @@ class PostgresExtractor:
                                     self.pg_sc.state))
             while results := cur.fetchmany(self.page_size):
                 yield tuple(Persons(*i)
+                            for i in results)
+
+    def extract_genres(self) -> Tuple[Genres]:
+        with self.pgconn.cursor(name='etl_{id}'.format(id=id(self))) as cur:
+            sql_query = """
+            SELECT
+               g.id,
+               g.name
+            FROM content.genre g
+            WHERE g.modified > %s
+            ORDER BY g.modified
+            OFFSET %s
+            """
+            self.pg_sc.get_state()
+
+            cur.execute(sql_query, (self.pg_sc.timestamp,
+                                    self.pg_sc.state))
+            while results := cur.fetchmany(self.page_size):
+                yield tuple(Genres(*i)
                             for i in results)
