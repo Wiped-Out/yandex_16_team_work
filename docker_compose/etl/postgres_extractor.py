@@ -15,7 +15,7 @@ class PostgresExtractor:
     page_size: int = 500
 
     def extract_movies(self) -> Tuple[Movies]:
-        with self.pgconn.cursor() as cur:
+        with self.pgconn.cursor(name='etl_{id}'.format(id=id(self))) as cur:
             sql_query = """
             SELECT
                fw.id,
@@ -109,7 +109,7 @@ class PostgresExtractor:
                             for i in results)
 
     def extract_persons(self, role: str) -> Tuple[Persons]:
-        with self.pgconn.cursor() as cur:
+        with self.pgconn.cursor(name='etl_{id}'.format(id=id(self))) as cur:
             sql_query = """
             SELECT
                p.id,
