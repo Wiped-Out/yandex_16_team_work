@@ -21,7 +21,7 @@ class BasePersonService:
 
     async def _put_person_to_cache(self, person: Person):
         await self.redis.set(
-            key=person.id, value=person.json(),
+            key=str(person.uuid), value=person.json(),
             expire=PERSON_CACHE_EXPIRE_IN_SECONDS,
         )
 
@@ -49,14 +49,15 @@ class PersonService(BasePersonService):
         data = await self.redis.get(key=person_id)
         if not data:
             return None
-        return Person.parse_raw(data)
+        return Person(**data)
 
 
 class PersonsService(BasePersonService):
     async def get_persons(
             self, search_param: Optional[str] = None,
     ) -> list[Person]:
-        persons = await self._get_persons_from_cache(search_param=search_param)
+        # persons = await self._get_persons_from_cache(search_param=search_param)
+        persons = []
         if not persons:
             persons = await self._get_persons_from_elastic(search_param=search_param)
             if persons:
@@ -69,15 +70,10 @@ class PersonsService(BasePersonService):
         if search_param:
             query = {
                 "query": {
-                    "nested": {
-                        "path": "genre",
-                        "query": {
-                            "bool": {
-                                "must": [
-                                    {"match_all": {"title": search_param}}
-                                ]
-                            }
-                        }
+                    "multi_match": {
+                        "query": search_param,
+                        "fields": ["full_name"],
+                        "fuzziness": "auto"
                     }
                 }
             }
@@ -97,12 +93,14 @@ class PersonsService(BasePersonService):
                 }
             }
 
-        count_rows = await self.elastic.count(index=self.index)
         try:
             doc = await self.elastic.search(
-                index=self.index, body=query, size=count_rows,
+                index=self.index,
+                body=query,
             )
-            return [Person(**person) for person in doc["hits"]["hits"]]
+            print(f"То что вытащил {doc}")
+
+            return [Person(**person["_source"]) for person in doc["hits"]["hits"]]
         except NotFoundError:
             return []
 
