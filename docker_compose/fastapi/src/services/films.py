@@ -9,23 +9,10 @@ from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
 from fuzzywuzzy import fuzz
-
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
-
-
-class ServiceMixin:
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        self.redis = redis
-        self.elastic = elastic
-
-    async def _put_film_to_cache(self, film: Film):
-        await self.redis.set(
-            key=film.id, value=film.json(),
-            expire=FILM_CACHE_EXPIRE_IN_SECONDS,
-        )
+from services.base import BaseMovieService
 
 
-class FilmService(ServiceMixin):
+class FilmService(BaseMovieService):
     async def get_by_id(self, film_id: str) -> Optional[Film]:
         # Пытаемся получить данные из кеша, потому что оно работает быстрее
         film = await self._film_from_cache(film_id)
@@ -38,13 +25,6 @@ class FilmService(ServiceMixin):
 
         return film
 
-    async def _get_film_from_elastic(self, film_id: str) -> Optional[Film]:
-        try:
-            doc = await self.elastic.get('movies', film_id)
-        except NotFoundError:
-            return None
-        return Film(**doc['_source'])
-
     async def _film_from_cache(self, film_id: str) -> Optional[Film]:
         data = await self.redis.get(film_id)
         if not data:
@@ -54,7 +34,7 @@ class FilmService(ServiceMixin):
         return film
 
 
-class FilmsService(ServiceMixin):
+class FilmsService(BaseMovieService):
     async def get_films(
             self, sort_param: Optional[str] = None,
             genre_id: Optional[str] = None,
@@ -73,50 +53,33 @@ class FilmsService(ServiceMixin):
             self, sort_param: Optional[str],
             search: Optional[str],
     ) -> list[Film]:
-        # todo здесь я не уверен в запросе + не знаю как встроить поиск по жанру
 
         if search:
             query = {
                 "query": {
-                    "nested": {
-                        "path": "genre",
-                        "query": {
-                            "bool": {
-                                "must": [
-                                    {"match_all": {"title": search}}
-                                ]
-                            }
-                        }
+                    "multi_match": {
+                        "query": search,
+                        "fields": ["full_name"],
+                        "fuzziness": "auto"
                     }
                 }
             }
         else:
             query = {
                 "query": {
-                    "nested": {
-                        "path": "genre",
-                        "query": {
-                            "bool": {
-                                "must": [
-                                    {"match_all": {}}
-                                ]
-                            }
-                        }
-                    }
+                    "match_all": {}
                 }
             }
 
-        count_rows = await self.elastic.count(index="movies")
         try:
-            doc = await self.elastic.get(
+            doc = await self.elastic.search(
                 index="movies", body=query,
                 sort="imdb_rating:desc" if sort_param == "-imdb_rating" else "imdb_rating:asc",
-                size=count_rows["count"]
             )
         except NotFoundError:
             return []
 
-        return [Film(**film) for film in doc["hits"]["hits"]]
+        return [Film(**film["_source"]) for film in doc["hits"]["hits"]]
 
     async def _films_from_cache(
             self, sort_param: Optional[str],

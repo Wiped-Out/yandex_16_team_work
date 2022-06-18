@@ -2,27 +2,13 @@ from functools import lru_cache
 from typing import Optional
 
 from aioredis import Redis
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.genre import Genre
-
-GENRE_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
-
-
-class BaseGenreService:
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        self.redis = redis
-        self.elastic = elastic
-        self.index = "genres"
-
-    async def _put_genre_to_cache(self, genre: Genre):
-        await self.redis.set(
-            key=genre.uuid, value=genre.json(),
-            expire=GENRE_CACHE_EXPIRE_IN_SECONDS,
-        )
+from services.base import BaseGenreService
 
 
 class GenreService(BaseGenreService):
@@ -34,13 +20,6 @@ class GenreService(BaseGenreService):
                 await self._put_genre_to_cache(genre=genre)
             return genre
         return genre
-
-    async def _get_genre_from_elastic(self, genre_id: str) -> Optional[Genre]:
-        try:
-            doc = await self.elastic.get(self.index, genre_id)
-        except NotFoundError:
-            return None
-        return Genre(**doc["_source"])
 
     async def _get_genre_from_cache(self, genre_id: str) -> Optional[Genre]:
         data = await self.redis.get(key=genre_id)
@@ -59,35 +38,9 @@ class GenresService(BaseGenreService):
             return genres
         return genres
 
-    async def _get_genres_from_elastic(self) -> list[Genre]:
-        # todo запрос скорее все неправильный
-        query = {
-            "query": {
-                "nested": {
-                    "path": "genre",
-                    "query": {
-                        "bool": {
-                            "must": [
-                                {"match_all": {}}
-                            ]
-                        }
-                    }
-                }
-            }
-        }
-
-        count_rows = await self.elastic.count(index=self.index)
-        try:
-            doc = await self.elastic.get(
-                index=self.index, body=query, size=count_rows
-            )
-            return [Genre(**genre) for genre in doc["hits"]["hits"]]
-        except NotFoundError:
-            return []
-
     async def _get_genres_from_cache(self) -> list[Genre]:
         data = []
-        for key in self.redis.scan_iter("*"):
+        for key in self.redis.scan("*"):
             data.append(Genre(**self.redis.get(key=key)))
         return data
 

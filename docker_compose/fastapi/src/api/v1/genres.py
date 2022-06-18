@@ -9,7 +9,7 @@ from schemas.v1_schemas import Genre
 router = APIRouter()
 
 
-@router.get("/genres/{genre_id}", response_model=Genre)
+@router.get("/{genre_id}", response_model=Genre)
 async def get_genre(
         genre_id: str,
         genre_service: GenreService = Depends(get_genre_service)
@@ -22,7 +22,7 @@ async def get_genre(
     return Genre(**genre.dict())
 
 
-@router.get("/genres", response_model=Genre)
+@router.get("", response_model=Genre)
 async def get_genres(
         genres_service: GenresService = Depends(get_genres_service)
 ) -> list[Genre]:

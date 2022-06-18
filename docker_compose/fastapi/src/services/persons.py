@@ -2,28 +2,14 @@ from functools import lru_cache
 from typing import Optional
 
 from aioredis import Redis
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.person import Person
 from fuzzywuzzy import fuzz
-
-PERSON_CACHE_EXPIRE_IN_SECONDS = 60 * 5
-
-
-class BasePersonService:
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        self.redis = redis
-        self.elastic = elastic
-        self.index = "persons"
-
-    async def _put_person_to_cache(self, person: Person):
-        await self.redis.set(
-            key=str(person.uuid), value=person.json(),
-            expire=PERSON_CACHE_EXPIRE_IN_SECONDS,
-        )
+from services.base import BasePersonService
 
 
 class PersonService(BasePersonService):
@@ -34,14 +20,6 @@ class PersonService(BasePersonService):
             if person:
                 await self._put_person_to_cache(person=person)
         return person
-
-    async def _get_person_from_elastic(self, person_id: str) -> Optional[Person]:
-        try:
-            doc = await self.elastic.get(self.index, person_id)
-        except NotFoundError:
-            return None
-
-        return Person(**doc["_source"])
 
     async def _get_person_from_cache(
             self, person_id: str
@@ -56,8 +34,7 @@ class PersonsService(BasePersonService):
     async def get_persons(
             self, search_param: Optional[str] = None,
     ) -> list[Person]:
-        # persons = await self._get_persons_from_cache(search_param=search_param)
-        persons = []
+        persons = await self._get_persons_from_cache(search_param=search_param)
         if not persons:
             persons = await self._get_persons_from_elastic(search_param=search_param)
             if persons:
@@ -68,41 +45,8 @@ class PersonsService(BasePersonService):
             self, search_param: Optional[str] = None
     ) -> list[Person]:
         if search_param:
-            query = {
-                "query": {
-                    "multi_match": {
-                        "query": search_param,
-                        "fields": ["full_name"],
-                        "fuzziness": "auto"
-                    }
-                }
-            }
-        else:
-            query = {
-                "query": {
-                    "nested": {
-                        "path": "genre",
-                        "query": {
-                            "bool": {
-                                "must": [
-                                    {"match_all": {}}
-                                ]
-                            }
-                        }
-                    }
-                }
-            }
-
-        try:
-            doc = await self.elastic.search(
-                index=self.index,
-                body=query,
-            )
-            print(f"То что вытащил {doc}")
-
-            return [Person(**person["_source"]) for person in doc["hits"]["hits"]]
-        except NotFoundError:
-            return []
+            return await self._search_persons_in_elastic(search=search_param)
+        return await self._get_all_persons_from_elastic()
 
     async def _get_persons_from_cache(
             self, search_param: Optional[str] = None,
