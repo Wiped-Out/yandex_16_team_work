@@ -21,7 +21,7 @@ class ElasticsearchLoader:
 
         for i in range(len(data)):
             ready_data += [{'index': {'_index': index,
-                                      '_id': str(uuid.uuid4())}},
+                                      '_id': str(data[i].id)}},
                            asdict(data[i])]
 
         ready_data = ready_data[self.es_sc.state * 2:]

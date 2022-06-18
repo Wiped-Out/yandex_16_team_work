@@ -58,9 +58,7 @@ def load_data(pgconn: _connection, esconn: Elasticsearch) -> bool:
 
     methods_args = (
         ('extract_movies', ()),
-        ('extract_persons', ('actor',)),
-        ('extract_persons', ('director',)),
-        ('extract_persons', ('writer',)),
+        ('extract_persons', ()),
         ('extract_genres', ()),
     )
 
