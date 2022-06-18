@@ -32,7 +32,7 @@ class DataFaker:
                 'description': faker.unique.paragraph(nb_sentences=4),
                 'creation_date': faker.unique.date_time(),
                 'created': faker.unique.date_time_this_century(),
-                'modified': faker.unique.date_time_this_century(),
+                'modified': faker.unique.date_time_this_month(),
                 'type': random.choice(('movie', 'tv_show')),
                 'file_path': '',
                 'rating': round(random.uniform(0, 10), 1),
@@ -57,7 +57,7 @@ class DataFaker:
                 'name': faker.unique.word(),
                 'description': faker.unique.paragraph(nb_sentences=3),
                 'created': faker.unique.date_time_this_century(),
-                'modified': faker.unique.date_time_this_century(),
+                'modified': faker.unique.date_time_this_month(),
                 'id': uuid.uuid4()
             }
             ready_data.append(Genre(**data))
@@ -78,7 +78,7 @@ class DataFaker:
             data = {
                 'full_name': faker.unique.name(),
                 'created': faker.unique.date_time_this_century(),
-                'modified': faker.unique.date_time_this_century(),
+                'modified': faker.unique.date_time_this_month(),
                 'id': uuid.uuid4()
             }
             ready_data.append(Person(**data))

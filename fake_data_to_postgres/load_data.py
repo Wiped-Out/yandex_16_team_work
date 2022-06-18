@@ -1,6 +1,6 @@
-import datetime
 import os
 from contextlib import contextmanager
+
 import psycopg2
 from dotenv import load_dotenv
 from psycopg2.extensions import connection as _connection
@@ -16,9 +16,10 @@ load_dotenv()
 PG_PAGE_SIZE = 500
 DATA_FAKER_PAGE_SIZE = 500
 # Переменные для определения количества фейковых записей
-FILMWORKS_AMOUNT = 200_000
+FILMWORKS_AMOUNT = 25_000
 GENRES_AMOUNT = 120
-PERSONS_AMOUNT = 100_000
+PERSONS_AMOUNT = 10_000
+
 
 class PostgresDSL(BaseSettings):
     dbname: str = os.environ.get('DB_NAME')
@@ -26,6 +27,7 @@ class PostgresDSL(BaseSettings):
     password: str = os.environ.get('DB_PASSWORD')
     host: str = os.environ.get('DB_HOST', '127.0.0.1')
     port: int = os.environ.get('DB_PORT', 5432)
+
 
 @contextmanager
 def pg_manager(pg_conn: _connection):
