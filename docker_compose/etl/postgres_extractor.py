@@ -94,7 +94,6 @@ class PostgresExtractor:
             )
             OR fw.modified > %s
             GROUP BY fw.id
-            ORDER BY fw.modified
             OFFSET %s
             """
 
@@ -108,30 +107,20 @@ class PostgresExtractor:
                 yield tuple(Movies(*i)
                             for i in results)
 
-    def extract_persons(self, role: str) -> Tuple[Persons]:
+    def extract_persons(self) -> Tuple[Persons]:
         with self.pgconn.cursor(name='etl_{id}'.format(id=id(self))) as cur:
             sql_query = """
             SELECT
                p.id,
-               p.full_name,
-               pfw.role,
-               COALESCE (
-                        ARRAY_AGG(DISTINCT fw.id),
-                        '{}'
-               ) film_ids
+               p.full_name
             FROM content.person p
-            LEFT JOIN content.person_film_work pfw ON pfw.person_id = p.id
-            LEFT JOIN content.film_work fw ON fw.id = pfw.film_work_id
-            WHERE pfw.role = %s AND p.modified > %s
-            GROUP BY pfw.role, p.id
-            ORDER BY p.modified
+            WHERE p.modified > %s
             OFFSET %s
             """
 
             self.pg_sc.get_state()
 
-            cur.execute(sql_query, (role,
-                                    self.pg_sc.timestamp,
+            cur.execute(sql_query, (self.pg_sc.timestamp,
                                     self.pg_sc.state))
             while results := cur.fetchmany(self.page_size):
                 yield tuple(Persons(*i)
@@ -145,7 +134,6 @@ class PostgresExtractor:
                g.name
             FROM content.genre g
             WHERE g.modified > %s
-            ORDER BY g.modified
             OFFSET %s
             """
             self.pg_sc.get_state()

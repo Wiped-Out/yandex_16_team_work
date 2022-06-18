@@ -34,8 +34,6 @@ class Movies(BaseDataclass):
 class Persons(BaseDataclass):
     id: uuid.UUID
     full_name: str
-    role: str
-    film_ids: List[uuid.UUID]
 
 
 @validate_arguments
