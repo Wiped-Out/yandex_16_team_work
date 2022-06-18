@@ -19,10 +19,11 @@ async def get_genre(
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="genre not found",
         )
+
     return Genre(**genre.dict())
 
 
-@router.get("", response_model=Genre)
+@router.get("", response_model=list[Genre])
 async def get_genres(
         genres_service: GenresService = Depends(get_genres_service)
 ) -> list[Genre]:

@@ -2,9 +2,17 @@ import orjson
 from pydantic import BaseModel
 from pydantic.types import UUID4
 from utils import utils
-from models.genre import Genre
 from typing import Optional
-from models.person import Person
+
+
+class PersonInFilm(BaseModel):
+    id: UUID4
+    full_name: str
+
+
+class GenreInFilm(BaseModel):
+    id: UUID4
+    name: str
 
 
 class Film(BaseModel):
@@ -14,14 +22,15 @@ class Film(BaseModel):
 
     imdb_rating: float
 
-    genres: list[Genre]
+    genre: list[GenreInFilm]
 
-    actors: list[Person]
-    screenwriters: list[Person]
-    director: Person
+    actors: list[PersonInFilm]
+    writers: list[PersonInFilm]
+    directors: list[PersonInFilm]
 
-    actors_names: list[Person]
-    screenwriters_names: list[Person]
+    actors_names: list[str]
+    writers_names: list[str]
+    directors_names: list[str]
 
     class Config:
         json_loads = orjson.loads

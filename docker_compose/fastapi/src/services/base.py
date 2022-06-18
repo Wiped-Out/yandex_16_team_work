@@ -2,7 +2,7 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 
 from models.film import Film
-from models.person import Person
+from models.person import Person, PersonType
 from models.genre import Genre
 from typing import Optional
 from elasticsearch import NotFoundError
@@ -16,23 +16,13 @@ class BaseService:
 
     async def _get_from_elastic_by_id(
             self, _id: str, model, index: str
-    ) -> list:
-        query = {
-            "query": {
-                "match": {
-                    "id": {
-                        "query": _id
-                    }
-                }
-            }
-        }
-
+    ):
         try:
-            doc = await self.elastic.search(index=index, body=query)
+            doc = await self.elastic.get(index, _id)
         except NotFoundError:
-            return [None]
+            return None
 
-        return [model(**item["_source"]) for item in doc["hits"]["hits"]]
+        return model(**doc["_source"])
 
     async def _get_from_elastic_by_search(
             self, search: str, fields: list[str], index: str, model
@@ -78,15 +68,14 @@ class BaseGenreService(BaseService):
 
     async def _put_genre_to_cache(self, genre: Genre):
         await self.redis.set(
-            key=genre.uuid, value=genre.json(),
+            key=str(genre.uuid), value=genre.json(),
             expire=self.CACHE_EXPIRE_IN_SECONDS,
         )
 
     async def _get_genre_from_elastic(self, genre_id: str) -> Optional[model]:
-        data = await self._get_from_elastic_by_id(
+        return await self._get_from_elastic_by_id(
             _id=genre_id, index=self.index, model=self.model,
         )
-        return data[0]
 
     async def _get_genres_from_elastic(self) -> list[model]:
         return await self._get_all_data_from_elastic(
@@ -103,15 +92,26 @@ class BaseMovieService(BaseService):
 
     async def _put_film_to_cache(self, film: Film):
         await self.redis.set(
-            key=film.id, value=film.json(),
+            key=str(film.id), value=film.json(),
             expire=self.CACHE_EXPIRE_IN_SECONDS,
         )
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[model]:
-        data = await self._get_from_elastic_by_id(
+        return await self._get_from_elastic_by_id(
             _id=film_id, model=self.model, index=self.index
         )
-        return data[0]
+
+    async def _search_films_in_elastic(self, search: str) -> list[model]:
+        data = await self._get_from_elastic_by_search(
+            index=self.index, model=self.model, fields=["title"],
+            search=search
+        )
+        return data
+
+    async def _get_all_films_from_elastic(self) -> list[model]:
+        return await self._get_all_data_from_elastic(
+            index=self.index, model=self.model,
+        )
 
 
 class BasePersonService(BaseService):
@@ -128,9 +128,53 @@ class BasePersonService(BaseService):
         )
 
     async def _get_person_from_elastic(self, person_id: str) -> list[model]:
-        data = await self._get_from_elastic_by_id(
-            _id=person_id, model=self.model, index=self.index,
-        )
+        query = {
+            "query": {
+                "match": {
+                    "id": {
+                        "query": person_id
+                    }
+                }
+            }
+        }
+
+        try:
+            doc = await self.elastic.search(index=self.index, body=query)
+        except NotFoundError:
+            return []
+
+        data = []
+
+        item = doc["hits"]["hits"][0]
+        for role in PersonType:
+            elastic_role = "{0}s".format(str(role.value))
+            query = {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "nested": {
+                                    "path": elastic_role,
+                                    "query": {
+                                        "match": {
+                                            f"{elastic_role}.id": person_id
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+
+            try:
+                doc2 = await self.elastic.search(index="movies", body=query)
+                film_ids = [hit["_source"]['id'] for hit in doc2["hits"]["hits"]]
+            except NotFoundError:
+                film_ids = []
+
+            data.append(Person(**item["_source"], film_ids=film_ids, role=role))
+
         return data
 
     async def _search_persons_in_elastic(self, search: str) -> list[model]:

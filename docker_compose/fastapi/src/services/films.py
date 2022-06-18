@@ -14,7 +14,6 @@ from services.base import BaseMovieService
 
 class FilmService(BaseMovieService):
     async def get_by_id(self, film_id: str) -> Optional[Film]:
-        # Пытаемся получить данные из кеша, потому что оно работает быстрее
         film = await self._film_from_cache(film_id)
         if not film:
             film = await self._get_film_from_elastic(film_id)
@@ -30,8 +29,7 @@ class FilmService(BaseMovieService):
         if not data:
             return None
 
-        film = Film.parse_raw(data)
-        return film
+        return Film.parse_raw(data)
 
 
 class FilmsService(BaseMovieService):
@@ -40,9 +38,13 @@ class FilmsService(BaseMovieService):
             genre_id: Optional[str] = None,
             search: Optional[str] = None,
     ) -> list[Film]:
-        films = await self._films_from_cache(sort_param=sort_param, search=search)
+        films = await self._films_from_cache(
+            sort_param=sort_param, search=search, genre_id=genre_id,
+        )
         if not films:
-            films = await self._get_films_from_elastic(sort_param=sort_param, search=search)
+            films = await self._get_films_from_elastic(
+                sort_param=sort_param, search=search, genre_id=genre_id,
+            )
             if films:
                 await self._put_films_to_cache(films=films)
             return films
@@ -51,25 +53,33 @@ class FilmsService(BaseMovieService):
 
     async def _get_films_from_elastic(
             self, sort_param: Optional[str],
-            search: Optional[str],
+            search: Optional[str], genre_id: Optional[str]
     ) -> list[Film]:
 
         if search:
-            query = {
-                "query": {
-                    "multi_match": {
-                        "query": search,
-                        "fields": ["full_name"],
-                        "fuzziness": "auto"
+            return await self._search_films_in_elastic(search=search)
+
+        query = {
+            "query": {
+                "bool": {
+                    "must": []
+                }
+            }
+        }
+
+        if genre_id:
+            query["query"]["bool"]["must"].append(
+                {
+                    "nested": {
+                        "path": "genre",
+                        "query": {
+                            "match": {
+                                "genre.id": genre_id
+                            }
+                        }
                     }
                 }
-            }
-        else:
-            query = {
-                "query": {
-                    "match_all": {}
-                }
-            }
+            )
 
         try:
             doc = await self.elastic.search(
@@ -83,23 +93,24 @@ class FilmsService(BaseMovieService):
 
     async def _films_from_cache(
             self, sort_param: Optional[str],
-            search: Optional[str]
+            search: Optional[str], genre_id: Optional[str]
     ) -> list[Film]:
         data = []
 
-        # Если есть поисковой запрос
-        if search:
-            for key in self.redis.keys(pattern="*"):
-                film = Film(**self.redis.get(key))
-                # Проверяем совпадение строк. Коэффициент больше 80
-                # говорит о том, что этот фильм нам подходит
-                if fuzz.WRatio(search.lower(), film.title) > 80:
-                    data.append(film)
+        keys = await self.redis.keys(pattern="*")
+        for key in keys:
+            film_from_redis = await self.redis.get(key)
+            film = Film.parse_raw(film_from_redis)
 
-            return data
+            # Не проходит фильтрацию по жанру
+            if genre_id and not any(item.id == genre_id for item in film.genre):
+                continue
 
-        for key in self.redis.keys(pattern="*"):
-            data.append(Film(**self.redis.get(key)))
+            # Не подходит по поисковому запросу
+            if search and not fuzz.WRatio(search.lower(), film.title) > 80:
+                continue
+
+            data.append(film)
 
         # Если добавлен запрос на сортировку
         if sort_param:

@@ -40,8 +40,12 @@ class GenresService(BaseGenreService):
 
     async def _get_genres_from_cache(self) -> list[Genre]:
         data = []
-        for key in self.redis.scan("*"):
-            data.append(Genre(**self.redis.get(key=key)))
+        keys = await self.redis.keys(pattern="*")
+        for key in keys:
+            genre_from_redis = await self.redis.get(key)
+            genre = Genre.parse_raw(genre_from_redis)
+            data.append(genre)
+
         return data
 
     async def _put_genres_to_cache(self, genres: list[Genre]):
