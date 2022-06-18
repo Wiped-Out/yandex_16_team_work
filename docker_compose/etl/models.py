@@ -28,6 +28,7 @@ class Movies(BaseDataclass):
     actors: List[Dict]
     writers: List[Dict]
 
+
 @validate_arguments
 @dataclass
 class Persons(BaseDataclass):
