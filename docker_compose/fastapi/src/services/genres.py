@@ -20,7 +20,7 @@ class BaseGenreService:
 
     async def _put_genre_to_cache(self, genre: Genre):
         await self.redis.set(
-            key=genre.id, value=genre.json(),
+            key=genre.uuid, value=genre.json(),
             expire=GENRE_CACHE_EXPIRE_IN_SECONDS,
         )
 

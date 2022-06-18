@@ -1,5 +1,5 @@
 import orjson
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic.types import UUID4
 from utils import utils
 from enum import Enum
@@ -12,9 +12,10 @@ class PersonType(str, Enum):
 
 
 class Person(BaseModel):
-    id: UUID4
-    name: str
+    uuid: UUID4 = Field(alias="id")
+    full_name: str
     role: PersonType
+    film_ids: list[UUID4]
 
     class Config:
         json_loads = orjson.loads
