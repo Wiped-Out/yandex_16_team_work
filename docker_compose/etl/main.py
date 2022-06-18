@@ -51,8 +51,6 @@ def load_data(pgconn: _connection, esconn: Elasticsearch) -> bool:
 
     indexes = ('movies',
                'persons',
-               'persons',
-               'persons',
                'genres',
                )
 
@@ -64,9 +62,7 @@ def load_data(pgconn: _connection, esconn: Elasticsearch) -> bool:
 
     state_files = (
         ('pg_movies.state', 'es_movies.state'),
-        ('pg_actors.state', 'es_actors.state'),
-        ('pg_directors.state', 'es_directors.state'),
-        ('pg_writers.state', 'es_writers.state'),
+        ('pg_persons.state', 'es_persons.state'),
         ('pg_genres.state', 'es_genres.state')
     )
 
