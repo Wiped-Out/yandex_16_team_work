@@ -1,4 +1,3 @@
-import uuid
 from dataclasses import dataclass, asdict
 from typing import Tuple
 

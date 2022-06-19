@@ -95,9 +95,8 @@ if __name__ == '__main__':
         while not is_successful:
             try:
                 with PostgreSQLManager(dsl) as pg_conn, \
-                        ElasticSearchManager(
-                            os.environ.get('ELASTIC_URI')
-                        ) as es_conn:
+                        ElasticSearchManager(os.environ.get(
+                            'ELASTIC_URI')) as es_conn:
                     is_successful = load_data(pg_conn, es_conn)
             except ConnectionError:
                 pass

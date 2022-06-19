@@ -18,7 +18,9 @@ async def search_for_films(
 ) -> list[FilmMainPage]:
     films = await films_service.get_films(search=query)
     if not films:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="films not found")
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="films not found",
+        )
 
     return [FilmMainPage(**film.dict()) for film in films]
 
@@ -29,7 +31,9 @@ async def film_details(
 ) -> Film:
     film = await film_service.get_by_id(film_id)
     if not film:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='film not found',
+        )
 
     return Film(**film.dict())
 
@@ -42,6 +46,8 @@ async def get_films_for_main_page(
 ) -> list[Film]:
     films = await films_service.get_films(sort_param=sort, genre_id=genre_id)
     if not films:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="films not found")
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="films not found",
+        )
 
     return [Film(**film.dict()) for film in films]

@@ -169,11 +169,14 @@ class BasePersonService(BaseService):
 
             try:
                 doc2 = await self.elastic.search(index="movies", body=query)
-                film_ids = [hit["_source"]['id'] for hit in doc2["hits"]["hits"]]
+                film_ids = [hit["_source"]['id']
+                            for hit in doc2["hits"]["hits"]]
             except NotFoundError:
                 film_ids = []
 
-            data.append(Person(**item["_source"], film_ids=film_ids, role=role))
+            data.append(
+                Person(**item["_source"], film_ids=film_ids, role=role)
+            )
 
         return data
 

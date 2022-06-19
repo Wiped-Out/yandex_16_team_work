@@ -108,7 +108,8 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
         db_table = "content\".\"film_work"
         indexes = [models.Index(
             fields=['creation_date', 'rating'],
-            name='film_work_creation_date_idx')] + TimeStampedMixin.Meta.indexes
+            name='film_work_creation_date_idx')
+                  ] + TimeStampedMixin.Meta.indexes
         verbose_name = 'Фильм'
         verbose_name_plural = "Фильмы"
 

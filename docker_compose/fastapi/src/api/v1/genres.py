@@ -29,6 +29,8 @@ async def get_genres(
 ) -> list[Genre]:
     genres_from_db = await genres_service.get_genres()
     if not genres_from_db:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="genres not found")
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="genres not found",
+        )
 
     return [Genre(**genre.dict()) for genre in genres_from_db]

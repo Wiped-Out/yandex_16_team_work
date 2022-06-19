@@ -28,7 +28,9 @@ class PersonsService(BasePersonService):
                 await self._put_persons_to_cache(persons=persons)
         return persons
 
-    async def _get_persons_from_cache_by_search(self, search: str) -> list[Person]:
+    async def _get_persons_from_cache_by_search(
+            self, search: str
+    ) -> list[Person]:
         data = []
 
         keys = await self.redis.keys(pattern="*")
@@ -37,7 +39,8 @@ class PersonsService(BasePersonService):
             person = Person.parse_raw(person_from_redis)
 
             # Не подходит по поисковому запросу
-            if search and not fuzz.WRatio(search.lower(), person.full_name) > 80:
+            if search and \
+                    not fuzz.WRatio(search.lower(), person.full_name) > 80:
                 continue
 
             data.append(person)

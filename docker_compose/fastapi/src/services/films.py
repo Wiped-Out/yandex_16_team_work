@@ -84,7 +84,9 @@ class FilmsService(BaseMovieService):
         try:
             doc = await self.elastic.search(
                 index="movies", body=query,
-                sort="imdb_rating:desc" if sort_param == "-imdb_rating" else "imdb_rating:asc",
+                sort="imdb_rating:desc"
+                if sort_param == "-imdb_rating"
+                else "imdb_rating:asc",
             )
         except NotFoundError:
             return []
@@ -103,7 +105,8 @@ class FilmsService(BaseMovieService):
             film = Film.parse_raw(film_from_redis)
 
             # Не проходит фильтрацию по жанру
-            if genre_id and not any(item.id == genre_id for item in film.genre):
+            if genre_id and not \
+                    any(item.id == genre_id for item in film.genre):
                 continue
 
             # Не подходит по поисковому запросу
