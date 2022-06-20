@@ -34,7 +34,8 @@ class FilmService(BaseMovieService):
 
 class FilmsService(BaseMovieService):
     async def get_films(
-            self, sort_param: Optional[str] = None,
+            self, page_size: int, page: int,
+            sort_param: Optional[str] = None,
             genre_id: Optional[str] = None,
             search: Optional[str] = None,
     ) -> list[Film]:
@@ -44,6 +45,7 @@ class FilmsService(BaseMovieService):
         if not films:
             films = await self._get_films_from_elastic(
                 sort_param=sort_param, search=search, genre_id=genre_id,
+                page=page, page_size=page_size,
             )
             if films:
                 await self._put_films_to_cache(films=films)
@@ -53,11 +55,14 @@ class FilmsService(BaseMovieService):
 
     async def _get_films_from_elastic(
             self, sort_param: Optional[str],
-            search: Optional[str], genre_id: Optional[str]
+            search: Optional[str], genre_id: Optional[str],
+            page: int, page_size: int,
     ) -> list[Film]:
 
         if search:
-            return await self._search_films_in_elastic(search=search)
+            return await self._search_films_in_elastic(
+                search=search, page_size=page_size, page=page
+            )
 
         query = {
             "query": {
@@ -83,10 +88,12 @@ class FilmsService(BaseMovieService):
 
         try:
             doc = await self.elastic.search(
-                index="movies", body=query,
+                index=self.index, body=query,
+                from_=page_size * (page - 1),
                 sort="imdb_rating:desc"
                 if sort_param == "-imdb_rating"
                 else "imdb_rating:asc",
+                size=page_size,
             )
         except NotFoundError:
             return []

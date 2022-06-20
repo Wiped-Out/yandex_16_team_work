@@ -1,8 +1,9 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from services.persons import PersonsService, get_persons_service
 from schemas.v1_schemas import Person, Film
+from typing import Optional
 
 router = APIRouter()
 
@@ -11,8 +12,17 @@ router = APIRouter()
 async def search_persons(
         query: str,
         persons_service: PersonsService = Depends(get_persons_service),
+        page_size: Optional[int] = Query(default=None, alias="page[size]"),
+        page: Optional[int] = Query(default=None, alias="page[number]"),
 ) -> list[Person]:
-    persons = await persons_service.search_persons(search=query)
+    if not page_size:
+        page_size = 50
+    if not page:
+        page = 1
+
+    persons = await persons_service.search_persons(
+        search=query, page_size=page_size, page=page,
+    )
     if not persons:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="persons not found"

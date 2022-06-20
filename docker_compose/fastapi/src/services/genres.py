@@ -29,10 +29,12 @@ class GenreService(BaseGenreService):
 
 
 class GenresService(BaseGenreService):
-    async def get_genres(self) -> list[Genre]:
+    async def get_genres(self, page: int, page_size: int) -> list[Genre]:
         genres = await self._get_genres_from_cache()
         if not genres:
-            genres = await self._get_genres_from_elastic()
+            genres = await self._get_genres_from_elastic(
+                page_size=page_size, page=page,
+            )
             if genres:
                 await self._put_genres_to_cache(genres=genres)
             return genres

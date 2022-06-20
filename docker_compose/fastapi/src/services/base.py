@@ -25,7 +25,8 @@ class BaseService:
         return model(**doc["_source"])
 
     async def _get_from_elastic_by_search(
-            self, search: str, fields: list[str], index: str, model
+            self, search: str, fields: list[str], index: str, model,
+            page: int, page_size: int,
     ):
         query = {
             "query": {
@@ -38,13 +39,17 @@ class BaseService:
         }
 
         try:
-            doc = await self.elastic.search(index=index, body=query)
+            doc = await self.elastic.search(
+                index=index, body=query,
+                from_=page_size * (page - 1),
+                size=page_size
+            )
             return [model(**item["_source"]) for item in doc["hits"]["hits"]]
         except NotFoundError:
             return []
 
     async def _get_all_data_from_elastic(
-            self, index: str, model
+            self, index: str, model, page: int, page_size: int
     ):
         query = {
             "query": {
@@ -53,7 +58,11 @@ class BaseService:
         }
 
         try:
-            doc = await self.elastic.search(index=index, body=query, )
+            doc = await self.elastic.search(
+                index=index, body=query,
+                from_=page_size * (page - 1),
+                size=page_size,
+            )
             return [model(**item["_source"]) for item in doc["hits"]["hits"]]
         except NotFoundError:
             return []
@@ -77,9 +86,10 @@ class BaseGenreService(BaseService):
             _id=genre_id, index=self.index, model=self.model,
         )
 
-    async def _get_genres_from_elastic(self) -> list[model]:
+    async def _get_genres_from_elastic(self, page: int, page_size: int) -> list[model]:
         return await self._get_all_data_from_elastic(
-            index=self.index, model=self.model,
+            index=self.index, model=self.model, page_size=page_size,
+            page=page
         )
 
 
@@ -101,17 +111,14 @@ class BaseMovieService(BaseService):
             _id=film_id, model=self.model, index=self.index
         )
 
-    async def _search_films_in_elastic(self, search: str) -> list[model]:
+    async def _search_films_in_elastic(
+            self, search: str, page_size: int, page: int
+    ) -> list[model]:
         data = await self._get_from_elastic_by_search(
             index=self.index, model=self.model, fields=["title"],
-            search=search
+            search=search, page_size=page_size, page=page
         )
         return data
-
-    async def _get_all_films_from_elastic(self) -> list[model]:
-        return await self._get_all_data_from_elastic(
-            index=self.index, model=self.model,
-        )
 
 
 class BasePersonService(BaseService):
@@ -180,14 +187,11 @@ class BasePersonService(BaseService):
 
         return data
 
-    async def _search_persons_in_elastic(self, search: str) -> list[model]:
+    async def _search_persons_in_elastic(
+            self, search: str, page: int, page_size: int
+    ) -> list[model]:
         data = await self._get_from_elastic_by_search(
             index=self.index, model=self.model, fields=["full_name"],
-            search=search
+            search=search, page_size=page_size, page=page
         )
         return data
-
-    async def _get_all_persons_from_elastic(self) -> list[model]:
-        return await self._get_all_data_from_elastic(
-            index=self.index, model=self.model,
-        )

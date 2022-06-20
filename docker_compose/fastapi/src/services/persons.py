@@ -12,10 +12,14 @@ from services.base import BasePersonService
 
 
 class PersonsService(BasePersonService):
-    async def search_persons(self, search: str) -> list[Person]:
+    async def search_persons(
+            self, search: str, page: int, page_size: int
+    ) -> list[Person]:
         persons = await self._get_persons_from_cache_by_search(search=search)
         if not persons:
-            persons = await self._search_persons_in_elastic(search=search)
+            persons = await self._search_persons_in_elastic(
+                search=search, page_size=page_size, page=page
+            )
             if persons:
                 await self._put_persons_to_cache(persons=persons)
         return persons

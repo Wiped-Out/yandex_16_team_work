@@ -12,11 +12,20 @@ from models.film import Film
 router = APIRouter()
 
 
-@router.get("/search", response_model=list[FilmMainPage])
+@router.get("/search", response_model=FilmMainPage)
 async def search_for_films(
         query: str, films_service: FilmsService = Depends(get_films_service),
-) -> list[FilmMainPage]:
-    films = await films_service.get_films(search=query)
+        page_size: Optional[int] = Query(default=None, alias="page[size]"),
+        page: Optional[int] = Query(default=None, alias="page[number]"),
+):
+    if not page_size:
+        page_size = 50
+    if not page:
+        page = 1
+
+    films = await films_service.get_films(
+        search=query, page_size=page_size, page=page,
+    )
     if not films:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="films not found",
@@ -42,9 +51,19 @@ async def film_details(
 async def get_films_for_main_page(
         films_service: FilmsService = Depends(get_films_service),
         sort: Optional[str] = None,
-        genre_id: Optional[str] = Query(default=None, alias="filter[genre]")
-) -> list[Film]:
-    films = await films_service.get_films(sort_param=sort, genre_id=genre_id)
+        genre_id: Optional[str] = Query(default=None, alias="filter[genre]"),
+        page_size: Optional[int] = Query(default=None, alias="page[size]"),
+        page: Optional[int] = Query(default=None, alias="page[number]"),
+):
+    if not page_size:
+        page_size = 50
+    if not page:
+        page = 1
+
+    films = await films_service.get_films(
+        sort_param=sort, genre_id=genre_id, page=page,
+        page_size=page_size,
+    )
     if not films:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="films not found",
