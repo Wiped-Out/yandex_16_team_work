@@ -28,6 +28,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - backend_static:/data/static
+      - fastapi_static:/data/fastapi_static
     depends_on:
       - backend
     ports:
@@ -63,8 +64,8 @@ services:
   fastapi:
     build:
       context: ./fastapi
-    ports:
-      - 8000:8000
+    volumes:
+      - fastapi_static:/app/src/static
     depends_on:
       - postgres
       - elastic
@@ -77,3 +78,4 @@ volumes:
   movies_db:
   esdata:
   redisdata:
+  fastapi_static:
