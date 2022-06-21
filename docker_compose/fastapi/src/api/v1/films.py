@@ -6,7 +6,7 @@ from services.films import (
     FilmService, get_film_service, get_films_service, FilmsService
 )
 from typing import Optional
-from schemas.v1_schemas import FilmMainPage
+from schemas.v1_schemas import Film
 from models.film import Film
 from fastapi_pagination import Page
 from utils import utils
@@ -14,7 +14,7 @@ from utils import utils
 router = APIRouter()
 
 
-@router.get("/search", response_model=Page[FilmMainPage])
+@router.get("/search", response_model=Page[Film])
 async def search_for_films(
         query: str, films_service: FilmsService = Depends(get_films_service),
         page_size: Optional[int] = Query(default=50, alias="page[size]"),
@@ -30,7 +30,7 @@ async def search_for_films(
 
     total_records = await films_service.count_items_in_elastic(search=query)
     return utils.paginate(
-        items=[FilmMainPage(**film.dict()) for film in films],
+        items=[Film(**film.dict()) for film in films],
         total=total_records, page=page, size=page_size
     )
 

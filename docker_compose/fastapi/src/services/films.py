@@ -176,6 +176,60 @@ class FilmsService(BaseMovieService):
         count = await self.elastic.count(index=self.index, body=query)
         return count["count"]
 
+    async def get_films_for_person(
+            self, person_id: str, page: int, page_size: int
+    ) -> list[Film]:
+        query = {
+            "query": {
+                "bool": {
+                    "should": []
+                }
+            }
+        }
+        for role in ("actors", "directors", "writers"):
+            query["query"]["bool"]["should"].append({
+                "nested": {
+                    "path": role,
+                    "query": {
+                        "match": {
+                            f"{role}.id": person_id,
+                        }
+                    }
+                }
+            })
+
+        try:
+            doc = await self.elastic.search(
+                index=self.index, body=query,
+                from_=page_size * (page - 1),
+                size=page_size,
+            )
+            return [Film(**item["_source"]) for item in doc["hits"]["hits"]]
+        except NotFoundError:
+            return []
+
+    async def count_films_for_person_in_elastic(self, person_id: str) -> int:
+        query = {
+            "query": {
+                "bool": {
+                    "should": []
+                }
+            }
+        }
+        for role in ("actors", "directors", "writers"):
+            query["query"]["bool"]["should"].append({
+                "nested": {
+                    "path": role,
+                    "query": {
+                        "match": {
+                            f"{role}.id": person_id,
+                        }
+                    }
+                }
+            })
+
+        count = await self.elastic.count(index=self.index, body=query)
+        return count["count"]
 
     async def _put_films_to_cache(self, films: list[Film]):
         for film in films:
