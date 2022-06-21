@@ -14,7 +14,9 @@ from services.base import BaseMovieService
 
 class FilmService(BaseMovieService):
     async def get_by_id(self, film_id: str) -> Optional[Film]:
-        film = await self._film_from_cache(film_id)
+        # todo
+        # film = await self._film_from_cache(film_id)
+        film = None
         if not film:
             film = await self._get_film_from_elastic(film_id)
             if not film:
@@ -39,9 +41,11 @@ class FilmsService(BaseMovieService):
             genre_id: Optional[str] = None,
             search: Optional[str] = None,
     ) -> list[Film]:
-        films = await self._films_from_cache(
-            sort_param=sort_param, search=search, genre_id=genre_id,
-        )
+        # todo
+        # films = await self._films_from_cache(
+        #     sort_param=sort_param, search=search, genre_id=genre_id,
+        # )
+        films = []
         if not films:
             films = await self._get_films_from_elastic(
                 sort_param=sort_param, search=search, genre_id=genre_id,
@@ -52,6 +56,36 @@ class FilmsService(BaseMovieService):
             return films
 
         return films
+
+    async def _films_from_cache(
+            self, sort_param: Optional[str],
+            search: Optional[str], genre_id: Optional[str]
+    ) -> list[Film]:
+        data = []
+
+        keys = await self.redis.keys(pattern="*")
+        for key in keys:
+            film_from_redis = await self.redis.get(key)
+            film = Film.parse_raw(film_from_redis)
+
+            # Не проходит фильтрацию по жанру
+            if genre_id and not \
+                    any(item.id == genre_id for item in film.genre):
+                continue
+
+            # Не подходит по поисковому запросу
+            if search and not fuzz.WRatio(search.lower(), film.title) > 80:
+                continue
+
+            data.append(film)
+
+        # Если добавлен запрос на сортировку
+        if sort_param:
+            data.sort(
+                key=lambda x: x.imdb_rating,
+                reverse=sort_param == "-imdb_rating"
+            )
+        return data
 
     async def _get_films_from_elastic(
             self, sort_param: Optional[str],
@@ -100,35 +134,48 @@ class FilmsService(BaseMovieService):
 
         return [Film(**film["_source"]) for film in doc["hits"]["hits"]]
 
-    async def _films_from_cache(
-            self, sort_param: Optional[str],
-            search: Optional[str], genre_id: Optional[str]
-    ) -> list[Film]:
-        data = []
+    async def count_items_in_elastic(
+            self, search: Optional[str] = None, genre_id: Optional[str] = None
+    ) -> int:
+        if search:
+            query = {
+                "query": {
+                    "multi_match": {
+                        "query": search,
+                        "fields": ["title"],
+                        "fuzziness": "auto"
+                    }
+                }
+            }
 
-        keys = await self.redis.keys(pattern="*")
-        for key in keys:
-            film_from_redis = await self.redis.get(key)
-            film = Film.parse_raw(film_from_redis)
+            count = await self.elastic.count(index=self.index, body=query)
+            return count["count"]
 
-            # Не проходит фильтрацию по жанру
-            if genre_id and not \
-                    any(item.id == genre_id for item in film.genre):
-                continue
+        query = {
+            "query": {
+                "bool": {
+                    "must": []
+                }
+            }
+        }
 
-            # Не подходит по поисковому запросу
-            if search and not fuzz.WRatio(search.lower(), film.title) > 80:
-                continue
-
-            data.append(film)
-
-        # Если добавлен запрос на сортировку
-        if sort_param:
-            data.sort(
-                key=lambda x: x.imdb_rating,
-                reverse=sort_param == "-imdb_rating"
+        if genre_id:
+            query["query"]["bool"]["must"].append(
+                {
+                    "nested": {
+                        "path": "genre",
+                        "query": {
+                            "match": {
+                                "genre.id": genre_id
+                            }
+                        }
+                    }
+                }
             )
-        return data
+
+        count = await self.elastic.count(index=self.index, body=query)
+        return count["count"]
+
 
     async def _put_films_to_cache(self, films: list[Film]):
         for film in films:

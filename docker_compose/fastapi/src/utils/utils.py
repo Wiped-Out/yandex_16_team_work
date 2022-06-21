@@ -13,6 +13,9 @@ def orjson_dumps(v, *, default):
     return orjson.dumps(v, default=default).decode()
 
 
-def paginate(items: Sequence[T], total: conint(ge=1), page: conint(ge=1), size: conint(ge=1)):
+def paginate(
+        items: Sequence[T], total: conint(ge=1), page: conint(ge=1),
+        size: conint(ge=1)
+) -> Page[T]:
     params = Params(page=page, size=size)
     return Page.create(items=items, total=total, params=params)

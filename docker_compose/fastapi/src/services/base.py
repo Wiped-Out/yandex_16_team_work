@@ -81,17 +81,6 @@ class BaseGenreService(BaseService):
             expire=self.CACHE_EXPIRE_IN_SECONDS,
         )
 
-    async def _get_genre_from_elastic(self, genre_id: str) -> Optional[model]:
-        return await self._get_from_elastic_by_id(
-            _id=genre_id, index=self.index, model=self.model,
-        )
-
-    async def _get_genres_from_elastic(self, page: int, page_size: int) -> list[model]:
-        return await self._get_all_data_from_elastic(
-            index=self.index, model=self.model, page_size=page_size,
-            page=page
-        )
-
 
 class BaseMovieService(BaseService):
     model = Film
@@ -185,13 +174,4 @@ class BasePersonService(BaseService):
                 Person(**item["_source"], film_ids=film_ids, role=role)
             )
 
-        return data
-
-    async def _search_persons_in_elastic(
-            self, search: str, page: int, page_size: int
-    ) -> list[model]:
-        data = await self._get_from_elastic_by_search(
-            index=self.index, model=self.model, fields=["full_name"],
-            search=search, page_size=page_size, page=page
-        )
         return data

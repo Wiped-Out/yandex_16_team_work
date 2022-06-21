@@ -15,7 +15,9 @@ class PersonsService(BasePersonService):
     async def search_persons(
             self, search: str, page: int, page_size: int
     ) -> list[Person]:
-        persons = await self._get_persons_from_cache_by_search(search=search)
+        # todo
+        # persons = await self._get_persons_from_cache_by_search(search=search)
+        persons = []
         if not persons:
             persons = await self._search_persons_in_elastic(
                 search=search, page_size=page_size, page=page
@@ -24,7 +26,7 @@ class PersonsService(BasePersonService):
                 await self._put_persons_to_cache(persons=persons)
         return persons
 
-    async def get_persons_by_id(self, person_id: str) -> list[Person]:
+    async def _get_persons_by_id(self, person_id: str) -> list[Person]:
         persons = await self._get_person_from_cache(person_id=person_id)
         if not persons:
             persons = await self._get_person_from_elastic(person_id=person_id)
@@ -50,6 +52,30 @@ class PersonsService(BasePersonService):
             data.append(person)
 
         return data
+
+    async def _search_persons_in_elastic(
+            self, search: str, page: int, page_size: int
+    ) -> list[Person]:
+        # todo Добавить сюда наполнение модели фильмами и ролью
+        data = await self._get_from_elastic_by_search(
+            index=self.index, model=Person, fields=["full_name"],
+            search=search, page_size=page_size, page=page
+        )
+        return data
+
+    async def count_persons_in_elastic(self, search: str) -> int:
+        query = {
+            "query": {
+                "multi_match": {
+                    "query": search,
+                    "fields": ["full_name"],
+                    "fuzziness": "auto"
+                }
+            }
+        }
+
+        count = await self.elastic.count(index=self.index, body=query)
+        return count["count"]
 
     async def _get_person_from_cache(self, person_id: str) -> list[Person]:
         data = []

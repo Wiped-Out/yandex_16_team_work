@@ -13,7 +13,9 @@ from services.base import BaseGenreService
 
 class GenreService(BaseGenreService):
     async def get_genre(self, genre_id: str) -> Optional[Genre]:
-        genre = await self._get_genre_from_cache(genre_id=genre_id)
+        # todo
+        # genre = await self._get_genre_from_cache(genre_id=genre_id)
+        genre = None
         if not genre:
             genre = await self._get_genre_from_elastic(genre_id=genre_id)
             if genre:
@@ -27,10 +29,17 @@ class GenreService(BaseGenreService):
             return None
         return Genre.parse_raw(data)
 
+    async def _get_genre_from_elastic(self, genre_id: str) -> Optional[Genre]:
+        return await self._get_from_elastic_by_id(
+            _id=genre_id, index=self.index, model=self.model,
+        )
+
 
 class GenresService(BaseGenreService):
     async def get_genres(self, page: int, page_size: int) -> list[Genre]:
-        genres = await self._get_genres_from_cache()
+        # todo
+        # genres = await self._get_genres_from_cache()
+        genres = []
         if not genres:
             genres = await self._get_genres_from_elastic(
                 page_size=page_size, page=page,
@@ -49,6 +58,18 @@ class GenresService(BaseGenreService):
             data.append(genre)
 
         return data
+
+    async def _get_genres_from_elastic(
+            self, page: int, page_size: int,
+    ) -> list[Genre]:
+        return await self._get_all_data_from_elastic(
+            index=self.index, model=self.model, page_size=page_size,
+            page=page
+        )
+
+    async def count_genres_in_elastic(self) -> int:
+        count = await self.elastic.count(index=self.index)
+        return count["count"]
 
     async def _put_genres_to_cache(self, genres: list[Genre]):
         for genre in genres:
