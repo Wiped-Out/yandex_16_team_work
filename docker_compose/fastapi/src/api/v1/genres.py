@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from services.genres import (
     GenresService, get_genres_service, GenreService, get_genre_service,
 )
@@ -14,10 +14,13 @@ router = APIRouter()
 
 @router.get("/{genre_id}", response_model=Genre)
 async def get_genre(
-        genre_id: str,
+        genre_id: str, request: Request,
         genre_service: GenreService = Depends(get_genre_service)
 ) -> Genre:
-    genre = await genre_service.get_genre(genre_id=genre_id)
+    cache_key = f"{request.url.path}_{genre_id=}"
+    genre = await genre_service.get_genre(
+        genre_id=genre_id, cache_key=cache_key,
+    )
     if not genre:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="genre not found",
@@ -28,12 +31,14 @@ async def get_genre(
 
 @router.get("", response_model=Page[Genre])
 async def get_genres(
+        request: Request,
         genres_service: GenresService = Depends(get_genres_service),
         page_size: Optional[int] = Query(default=50, alias="page[size]"),
         page: Optional[int] = Query(default=1, alias="page[number]"),
 ):
+    cache_key = f"{request.url.path}_{page_size=}_{page=}"
     genres_from_db = await genres_service.get_genres(
-        page_size=page_size, page=page,
+        page_size=page_size, page=page, cache_key=cache_key,
     )
     if not genres_from_db:
         raise HTTPException(

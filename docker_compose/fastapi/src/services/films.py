@@ -8,80 +8,67 @@ from fastapi import Depends
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
-from fuzzywuzzy import fuzz
 from services.base import BaseMovieService
+import json
 
 
 class FilmService(BaseMovieService):
-    async def get_by_id(self, film_id: str) -> Optional[Film]:
-        film = await self._film_from_cache(film_id)
+    async def get_by_id(self, film_id: str, cache_key: str) -> Optional[Film]:
+        film = await self._film_from_cache(cache_key=cache_key)
         if not film:
             film = await self._get_film_from_elastic(film_id)
             if not film:
                 return None
             # Сохраняем фильм в кеш
-            await self._put_film_to_cache(film)
+            await self._put_film_to_cache(film=film, cache_key=cache_key)
 
         return film
 
-    async def _film_from_cache(self, film_id: str) -> Optional[Film]:
-        data = await self.redis.get(film_id)
+    async def _film_from_cache(self, cache_key: str) -> Optional[Film]:
+        data = await self.redis.get(key=cache_key)
         if not data:
             return None
 
         return Film.parse_raw(data)
 
+    async def _get_film_from_elastic(self, film_id: str) -> Optional[Film]:
+        return await self._get_from_elastic_by_id(
+            _id=film_id, model=self.model, index=self.index
+        )
+
+    async def _put_film_to_cache(self, film: Film, cache_key: str):
+        await self.redis.set(
+            key=cache_key, value=film.json(),
+            expire=self.CACHE_EXPIRE_IN_SECONDS,
+        )
+
 
 class FilmsService(BaseMovieService):
     async def get_films(
             self, page_size: int, page: int,
+            cache_key: str,
             sort_param: Optional[str] = None,
             genre_id: Optional[str] = None,
             search: Optional[str] = None,
     ) -> list[Film]:
-        films = await self._films_from_cache(
-            sort_param=sort_param, search=search, genre_id=genre_id,
-        )
+        films = await self._films_from_cache(cache_key=cache_key)
         if not films:
             films = await self._get_films_from_elastic(
                 sort_param=sort_param, search=search, genre_id=genre_id,
                 page=page, page_size=page_size,
             )
             if films:
-                await self._put_films_to_cache(films=films)
+                await self._put_films_to_cache(films=films, cache_key=cache_key)
             return films
 
         return films
 
-    async def _films_from_cache(
-            self, sort_param: Optional[str],
-            search: Optional[str], genre_id: Optional[str]
-    ) -> list[Film]:
-        data = []
+    async def _films_from_cache(self, cache_key: str) -> list[Film]:
+        data = await self.redis.get(key=cache_key)
+        if not data:
+            return []
 
-        keys = await self.redis.keys(pattern="*")
-        for key in keys:
-            film_from_redis = await self.redis.get(key)
-            film = Film.parse_raw(film_from_redis)
-
-            # Не проходит фильтрацию по жанру
-            if genre_id and not \
-                    any(item.id == genre_id for item in film.genre):
-                continue
-
-            # Не подходит по поисковому запросу
-            if search and not fuzz.WRatio(search.lower(), film.title) > 80:
-                continue
-
-            data.append(film)
-
-        # Если добавлен запрос на сортировку
-        if sort_param:
-            data.sort(
-                key=lambda x: x.imdb_rating,
-                reverse=sort_param == "-imdb_rating"
-            )
-        return data
+        return [Film.parse_raw(film_dict) for film_dict in json.loads(data)]
 
     async def _get_films_from_elastic(
             self, sort_param: Optional[str],
@@ -227,9 +214,12 @@ class FilmsService(BaseMovieService):
         count = await self.elastic.count(index=self.index, body=query)
         return count["count"]
 
-    async def _put_films_to_cache(self, films: list[Film]):
-        for film in films:
-            await self._put_film_to_cache(film=film)
+    async def _put_films_to_cache(self, films: list[Film], cache_key: str):
+        films = [film.json() for film in films]
+        await self.redis.set(
+            key=cache_key, value=json.dumps(films),
+            expire=self.CACHE_EXPIRE_IN_SECONDS,
+        )
 
 
 @lru_cache()

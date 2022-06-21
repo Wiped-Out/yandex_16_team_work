@@ -75,9 +75,9 @@ class BaseGenreService(BaseService):
         super().__init__(redis, elastic)
         self.index = "genres"
 
-    async def _put_genre_to_cache(self, genre: Genre):
+    async def _put_genre_to_cache(self, genre: Genre, cache_key: str):
         await self.redis.set(
-            key=str(genre.uuid), value=genre.json(),
+            key=cache_key, value=genre.json(),
             expire=self.CACHE_EXPIRE_IN_SECONDS,
         )
 
@@ -88,17 +88,6 @@ class BaseMovieService(BaseService):
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         super().__init__(redis, elastic)
         self.index = "movies"
-
-    async def _put_film_to_cache(self, film: Film):
-        await self.redis.set(
-            key=str(film.id), value=film.json(),
-            expire=self.CACHE_EXPIRE_IN_SECONDS,
-        )
-
-    async def _get_film_from_elastic(self, film_id: str) -> Optional[model]:
-        return await self._get_from_elastic_by_id(
-            _id=film_id, model=self.model, index=self.index
-        )
 
     async def _search_films_in_elastic(
             self, search: str, page_size: int, page: int
@@ -116,12 +105,6 @@ class BasePersonService(BaseService):
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         super().__init__(redis, elastic)
         self.index = "persons"
-
-    async def _put_person_to_cache(self, person: Person):
-        await self.redis.set(
-            key=str(person.uuid), value=person.json(),
-            expire=self.CACHE_EXPIRE_IN_SECONDS,
-        )
 
     async def _get_person_from_elastic(self, person_id: str) -> list[model]:
         query = {

@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from services.persons import PersonsService, get_persons_service
 from services.films import FilmsService, get_films_service
 from schemas.v1_schemas import Person, Film
@@ -13,13 +13,14 @@ router = APIRouter()
 
 @router.get("/search", response_model=Page[Person])
 async def search_persons(
-        query: str,
+        query: str, request: Request,
         persons_service: PersonsService = Depends(get_persons_service),
         page_size: Optional[int] = Query(default=50, alias="page[size]"),
         page: Optional[int] = Query(default=1, alias="page[number]"),
 ):
+    cache_key = f"{request.url.path}_{query=}_{page_size=}_{page=}"
     persons = await persons_service.search_persons(
-        search=query, page_size=page_size, page=page,
+        search=query, page_size=page_size, page=page, cache_key=cache_key,
     )
     if not persons:
         raise HTTPException(
@@ -57,10 +58,13 @@ async def films_by_person(
 
 @router.get("/{person_id}", response_model=list[Person])
 async def get_person(
-        person_id: str,
+        person_id: str, request: Request,
         person_service: PersonsService = Depends(get_persons_service),
 ) -> list[Person]:
-    persons = await person_service._get_persons_by_id(person_id=person_id)
+    cache_key = f"{request.url.path}_{person_id=}"
+    persons = await person_service._get_persons_by_id(
+        person_id=person_id, cache_key=cache_key,
+    )
     if not persons:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail="person not found",

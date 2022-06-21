@@ -20,3 +20,4 @@ class Person(BaseModel):
     class Config:
         json_loads = orjson.loads
         json_dumps = utils.orjson_dumps
+        allow_population_by_field_name = True
