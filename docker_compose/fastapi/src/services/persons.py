@@ -1,12 +1,12 @@
 from functools import lru_cache
 
 from aioredis import Redis
-from elasticsearch import AsyncElasticsearch
+from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
 from db.elastic import get_elastic
 from db.redis import get_redis
-from models.person import Person
+from models.person import Person, PersonType
 from fuzzywuzzy import fuzz
 from services.base import BasePersonService
 
@@ -15,9 +15,7 @@ class PersonsService(BasePersonService):
     async def search_persons(
             self, search: str, page: int, page_size: int
     ) -> list[Person]:
-        # todo
-        # persons = await self._get_persons_from_cache_by_search(search=search)
-        persons = []
+        persons = await self._get_persons_from_cache_by_search(search=search)
         if not persons:
             persons = await self._search_persons_in_elastic(
                 search=search, page_size=page_size, page=page
@@ -56,11 +54,59 @@ class PersonsService(BasePersonService):
     async def _search_persons_in_elastic(
             self, search: str, page: int, page_size: int
     ) -> list[Person]:
-        # todo Добавить сюда наполнение модели фильмами и ролью
-        data = await self._get_from_elastic_by_search(
-            index=self.index, model=Person, fields=["full_name"],
-            search=search, page_size=page_size, page=page
-        )
+        query = {
+            "query": {
+                "multi_match": {
+                    "query": search,
+                    "fields": ["full_name"],
+                    "fuzziness": "auto"
+                }
+            }
+        }
+
+        try:
+            doc = await self.elastic.search(
+                index=self.index, body=query,
+                from_=page_size * (page - 1),
+                size=page_size
+            )
+        except NotFoundError:
+            return []
+
+        data = []
+        for item in doc["hits"]["hits"]:
+            for role in PersonType:
+                elastic_role = "{0}s".format(str(role.value))
+                query = {
+                    "query": {
+                        "bool": {
+                            "must": [
+                                {
+                                    "nested": {
+                                        "path": elastic_role,
+                                        "query": {
+                                            "match": {
+                                                f"{elastic_role}.id": item["_source"]["id"]
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+
+                try:
+                    doc2 = await self.elastic.search(index="movies", body=query)
+                    film_ids = [hit["_source"]['id']
+                                for hit in doc2["hits"]["hits"]]
+                except NotFoundError:
+                    film_ids = []
+
+                data.append(
+                    Person(**item["_source"], film_ids=film_ids, role=role)
+                )
+
         return data
 
     async def count_persons_in_elastic(self, search: str) -> int:

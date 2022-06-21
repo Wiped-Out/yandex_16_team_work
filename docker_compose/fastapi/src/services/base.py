@@ -140,7 +140,6 @@ class BasePersonService(BaseService):
             return []
 
         data = []
-
         item = doc["hits"]["hits"][0]
         for role in PersonType:
             elastic_role = "{0}s".format(str(role.value))

@@ -13,9 +13,7 @@ from services.base import BaseGenreService
 
 class GenreService(BaseGenreService):
     async def get_genre(self, genre_id: str) -> Optional[Genre]:
-        # todo
-        # genre = await self._get_genre_from_cache(genre_id=genre_id)
-        genre = None
+        genre = await self._get_genre_from_cache(genre_id=genre_id)
         if not genre:
             genre = await self._get_genre_from_elastic(genre_id=genre_id)
             if genre:
@@ -37,9 +35,7 @@ class GenreService(BaseGenreService):
 
 class GenresService(BaseGenreService):
     async def get_genres(self, page: int, page_size: int) -> list[Genre]:
-        # todo
-        # genres = await self._get_genres_from_cache()
-        genres = []
+        genres = await self._get_genres_from_cache()
         if not genres:
             genres = await self._get_genres_from_elastic(
                 page_size=page_size, page=page,

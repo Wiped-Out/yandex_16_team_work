@@ -14,9 +14,7 @@ from services.base import BaseMovieService
 
 class FilmService(BaseMovieService):
     async def get_by_id(self, film_id: str) -> Optional[Film]:
-        # todo
-        # film = await self._film_from_cache(film_id)
-        film = None
+        film = await self._film_from_cache(film_id)
         if not film:
             film = await self._get_film_from_elastic(film_id)
             if not film:
@@ -41,11 +39,9 @@ class FilmsService(BaseMovieService):
             genre_id: Optional[str] = None,
             search: Optional[str] = None,
     ) -> list[Film]:
-        # todo
-        # films = await self._films_from_cache(
-        #     sort_param=sort_param, search=search, genre_id=genre_id,
-        # )
-        films = []
+        films = await self._films_from_cache(
+            sort_param=sort_param, search=search, genre_id=genre_id,
+        )
         if not films:
             films = await self._get_films_from_elastic(
                 sort_param=sort_param, search=search, genre_id=genre_id,
