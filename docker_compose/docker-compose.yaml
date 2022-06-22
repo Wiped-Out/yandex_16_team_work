@@ -41,8 +41,6 @@ services:
     environment:
       discovery.type: "single-node"
       ES_JAVA_OPTS: "-Xms1000m -Xmx1000m"
-    ports:
-      - 9200:9200
     volumes:
       - esdata:/usr/share/elasticsearch/data
 
@@ -56,8 +54,6 @@ services:
 
   redis:
     image: redis:7.0
-    ports:
-      - 6379:6379
     volumes:
       - redisdata:/data
 
