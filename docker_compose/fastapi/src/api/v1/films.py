@@ -15,7 +15,11 @@ from api.answers.v1 import answers
 router = APIRouter()
 
 
-@router.get("/search", response_model=Page[Film])
+@router.get(
+    path="/search",
+    response_model=Page[Film],
+    description="Search films by query parameter",
+)
 async def search_for_films(
         query: str, request: Request,
         films_service: FilmsService = Depends(get_films_service),
@@ -38,7 +42,12 @@ async def search_for_films(
     )
 
 
-@router.get('/{film_id}', response_model=Film)
+@router.get(
+    path='/{film_id}',
+    response_model=Film,
+    summary="Get info about film by UUID",
+    description="Get title and IMDB rating for film"
+)
 async def film_details(
         film_id: str, request: Request,
         film_service: FilmService = Depends(get_film_service)
@@ -53,7 +62,12 @@ async def film_details(
     return Film(**film.dict())
 
 
-@router.get('', response_model=Page[Film])
+@router.get(
+    path='',
+    response_model=Page[Film],
+    summary="Get films for main page",
+    description="Get films info for main page: title and IMDB rating"
+)
 async def get_films_for_main_page(
         request: Request,
         films_service: FilmsService = Depends(get_films_service),

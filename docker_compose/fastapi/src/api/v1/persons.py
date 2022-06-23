@@ -12,7 +12,11 @@ from api.answers.v1 import answers
 router = APIRouter()
 
 
-@router.get("/search", response_model=Page[Person])
+@router.get(
+    path="/search",
+    response_model=Page[Person],
+    description="Search persons by query parameter",
+)
 async def search_persons(
         query: str, request: Request,
         persons_service: PersonsService = Depends(get_persons_service),
@@ -35,7 +39,11 @@ async def search_persons(
     )
 
 
-@router.get("/{person_id}/film", response_model=Page[Film])
+@router.get(
+    path="/{person_id}/film",
+    response_model=Page[Film],
+    description="Get films where person was involved",
+)
 async def films_by_person(
         person_id: str,
         films_service: FilmsService = Depends(get_films_service),
@@ -57,7 +65,11 @@ async def films_by_person(
     )
 
 
-@router.get("/{person_id}", response_model=list[Person])
+@router.get(
+    path="/{person_id}",
+    response_model=list[Person],
+    description="Get person's full name, role and films where person was involved"
+)
 async def get_person(
         person_id: str, request: Request,
         person_service: PersonsService = Depends(get_persons_service),

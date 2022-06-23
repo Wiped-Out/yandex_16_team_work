@@ -13,7 +13,11 @@ from api.answers.v1 import answers
 router = APIRouter()
 
 
-@router.get("/{genre_id}", response_model=Genre)
+@router.get(
+    path="/{genre_id}",
+    response_model=Genre,
+    description="Get genre name by UUID"
+)
 async def get_genre(
         genre_id: str, request: Request,
         genre_service: GenreService = Depends(get_genre_service)
@@ -30,7 +34,11 @@ async def get_genre(
     return Genre(**genre.dict())
 
 
-@router.get("", response_model=Page[Genre])
+@router.get(
+    path="",
+    response_model=Page[Genre],
+    description="Get all genres"
+)
 async def get_genres(
         request: Request,
         genres_service: GenresService = Depends(get_genres_service),
