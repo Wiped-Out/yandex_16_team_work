@@ -7,6 +7,7 @@ from schemas.v1_schemas import Person, Film
 from typing import Optional
 from utils import utils
 from fastapi_pagination import Page
+from api.answers.v1 import answers
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ async def search_persons(
     )
     if not persons:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="persons not found"
+            status_code=HTTPStatus.NOT_FOUND, detail=answers.PERSONS_NOT_FOUND
         )
 
     total_records = await persons_service.count_persons_in_elastic(search=query)
@@ -46,7 +47,7 @@ async def films_by_person(
     )
     if not films:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="films not found",
+            status_code=HTTPStatus.NOT_FOUND, detail=answers.FILMS_NOT_FOUND,
         )
 
     total_records = await films_service.count_films_for_person_in_elastic(person_id)
@@ -67,6 +68,6 @@ async def get_person(
     )
     if not persons:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="person not found",
+            status_code=HTTPStatus.NOT_FOUND, detail=answers.PERSON_NOT_FOUND,
         )
     return [Person(**person.dict()) for person in persons]

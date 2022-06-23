@@ -10,6 +10,7 @@ from schemas.v1_schemas import Film
 from models.film import Film
 from fastapi_pagination import Page
 from utils import utils
+from api.answers.v1 import answers
 
 router = APIRouter()
 
@@ -27,7 +28,7 @@ async def search_for_films(
     )
     if not films:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="films not found",
+            status_code=HTTPStatus.NOT_FOUND, detail=answers.FILMS_NOT_FOUND,
         )
 
     total_records = await films_service.count_items_in_elastic(search=query)
@@ -46,7 +47,7 @@ async def film_details(
     film = await film_service.get_by_id(film_id=film_id, cache_key=cache_key)
     if not film:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='film not found',
+            status_code=HTTPStatus.NOT_FOUND, detail=answers.FILM_NOT_FOUND,
         )
 
     return Film(**film.dict())
@@ -68,7 +69,7 @@ async def get_films_for_main_page(
     )
     if not films:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="films not found",
+            status_code=HTTPStatus.NOT_FOUND, detail=answers.FILMS_NOT_FOUND,
         )
 
     total_records = await films_service.count_items_in_elastic(genre_id=genre_id)

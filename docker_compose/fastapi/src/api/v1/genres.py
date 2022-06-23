@@ -8,6 +8,7 @@ from schemas.v1_schemas import Genre
 from fastapi_pagination import Page
 from utils import utils
 from typing import Optional
+from api.answers.v1 import answers
 
 router = APIRouter()
 
@@ -23,7 +24,7 @@ async def get_genre(
     )
     if not genre:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="genre not found",
+            status_code=HTTPStatus.NOT_FOUND, detail=answers.GENRE_NOT_FOUND,
         )
 
     return Genre(**genre.dict())
@@ -42,7 +43,7 @@ async def get_genres(
     )
     if not genres_from_db:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="genres not found",
+            status_code=HTTPStatus.NOT_FOUND, detail=answers.GENRES_NOT_FOUND,
         )
 
     total_records = await genres_service.count_genres_in_elastic()
