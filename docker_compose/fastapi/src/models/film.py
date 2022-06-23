@@ -1,8 +1,7 @@
-import orjson
 from pydantic import BaseModel
 from pydantic.types import UUID4
-from utils import utils
 from typing import Optional
+from models.base import BaseOrjsonModel
 
 
 class PersonInFilm(BaseModel):
@@ -15,7 +14,7 @@ class GenreInFilm(BaseModel):
     name: str
 
 
-class Film(BaseModel):
+class Film(BaseModel, BaseOrjsonModel):
     id: UUID4
     title: str
     description: Optional[str]
@@ -31,7 +30,3 @@ class Film(BaseModel):
     actors_names: list[str]
     writers_names: list[str]
     directors_names: list[str]
-
-    class Config:
-        json_loads = orjson.loads
-        json_dumps = utils.orjson_dumps
