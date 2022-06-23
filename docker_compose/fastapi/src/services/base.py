@@ -4,7 +4,6 @@ from elasticsearch import AsyncElasticsearch
 from models.film import Film
 from models.person import Person, PersonType
 from models.genre import Genre
-from typing import Optional
 from elasticsearch import NotFoundError
 
 
