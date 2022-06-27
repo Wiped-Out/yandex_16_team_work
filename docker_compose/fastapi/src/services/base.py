@@ -2,10 +2,11 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 
 from models.film import Film
-from models.person import Person
+from models.person import Person, PersonType
 from models.genre import Genre
 from elasticsearch import NotFoundError
 import json
+from typing import Optional
 
 
 class BaseRedisService:
@@ -128,10 +129,148 @@ class BaseGenreService(BaseRedisService, BaseElasticService):
         self.elastic = elastic
 
 
-class BaseMovieService(BaseRedisService, BaseElasticService):
+class ElasticFilm(BaseElasticService):
+    def __init__(self, elastic: AsyncElasticsearch):
+        BaseElasticService.__init__(self, elastic=elastic)
+        self.elastic = elastic
+        self.index = "movies"
+        self.model = Film
+
+    async def _get_films_from_elastic(
+            self, sort_param: Optional[str],
+            search: Optional[str], genre_id: Optional[str],
+            page: int, page_size: int,
+    ) -> list[Film]:
+        if search:
+            return await self.get_items_by_search(
+                search=search, page_size=page_size, page=page,
+                index=self.index, model=self.model, fields=["title"]
+            )
+
+        query = {
+            "query": {
+                "bool": {
+                    "must": []
+                }
+            }
+        }
+
+        if genre_id:
+            query["query"]["bool"]["must"].append(
+                {
+                    "nested": {
+                        "path": "genre",
+                        "query": {
+                            "match": {
+                                "genre.id": genre_id
+                            }
+                        }
+                    }
+                }
+            )
+
+        try:
+            doc = await self.elastic.search(
+                index=self.index, body=query,
+                from_=page_size * (page - 1),
+                sort="imdb_rating:desc"
+                if sort_param == "-imdb_rating"
+                else "imdb_rating:asc",
+                size=page_size,
+            )
+        except NotFoundError:
+            return []
+
+        return [Film(**film["_source"]) for film in doc["hits"]["hits"]]
+
+    async def count_items_in_elastic(
+            self, search: Optional[str] = None, genre_id: Optional[str] = None
+    ) -> int:
+        if search:
+            query = {
+                "query": {
+                    "multi_match": {
+                        "query": search,
+                        "fields": ["title"],
+                        "fuzziness": "auto"
+                    }
+                }
+            }
+
+            count = await self.elastic.count(index=self.index, body=query)
+            return count["count"]
+
+        query = {
+            "query": {
+                "bool": {
+                    "must": []
+                }
+            }
+        }
+
+        if genre_id:
+            query["query"]["bool"]["must"].append(
+                {
+                    "nested": {
+                        "path": "genre",
+                        "query": {
+                            "match": {
+                                "genre.id": genre_id
+                            }
+                        }
+                    }
+                }
+            )
+
+        count = await self.elastic.count(index=self.index, body=query)
+        return count["count"]
+
+    async def get_films_for_person_query(self, person_id: str) -> dict:
+        query = {
+            "query": {
+                "bool": {
+                    "should": []
+                }
+            }
+        }
+        for role in ("actors", "directors", "writers"):
+            query["query"]["bool"]["should"].append({
+                "nested": {
+                    "path": role,
+                    "query": {
+                        "match": {
+                            f"{role}.id": person_id,
+                        }
+                    }
+                }
+            })
+        return query
+
+    async def get_films_for_person(
+            self, person_id: str, page: int, page_size: int
+    ) -> list[Film]:
+        query = await self.get_films_for_person_query(person_id=person_id)
+
+        try:
+            doc = await self.elastic.search(
+                index=self.index, body=query,
+                from_=page_size * (page - 1),
+                size=page_size,
+            )
+            return [Film(**item["_source"]) for item in doc["hits"]["hits"]]
+        except NotFoundError:
+            return []
+
+    async def count_films_for_person_in_elastic(self, person_id: str) -> int:
+        query = await self.get_films_for_person_query(person_id=person_id)
+        count = await self.elastic.count(index=self.index, body=query)
+        return count["count"]
+
+
+class BaseFilmService(BaseRedisService, ElasticFilm):
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         BaseRedisService.__init__(self, redis=redis)
-        BaseElasticService.__init__(self, elastic=elastic)
+        ElasticFilm.__init__(self, elastic=elastic)
 
         self.index = "movies"
         self.model = Film
@@ -139,10 +278,92 @@ class BaseMovieService(BaseRedisService, BaseElasticService):
         self.elastic = elastic
 
 
-class BasePersonService(BaseRedisService, BaseElasticService):
+class ElasticPerson(BaseElasticService):
+    def __init__(self, elastic: AsyncElasticsearch):
+        BaseElasticService.__init__(self, elastic=elastic)
+        self.elastic = elastic
+        self.index = "persons"
+
+    async def search_persons_in_elastic(
+            self, search: str, page: int, page_size: int
+    ) -> list[Person]:
+        doc = await self._search_in_elastic(
+            search=search, fields=["full_name"], index=self.index, page=page,
+            page_size=page_size,
+        )
+        if not doc:
+            return []
+
+        data = []
+        for item in doc["hits"]["hits"]:
+            persons = await self.get_person_from_elastic(person_id=item["_source"]["id"])
+            data += persons
+
+        return data
+
+    async def get_person_from_elastic(self, person_id: str) -> list:
+        try:
+            doc = await self.elastic.get(self.index, person_id)
+        except NotFoundError:
+            return []
+
+        persons = await self.get_films_for_person_from_elastic(
+            person_data=doc, person_id=person_id
+        )
+        return persons
+
+    async def get_films_for_person_from_elastic(self, person_data: dict, person_id: str):
+        persons = []
+        for role in PersonType:
+            elastic_role = "{0}s".format(str(role.value))
+            query = {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "nested": {
+                                    "path": elastic_role,
+                                    "query": {
+                                        "match": {
+                                            f"{elastic_role}.id": person_id
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+
+            try:
+                doc2 = await self.elastic.search(index="movies", body=query)
+                film_ids = [hit["_source"]['id'] for hit in doc2["hits"]["hits"]]
+            except NotFoundError:
+                film_ids = []
+
+            persons.append(Person(**person_data["_source"], film_ids=film_ids, role=role))
+
+        return persons
+
+    async def count_persons_in_elastic(self, search: str) -> int:
+        query = {
+            "query": {
+                "multi_match": {
+                    "query": search,
+                    "fields": ["full_name"],
+                    "fuzziness": "auto"
+                }
+            }
+        }
+
+        count = await self.elastic.count(index=self.index, body=query)
+        return count["count"]
+
+
+class BasePersonService(BaseRedisService, ElasticPerson):
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
         BaseRedisService.__init__(self, redis=redis)
-        BaseElasticService.__init__(self, elastic=elastic)
+        ElasticPerson.__init__(self, elastic=elastic)
 
         self.index = "persons"
         self.model = Person

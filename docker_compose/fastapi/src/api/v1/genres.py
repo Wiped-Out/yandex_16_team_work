@@ -54,7 +54,7 @@ async def get_genres(
             status_code=HTTPStatus.NOT_FOUND, detail=answers.GENRES_NOT_FOUND,
         )
 
-    total_records = await genres_service.count_genres_in_elastic()
+    total_records = await genres_service.count_all_data_in_index(index="genres")
     return utils.paginate(
         items=[Genre(**genre.dict()) for genre in genres_from_db],
         total=total_records, page=page, size=page_size,

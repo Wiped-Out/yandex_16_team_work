@@ -2,16 +2,16 @@ from functools import lru_cache
 from typing import Optional
 
 from aioredis import Redis
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
-from services.base import BaseMovieService
+from services.base import BaseFilmService
 
 
-class FilmService(BaseMovieService):
+class FilmService(BaseFilmService):
     async def get_film_by_id(self, film_id: str, cache_key: str) -> Optional[Film]:
         film = await self.get_one_item_from_cache(cache_key=cache_key, model=Film)
         if not film:
@@ -21,7 +21,7 @@ class FilmService(BaseMovieService):
         return film
 
 
-class FilmsService(BaseMovieService):
+class FilmsService(BaseFilmService):
     async def get_films(
             self, page_size: int, page: int,
             cache_key: str,
@@ -40,151 +40,6 @@ class FilmsService(BaseMovieService):
             return films
 
         return films
-
-    async def _get_films_from_elastic(
-            self, sort_param: Optional[str],
-            search: Optional[str], genre_id: Optional[str],
-            page: int, page_size: int,
-    ) -> list[Film]:
-
-        if search:
-            return await self.get_items_by_search(
-                search=search, page_size=page_size, page=page,
-                index=self.index, model=self.model, fields=["title"]
-            )
-
-        query = {
-            "query": {
-                "bool": {
-                    "must": []
-                }
-            }
-        }
-
-        if genre_id:
-            query["query"]["bool"]["must"].append(
-                {
-                    "nested": {
-                        "path": "genre",
-                        "query": {
-                            "match": {
-                                "genre.id": genre_id
-                            }
-                        }
-                    }
-                }
-            )
-
-        try:
-            doc = await self.elastic.search(
-                index=self.index, body=query,
-                from_=page_size * (page - 1),
-                sort="imdb_rating:desc"
-                if sort_param == "-imdb_rating"
-                else "imdb_rating:asc",
-                size=page_size,
-            )
-        except NotFoundError:
-            return []
-
-        return [Film(**film["_source"]) for film in doc["hits"]["hits"]]
-
-    async def count_items_in_elastic(
-            self, search: Optional[str] = None, genre_id: Optional[str] = None
-    ) -> int:
-        if search:
-            query = {
-                "query": {
-                    "multi_match": {
-                        "query": search,
-                        "fields": ["title"],
-                        "fuzziness": "auto"
-                    }
-                }
-            }
-
-            count = await self.elastic.count(index=self.index, body=query)
-            return count["count"]
-
-        query = {
-            "query": {
-                "bool": {
-                    "must": []
-                }
-            }
-        }
-
-        if genre_id:
-            query["query"]["bool"]["must"].append(
-                {
-                    "nested": {
-                        "path": "genre",
-                        "query": {
-                            "match": {
-                                "genre.id": genre_id
-                            }
-                        }
-                    }
-                }
-            )
-
-        count = await self.elastic.count(index=self.index, body=query)
-        return count["count"]
-
-    async def get_films_for_person(
-            self, person_id: str, page: int, page_size: int
-    ) -> list[Film]:
-        query = {
-            "query": {
-                "bool": {
-                    "should": []
-                }
-            }
-        }
-        for role in ("actors", "directors", "writers"):
-            query["query"]["bool"]["should"].append({
-                "nested": {
-                    "path": role,
-                    "query": {
-                        "match": {
-                            f"{role}.id": person_id,
-                        }
-                    }
-                }
-            })
-
-        try:
-            doc = await self.elastic.search(
-                index=self.index, body=query,
-                from_=page_size * (page - 1),
-                size=page_size,
-            )
-            return [Film(**item["_source"]) for item in doc["hits"]["hits"]]
-        except NotFoundError:
-            return []
-
-    async def count_films_for_person_in_elastic(self, person_id: str) -> int:
-        query = {
-            "query": {
-                "bool": {
-                    "should": []
-                }
-            }
-        }
-        for role in ("actors", "directors", "writers"):
-            query["query"]["bool"]["should"].append({
-                "nested": {
-                    "path": role,
-                    "query": {
-                        "match": {
-                            f"{role}.id": person_id,
-                        }
-                    }
-                }
-            })
-
-        count = await self.elastic.count(index=self.index, body=query)
-        return count["count"]
 
 
 @lru_cache()

@@ -38,9 +38,6 @@ class GenresService(BaseGenreService):
             return genres
         return genres
 
-    async def count_genres_in_elastic(self) -> int:
-        return await self.count_all_data_in_index(index=self.index)
-
 
 @lru_cache()
 def get_genre_service(
