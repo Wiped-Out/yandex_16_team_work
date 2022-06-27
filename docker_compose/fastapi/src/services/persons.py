@@ -1,4 +1,3 @@
-import json
 from functools import lru_cache
 
 from aioredis import Redis
@@ -8,21 +7,21 @@ from fastapi import Depends
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.person import Person, PersonType
-from services.base import BasePersonService
+from services.base import BasePersonService, BaseRedisService
 
 
-class PersonsService(BasePersonService):
+class PersonsService(BasePersonService, BaseRedisService):
     async def search_persons(
             self, search: str, page: int, page_size: int,
             cache_key: str,
     ) -> list[Person]:
-        persons = await self._get_persons_from_cache_by_search(cache_key=cache_key)
+        persons = await self.get_items_from_cache(cache_key=cache_key, model=Person)
         if not persons:
             persons = await self._search_persons_in_elastic(
                 search=search, page_size=page_size, page=page
             )
             if persons:
-                await self._put_persons_to_cache(persons=persons, cache_key=cache_key)
+                await self.put_items_to_cache(cache_key=cache_key, items=persons)
         return persons
 
     async def _get_persons_by_id(
@@ -32,17 +31,8 @@ class PersonsService(BasePersonService):
         if not persons:
             persons = await self._get_person_from_elastic(person_id=person_id)
             if persons:
-                await self._put_persons_to_cache(persons=persons, cache_key=cache_key)
+                await self.put_items_to_cache(cache_key=cache_key, items=persons)
         return persons
-
-    async def _get_persons_from_cache_by_search(
-            self, cache_key: str
-    ) -> list[Person]:
-        data = await self.redis.get(key=cache_key)
-        if not data:
-            return []
-
-        return [Person.parse_raw(person_dict) for person_dict in json.loads(data)]
 
     async def _search_persons_in_elastic(
             self, search: str, page: int, page_size: int
@@ -117,6 +107,7 @@ class PersonsService(BasePersonService):
         return count["count"]
 
     async def _get_person_from_cache(self, person_id: str) -> list[Person]:
+        # todo зачем мы сделали именно таким сложным образом?
         data = []
         keys = await self.redis.keys(pattern="*")
         for key in keys:
@@ -127,13 +118,6 @@ class PersonsService(BasePersonService):
             person = Person.parse_raw(person_from_redis)
             data.append(person)
         return data
-
-    async def _put_persons_to_cache(self, cache_key: str, persons: list[Person]):
-        persons = [person.json() for person in persons]
-        await self.redis.set(
-            key=cache_key, value=json.dumps(persons),
-            expire=self.CACHE_EXPIRE_IN_SECONDS,
-        )
 
 
 @lru_cache()

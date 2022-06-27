@@ -8,42 +8,28 @@ from fastapi import Depends
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
-from services.base import BaseMovieService
-import json
+from services.base import BaseMovieService, BaseRedisService
 
 
-class FilmService(BaseMovieService):
+class FilmService(BaseMovieService, BaseRedisService):
     async def get_by_id(self, film_id: str, cache_key: str) -> Optional[Film]:
-        film = await self._film_from_cache(cache_key=cache_key)
+        film = await self.get_one_item_from_cache(cache_key=cache_key, model=Film)
         if not film:
             film = await self._get_film_from_elastic(film_id)
             if not film:
                 return None
             # Сохраняем фильм в кеш
-            await self._put_film_to_cache(film=film, cache_key=cache_key)
+            await self.put_one_item_to_cache(cache_key=cache_key, item=film)
 
         return film
-
-    async def _film_from_cache(self, cache_key: str) -> Optional[Film]:
-        data = await self.redis.get(key=cache_key)
-        if not data:
-            return None
-
-        return Film.parse_raw(data)
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[Film]:
         return await self._get_from_elastic_by_id(
             _id=film_id, model=self.model, index=self.index
         )
 
-    async def _put_film_to_cache(self, film: Film, cache_key: str):
-        await self.redis.set(
-            key=cache_key, value=film.json(),
-            expire=self.CACHE_EXPIRE_IN_SECONDS,
-        )
 
-
-class FilmsService(BaseMovieService):
+class FilmsService(BaseMovieService, BaseRedisService):
     async def get_films(
             self, page_size: int, page: int,
             cache_key: str,
@@ -51,24 +37,17 @@ class FilmsService(BaseMovieService):
             genre_id: Optional[str] = None,
             search: Optional[str] = None,
     ) -> list[Film]:
-        films = await self._films_from_cache(cache_key=cache_key)
+        films = await self.get_items_from_cache(cache_key=cache_key, model=Film)
         if not films:
             films = await self._get_films_from_elastic(
                 sort_param=sort_param, search=search, genre_id=genre_id,
                 page=page, page_size=page_size,
             )
             if films:
-                await self._put_films_to_cache(films=films, cache_key=cache_key)
+                await self.put_items_to_cache(cache_key=cache_key, items=films)
             return films
 
         return films
-
-    async def _films_from_cache(self, cache_key: str) -> list[Film]:
-        data = await self.redis.get(key=cache_key)
-        if not data:
-            return []
-
-        return [Film.parse_raw(film_dict) for film_dict in json.loads(data)]
 
     async def _get_films_from_elastic(
             self, sort_param: Optional[str],
@@ -213,13 +192,6 @@ class FilmsService(BaseMovieService):
 
         count = await self.elastic.count(index=self.index, body=query)
         return count["count"]
-
-    async def _put_films_to_cache(self, films: list[Film], cache_key: str):
-        films = [film.json() for film in films]
-        await self.redis.set(
-            key=cache_key, value=json.dumps(films),
-            expire=self.CACHE_EXPIRE_IN_SECONDS,
-        )
 
 
 @lru_cache()
