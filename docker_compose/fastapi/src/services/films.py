@@ -8,28 +8,20 @@ from fastapi import Depends
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
-from services.base import BaseMovieService, BaseRedisService
+from services.base import BaseMovieService
 
 
-class FilmService(BaseMovieService, BaseRedisService):
-    async def get_by_id(self, film_id: str, cache_key: str) -> Optional[Film]:
+class FilmService(BaseMovieService):
+    async def get_film_by_id(self, film_id: str, cache_key: str) -> Optional[Film]:
         film = await self.get_one_item_from_cache(cache_key=cache_key, model=Film)
         if not film:
-            film = await self._get_film_from_elastic(film_id)
-            if not film:
-                return None
-            # Сохраняем фильм в кеш
-            await self.put_one_item_to_cache(cache_key=cache_key, item=film)
-
+            film = await self.get_by_id(film_id, model=Film, index=self.index)
+            if film:
+                await self.put_one_item_to_cache(cache_key=cache_key, item=film)
         return film
 
-    async def _get_film_from_elastic(self, film_id: str) -> Optional[Film]:
-        return await self._get_from_elastic_by_id(
-            _id=film_id, model=self.model, index=self.index
-        )
 
-
-class FilmsService(BaseMovieService, BaseRedisService):
+class FilmsService(BaseMovieService):
     async def get_films(
             self, page_size: int, page: int,
             cache_key: str,
@@ -56,8 +48,9 @@ class FilmsService(BaseMovieService, BaseRedisService):
     ) -> list[Film]:
 
         if search:
-            return await self._search_films_in_elastic(
-                search=search, page_size=page_size, page=page
+            return await self.get_items_by_search(
+                search=search, page_size=page_size, page=page,
+                index=self.index, model=self.model, fields=["title"]
             )
 
         query = {

@@ -53,7 +53,7 @@ async def film_details(
         film_service: FilmService = Depends(get_film_service)
 ) -> Film:
     cache_key = f"{request.url.path}_{film_id=}"
-    film = await film_service.get_by_id(film_id=film_id, cache_key=cache_key)
+    film = await film_service.get_film_by_id(film_id=film_id, cache_key=cache_key)
     if not film:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail=answers.FILM_NOT_FOUND,

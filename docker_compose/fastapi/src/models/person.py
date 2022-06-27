@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
 from pydantic.types import UUID4
 from enum import Enum
 from models.base import BaseOrjsonModel
@@ -10,7 +10,7 @@ class PersonType(str, Enum):
     writer = "writer"
 
 
-class Person(BaseModel, BaseOrjsonModel):
+class Person(BaseOrjsonModel):
     uuid: UUID4 = Field(alias="id")
     full_name: str
     role: PersonType

@@ -14,7 +14,7 @@ class GenreInFilm(BaseModel):
     name: str
 
 
-class Film(BaseModel, BaseOrjsonModel):
+class Film(BaseOrjsonModel):
     id: UUID4
     title: str
     description: Optional[str]
