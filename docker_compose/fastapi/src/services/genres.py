@@ -20,7 +20,6 @@ class GenreService(BaseGenreService):
             genre = await self.get_by_id(_id=genre_id, model=Genre, index=self.index)
             if genre:
                 await self.put_one_item_to_cache(cache_key=cache_key, item=genre)
-            return genre
         return genre
 
 
@@ -35,7 +34,6 @@ class GenresService(BaseGenreService):
             )
             if genres:
                 await self.put_items_to_cache(cache_key=cache_key, items=genres)
-            return genres
         return genres
 
 

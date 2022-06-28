@@ -37,8 +37,6 @@ class FilmsService(BaseFilmService):
             )
             if films:
                 await self.put_items_to_cache(cache_key=cache_key, items=films)
-            return films
-
         return films
 
 
