@@ -1,7 +1,7 @@
 import os
 
-old_name = '.env'
-new_name = '.env.sample'
+old_name = '.env.sample'
+new_name = '.env'
 
 for item in os.walk('.'):
     if old_name in item[2]:
