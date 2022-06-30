@@ -1,3 +1,5 @@
+import asyncio
+
 import aiohttp
 import aioredis
 import pytest
@@ -6,7 +8,7 @@ from typing import Optional
 from dataclasses import dataclass
 from multidict import CIMultiDictProxy
 from elasticsearch import AsyncElasticsearch
-
+import json
 from .settings import settings
 
 
@@ -15,6 +17,13 @@ class HTTPResponse:
     body: dict
     headers: CIMultiDictProxy[str]
     status: int
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope='session')
@@ -47,6 +56,48 @@ async def session():
 
 
 @pytest.fixture
+def create_index(es_client: AsyncElasticsearch):
+    async def inner(index: str):
+        with open(settings.INDEXES_NAMES_MAPPINGS[index]) as index_mapping_file:
+            loaded_json = json.load(index_mapping_file)
+            await es_client.indices.create(index=index, body=loaded_json)
+
+    return inner
+
+
+@pytest.fixture
+def load_data(es_client: AsyncElasticsearch):
+    async def inner(index: str, filename: str):
+        with open(f"../testdata/prepared_data/{filename}") as data:
+            loaded_json = json.load(data)
+            items = loaded_json['items']
+            items_for_bulk = []
+            for item in items:
+                items_for_bulk += \
+                    [
+                        {'index': {
+                            '_index': index,
+                            '_id': item['id']
+                        }
+                        },
+
+                        item
+                    ]
+
+            await es_client.bulk(index=index, body=items_for_bulk)
+
+    return inner
+
+
+@pytest.fixture
+def flush_redis(redis_client: aioredis.Redis):
+    async def inner():
+        await redis_client.flushall()
+
+    return inner
+
+
+@pytest.fixture
 def make_get_request(session):
     async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
@@ -57,5 +108,28 @@ def make_get_request(session):
                 headers=response.headers,
                 status=response.status,
             )
+
+    return inner
+
+
+@pytest.fixture
+def delete_data(es_client: AsyncElasticsearch):
+    async def inner(index: str):
+        await es_client.indices.delete(index=index)
+
+    return inner
+
+
+@pytest.fixture
+def prepare_for_test(
+        create_index,
+        load_data,
+        flush_redis
+):
+    async def inner(index: str, filename: str):
+        await create_index(index=index)
+        await load_data(index=index, filename=filename)
+        await asyncio.sleep(1)
+        await flush_redis()
 
     return inner
