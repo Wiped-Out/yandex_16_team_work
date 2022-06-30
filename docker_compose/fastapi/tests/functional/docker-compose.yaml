@@ -12,10 +12,14 @@ services:
 
   redis:
     image: redis:7.0
+    ports:
+      - 6379:6379
 
   fastapi:
     build:
       context: ../../.
+    ports:
+      - 8001:8001
     depends_on:
       - elastic
       - redis
@@ -23,3 +27,6 @@ services:
   tests:
     build:
       context: .
+    depends_on:
+      - elastic
+      - redis
