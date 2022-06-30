@@ -1,0 +1,5 @@
+setup.cfg
+*.md
+Dockerfile
+docker-compose.*
+.env.sample
