@@ -23,7 +23,7 @@ router = APIRouter()
 async def search_for_films(
         query: str, request: Request,
         films_service: FilmsService = Depends(get_films_service),
-        page_size: Optional[int] = Query(default=50, alias="page[size]"),
+        page_size: Optional[int] = Query(default=50, le=100, alias="page[size]"),
         page: Optional[int] = Query(default=1, alias="page[number]"),
 ):
     cache_key = f"{request.url.path}_{query=}_{page_size=}_{page=}"
@@ -73,7 +73,7 @@ async def get_films_for_main_page(
         films_service: FilmsService = Depends(get_films_service),
         sort: Optional[str] = None,
         genre_id: Optional[str] = Query(default=None, alias="filter[genre]"),
-        page_size: Optional[int] = Query(default=50, alias="page[size]"),
+        page_size: Optional[int] = Query(default=50, le=100, alias="page[size]"),
         page: Optional[int] = Query(default=1, alias="page[number]"),
 ):
     cache_key = f"{request.url.path}_{sort=}_{page_size=}_{page=}"

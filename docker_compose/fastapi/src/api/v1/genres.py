@@ -42,7 +42,7 @@ async def get_genre(
 async def get_genres(
         request: Request,
         genres_service: GenresService = Depends(get_genres_service),
-        page_size: Optional[int] = Query(default=50, alias="page[size]"),
+        page_size: Optional[int] = Query(default=50, le=100, alias="page[size]"),
         page: Optional[int] = Query(default=1, alias="page[number]"),
 ):
     cache_key = f"{request.url.path}_{page_size=}_{page=}"

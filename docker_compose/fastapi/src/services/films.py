@@ -27,7 +27,8 @@ class FilmService(BaseFilmService):
 
 class FilmsService(BaseFilmService):
     async def get_films(
-            self, page_size: int,
+            self,
+            page_size: int,
             page: int,
             cache_key: str,
             sort_param: Optional[str] = None,
