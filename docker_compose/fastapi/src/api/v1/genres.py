@@ -1,14 +1,15 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi_pagination import Page
+
+from api.answers.v1 import answers
+from schemas.pagination import PaginatedParams
+from schemas.v1_schemas import Genre
 from services.genres import (
     GenresService, get_genres_service, GenreService, get_genre_service,
 )
-from schemas.v1_schemas import Genre
-from fastapi_pagination import Page
 from utils import utils
-from typing import Optional
-from api.answers.v1 import answers
 
 router = APIRouter()
 
@@ -42,9 +43,10 @@ async def get_genre(
 async def get_genres(
         request: Request,
         genres_service: GenresService = Depends(get_genres_service),
-        page_size: Optional[int] = Query(default=50, le=100, alias="page[size]"),
-        page: Optional[int] = Query(default=1, alias="page[number]"),
+        paginated_params: PaginatedParams = Depends()
 ):
+    page_size, page = paginated_params.page_size, paginated_params.page
+
     cache_key = f"{request.url.path}_{page_size=}_{page=}"
     genres_from_db = await genres_service.get_genres(
         page_size=page_size, page=page, cache_key=cache_key,

@@ -1,16 +1,17 @@
 from http import HTTPStatus
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi_pagination import Page
 
+from api.answers.v1 import answers
+from models.film import Film
+from schemas.pagination import PaginatedParams
+from schemas.v1_schemas import Film
 from services.films import (
     FilmService, get_film_service, get_films_service, FilmsService
 )
-from typing import Optional
-from schemas.v1_schemas import Film
-from models.film import Film
-from fastapi_pagination import Page
 from utils import utils
-from api.answers.v1 import answers
 
 router = APIRouter()
 
@@ -23,9 +24,10 @@ router = APIRouter()
 async def search_for_films(
         query: str, request: Request,
         films_service: FilmsService = Depends(get_films_service),
-        page_size: Optional[int] = Query(default=50, le=100, alias="page[size]"),
-        page: Optional[int] = Query(default=1, alias="page[number]"),
+        paginated_params: PaginatedParams = Depends()
 ):
+    page_size, page = paginated_params.page_size, paginated_params.page
+
     cache_key = f"{request.url.path}_{query=}_{page_size=}_{page=}"
     films = await films_service.get_films(
         search=query, page_size=page_size, page=page, cache_key=cache_key,
@@ -73,9 +75,10 @@ async def get_films_for_main_page(
         films_service: FilmsService = Depends(get_films_service),
         sort: Optional[str] = None,
         genre_id: Optional[str] = Query(default=None, alias="filter[genre]"),
-        page_size: Optional[int] = Query(default=50, le=100, alias="page[size]"),
-        page: Optional[int] = Query(default=1, alias="page[number]"),
+        paginated_params: PaginatedParams = Depends()
 ):
+    page_size, page = paginated_params.page_size, paginated_params.page
+
     cache_key = f"{request.url.path}_{sort=}_{page_size=}_{page=}"
     films = await films_service.get_films(
         sort_param=sort, genre_id=genre_id, page=page,
