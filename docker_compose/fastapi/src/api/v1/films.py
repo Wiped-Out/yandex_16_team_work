@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi_pagination import Page
 
 from api.answers.v1 import answers
-from models.film import Film
 from schemas.pagination import PaginatedParams
 from schemas.v1_schemas import Film
 from services.films import (
@@ -53,7 +52,7 @@ async def search_for_films(
 async def film_details(
         film_id: str, request: Request,
         film_service: FilmService = Depends(get_film_service)
-) -> Film:
+):
     cache_key = f"{request.url.path}_{film_id=}"
     film = await film_service.get_film_by_id(film_id=film_id, cache_key=cache_key)
     if not film:
