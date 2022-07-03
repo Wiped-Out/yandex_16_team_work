@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi_pagination import Page
 
 from api.answers.v1 import answers
-from models.film import Film
 from schemas.pagination import PaginatedParams
-from schemas.v1_schemas import Film
+from schemas.v1_schemas import FilmMainPage
+from models.film import Film
 from services.films import (
     FilmService, get_film_service, get_films_service, FilmsService
 )
@@ -18,7 +18,7 @@ router = APIRouter()
 
 @router.get(
     path="/search",
-    response_model=Page[Film],
+    response_model=Page[FilmMainPage],
     description="Search films by query parameter",
 )
 async def search_for_films(
@@ -39,7 +39,7 @@ async def search_for_films(
 
     total_records = await films_service.count_items_in_elastic(search=query)
     return utils.paginate(
-        items=[Film(**film.dict()) for film in films],
+        items=[FilmMainPage(**film.dict()) for film in films],
         total=total_records, page=page, size=page_size
     )
 
@@ -53,7 +53,7 @@ async def search_for_films(
 async def film_details(
         film_id: str, request: Request,
         film_service: FilmService = Depends(get_film_service)
-) -> Film:
+):
     cache_key = f"{request.url.path}_{film_id=}"
     film = await film_service.get_film_by_id(film_id=film_id, cache_key=cache_key)
     if not film:
@@ -66,7 +66,7 @@ async def film_details(
 
 @router.get(
     path='',
-    response_model=Page[Film],
+    response_model=Page[FilmMainPage],
     summary="Get films for main page",
     description="Get films info for main page: title and IMDB rating"
 )
@@ -91,6 +91,6 @@ async def get_films_for_main_page(
 
     total_records = await films_service.count_items_in_elastic(genre_id=genre_id)
     return utils.paginate(
-        items=[Film(**film.dict()) for film in films],
+        items=[FilmMainPage(**film.dict()) for film in films],
         total=total_records, page=page, size=page_size,
     )

@@ -15,7 +15,7 @@ class Person(BaseModel):
     film_ids: list[UUID4]
 
 
-class Film(BaseModel):
+class FilmMainPage(BaseModel):
     id: UUID4
     title: str
     imdb_rating: Optional[float] = 0.01

@@ -5,7 +5,7 @@ from fastapi_pagination import Page
 
 from api.answers.v1 import answers
 from schemas.pagination import PaginatedParams
-from schemas.v1_schemas import Person, Film
+from schemas.v1_schemas import Person, FilmMainPage
 from services.films import FilmsService, get_films_service
 from services.persons import PersonsService, get_persons_service
 from utils import utils
@@ -43,7 +43,7 @@ async def search_persons(
 
 @router.get(
     path="/{person_id}/film",
-    response_model=Page[Film],
+    response_model=Page[FilmMainPage],
     description="Get films where person was involved",
 )
 async def films_by_person(
@@ -62,7 +62,7 @@ async def films_by_person(
 
     total_records = await films_service.count_films_for_person_in_elastic(person_id)
     return utils.paginate(
-        items=[Film(**film.dict()) for film in films],
+        items=[FilmMainPage(**film.dict()) for film in films],
         total=total_records, page=page, size=page_size
     )
 
