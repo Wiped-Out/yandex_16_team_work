@@ -1,15 +1,14 @@
 from functools import lru_cache
 
-from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
-from db.elastic import get_elastic
-from db.redis import get_redis
+from db.db import get_elastic
+from db.cache_db import get_redis
 from models.person import Person
-from services.base import BasePersonService, AsyncCacheStorage
+from services.base import BaseSearchPersonService, AsyncCacheStorage, AsyncFullTextSearchStorage
 
 
-class PersonsService(BasePersonService):
+class PersonsService(BaseSearchPersonService):
     async def search_persons(
             self,
             search: str,
@@ -20,10 +19,10 @@ class PersonsService(BasePersonService):
         persons = await self.get_items_from_cache(cache_key=cache_key, model=Person)
 
         if not persons:
-            persons = await self.search_persons_in_elastic(
+            persons = await self.search_persons_in_db(
                 search=search,
                 page_size=page_size,
-                page=page
+                page=page,
             )
 
             if persons:
@@ -31,7 +30,7 @@ class PersonsService(BasePersonService):
 
         return persons
 
-    async def _get_persons_by_id(
+    async def get_persons_by_id(
             self,
             person_id: str,
             cache_key: str
@@ -43,7 +42,7 @@ class PersonsService(BasePersonService):
         )
 
         if not persons:
-            persons = await self.get_person_from_elastic(person_id=person_id)
+            persons = await self.get_person(person_id=person_id)
 
             if persons:
                 await self.put_items_to_cache(cache_key=cache_key, items=persons)
@@ -54,6 +53,6 @@ class PersonsService(BasePersonService):
 @lru_cache()
 def get_persons_service(
         cache: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic)
+        full_text_search: AsyncFullTextSearchStorage = Depends(get_elastic)
 ) -> PersonsService:
-    return PersonsService(cache=cache, elastic=elastic)
+    return PersonsService(cache=cache, full_text_search=full_text_search)

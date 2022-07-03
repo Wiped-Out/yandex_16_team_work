@@ -1,13 +1,12 @@
 from functools import lru_cache
 from typing import Optional
 
-from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
-from db.elastic import get_elastic
-from db.redis import get_redis
+from db.db import get_elastic
+from db.cache_db import get_redis
 from models.genre import Genre
-from services.base import BaseGenreService, AsyncCacheStorage
+from services.base import BaseGenreService, AsyncCacheStorage, AsyncFullTextSearchStorage
 
 
 class GenreService(BaseGenreService):
@@ -38,7 +37,7 @@ class GenresService(BaseGenreService):
         genres = await self.get_items_from_cache(cache_key=cache_key, model=Genre)
 
         if not genres:
-            genres = await self.get_data_from_elastic(
+            genres = await self.get_data(
                 page_size=page_size, page=page, model=Genre, index=self.index
             )
 
@@ -51,14 +50,14 @@ class GenresService(BaseGenreService):
 @lru_cache()
 def get_genre_service(
         cache: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic)
+        full_text_search: AsyncFullTextSearchStorage = Depends(get_elastic)
 ) -> GenreService:
-    return GenreService(cache=cache, elastic=elastic)
+    return GenreService(cache=cache, full_text_search=full_text_search)
 
 
 @lru_cache()
 def get_genres_service(
         cache: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic)
+        full_text_search: AsyncFullTextSearchStorage = Depends(get_elastic)
 ) -> GenresService:
-    return GenresService(cache=cache, elastic=elastic)
+    return GenresService(cache=cache, full_text_search=full_text_search)

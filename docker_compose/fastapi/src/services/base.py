@@ -1,184 +1,23 @@
-import json
-from abc import ABC, abstractmethod
 from typing import Optional
 
-from elasticsearch import AsyncElasticsearch
 from elasticsearch import NotFoundError
 
 from models.film import Film
 from models.genre import Genre
 from models.person import Person, PersonType
+from services.base_cache import BaseCacheStorage, AsyncCacheStorage
+from services.base_full_text_search import BaseFullTextSearchStorage, AsyncFullTextSearchStorage
 
 
-class AsyncCacheStorage(ABC):
-    @abstractmethod
-    async def get(self, key: str, **kwargs):
-        pass
+class FullTextSearchFilm(BaseFullTextSearchStorage):
+    def __init__(self, full_text_search: AsyncFullTextSearchStorage, **kwargs):
+        super(FullTextSearchFilm, self).__init__(full_text_search=full_text_search, **kwargs)
 
-    @abstractmethod
-    async def set(self, key: str, value: str, expire: int, **kwargs):
-        pass
-
-
-class BaseRedisStorage(AsyncCacheStorage):
-    def __init__(self, redis):
-        self.redis = redis
-
-    async def get(self, key: str, **kwargs):
-        return await self.redis.get(key=key)
-
-    async def set(self, key: str, value: str, expire: int, **kwargs):
-        return await self.redis.set(key=key,
-                                    value=value,
-                                    expire=expire)
-
-
-class BaseCacheStorage:
-    def __init__(self, cache: AsyncCacheStorage, **kwargs):
-        super().__init__(**kwargs)
-
-        self.cache = cache
-        self.CACHE_EXPIRE_IN_SECONDS = 60 * 5
-
-    async def get_one_item_from_cache(self, cache_key: str, model):
-        data = await self.cache.get(key=cache_key)
-
-        if not data:
-            return None
-
-        return model.parse_raw(data)
-
-    async def put_one_item_to_cache(self, cache_key: str, item):
-        await self.cache.set(
-            key=cache_key,
-            value=item.json(),
-            expire=self.CACHE_EXPIRE_IN_SECONDS,
-        )
-
-    async def get_items_from_cache(self, cache_key: str, model):
-        data = await self.cache.get(key=cache_key)
-        if not data:
-            return []
-
-        return [model.parse_raw(item) for item in json.loads(data)]
-
-    async def put_items_to_cache(self, cache_key: str, items: list):
-        await self.cache.set(
-            key=cache_key,
-            value=json.dumps([item.json() for item in items]),
-            expire=self.CACHE_EXPIRE_IN_SECONDS,
-        )
-
-
-class BaseElasticService:
-    def __init__(self, elastic: AsyncElasticsearch, **kwargs):
-        super().__init__(**kwargs)
-
-        self.elastic = elastic
-
-    async def get_by_id(
-            self,
-            _id: str,
-            model,
-            index: str
-    ):
-        try:
-            doc = await self.elastic.get(index, _id)
-        except NotFoundError:
-            return None
-
-        return model(**doc["_source"])
-
-    async def get_data_from_elastic(
-            self,
-            page: int,
-            page_size: int,
-            model,
-            index: str,
-    ):
-        query = {
-            "query": {
-                "match_all": {}
-            }
-        }
-
-        try:
-            doc = await self.elastic.search(
-                index=index,
-                body=query,
-                from_=page_size * (page - 1),
-                size=page_size,
-            )
-            return [model(**item["_source"]) for item in doc["hits"]["hits"]]
-        except NotFoundError:
-            return []
-
-    async def count_all_data_in_index(self, index: str) -> int:
-        count = await self.elastic.count(index=index)
-        return count["count"]
-
-    async def _search_in_elastic(
-            self,
-            search: str,
-            fields: list[str],
-            index: str,
-            page: int,
-            page_size: int,
-    ) -> dict:
-        query = {
-            "query": {
-                "multi_match": {
-                    "query": search,
-                    "fields": fields,
-                    "fuzziness": "auto"
-                }
-            }
-        }
-
-        try:
-            doc = await self.elastic.search(
-                index=index,
-                body=query,
-                from_=page_size * (page - 1),
-                size=page_size
-            )
-        except NotFoundError:
-            return {}
-
-        return doc
-
-    async def get_items_by_search(
-            self,
-            search: str,
-            fields: list[str],
-            index: str,
-            model,
-            page: int,
-            page_size: int
-    ) -> list:
-        doc = await self._search_in_elastic(
-            search=search,
-            fields=fields,
-            index=index,
-            page=page,
-            page_size=page_size
-        )
-
-        if not doc:
-            return []
-
-        return [model(**item["_source"]) for item in doc["hits"]["hits"]]
-
-
-class ElasticFilm(BaseElasticService):
-    def __init__(self, elastic: AsyncElasticsearch, **kwargs):
-        super(ElasticFilm, self).__init__(elastic=elastic, **kwargs)
-
-        self.elastic = elastic
+        self.full_text_search = full_text_search
         self.index = "movies"
         self.model = Film
 
-    async def _get_films_from_elastic(
+    async def get_films_from_db(
             self,
             sort_param: Optional[str],
             search: Optional[str],
@@ -215,7 +54,7 @@ class ElasticFilm(BaseElasticService):
             )
 
         try:
-            doc = await self.elastic.search(
+            doc = await self.full_text_search.search(
                 index=self.index,
                 body=query,
                 from_=page_size * (page - 1),
@@ -230,7 +69,7 @@ class ElasticFilm(BaseElasticService):
 
         return [Film(**film["_source"]) for film in doc["hits"]["hits"]]
 
-    async def count_items_in_elastic(
+    async def count_items(
             self,
             search: Optional[str] = None,
             genre_id: Optional[str] = None
@@ -246,7 +85,7 @@ class ElasticFilm(BaseElasticService):
                 }
             }
 
-            count = await self.elastic.count(index=self.index, body=query)
+            count = await self.full_text_search.count(index=self.index, body=query)
             return count["count"]
 
         query = {
@@ -271,7 +110,7 @@ class ElasticFilm(BaseElasticService):
                 }
             )
 
-        count = await self.elastic.count(index=self.index, body=query)
+        count = await self.full_text_search.count(index=self.index, body=query)
 
         return count["count"]
 
@@ -308,7 +147,7 @@ class ElasticFilm(BaseElasticService):
         query = await self.get_films_for_person_query(person_id=person_id)
 
         try:
-            doc = await self.elastic.search(
+            doc = await self.full_text_search.search(
                 index=self.index,
                 body=query,
                 from_=page_size * (page - 1),
@@ -319,28 +158,36 @@ class ElasticFilm(BaseElasticService):
         except NotFoundError:
             return []
 
-    async def count_films_for_person_in_elastic(self, person_id: str) -> int:
+    async def count_films_for_person(self, person_id: str) -> int:
         query = await self.get_films_for_person_query(person_id=person_id)
-        count = await self.elastic.count(index=self.index, body=query)
+        count = await self.full_text_search.count(index=self.index, body=query)
 
         return count["count"]
 
 
-class ElasticPerson(BaseElasticService):
-    def __init__(self, elastic: AsyncElasticsearch, **kwargs):
-        super().__init__(elastic=elastic, **kwargs)
+class BaseFilmService(BaseCacheStorage, FullTextSearchFilm):
+    def __init__(self, cache: AsyncCacheStorage, full_text_search: AsyncFullTextSearchStorage, **kwargs):
+        super().__init__(cache=cache, full_text_search=full_text_search, **kwargs)
 
-        self.elastic = elastic
+        self.index = "movies"
+        self.model = Film
+
+
+class FullTextSearchPerson(BaseFullTextSearchStorage):
+    def __init__(self, full_text_search: AsyncFullTextSearchStorage, **kwargs):
+        super().__init__(full_text_search=full_text_search, **kwargs)
+
+        self.full_text_search = full_text_search
         self.index = "persons"
 
-    async def search_persons_in_elastic(
+    async def search_persons_in_db(
             self,
             search: str,
             page: int,
             page_size: int
     ) -> list[Person]:
 
-        doc = await self._search_in_elastic(
+        doc = await self.search(
             search=search,
             fields=["full_name"],
             index=self.index,
@@ -353,36 +200,36 @@ class ElasticPerson(BaseElasticService):
 
         data = []
         for item in doc["hits"]["hits"]:
-            persons = await self.get_person_from_elastic(person_id=item["_source"]["id"])
+            persons = await self.get_person(person_id=item["_source"]["id"])
             data += persons
 
         return data
 
-    async def get_person_from_elastic(self, person_id: str) -> list:
+    async def get_person(self, person_id: str) -> list:
         try:
-            doc = await self.elastic.get(self.index, person_id)
+            doc = await self.full_text_search.get(self.index, person_id)
         except NotFoundError:
             return []
 
-        persons = await self.get_films_for_person_from_elastic(
+        persons = await self.get_films_for_person(
             person_data=doc, person_id=person_id
         )
         return persons
 
-    async def get_films_for_person_from_elastic(self, person_data: dict, person_id: str):
+    async def get_films_for_person(self, person_data: dict, person_id: str):
         persons = []
         for role in PersonType:
-            elastic_role = "{0}s".format(str(role.value))
+            role_in_query = "{0}s".format(str(role.value))
             query = {
                 "query": {
                     "bool": {
                         "must": [
                             {
                                 "nested": {
-                                    "path": elastic_role,
+                                    "path": role_in_query,
                                     "query": {
                                         "match": {
-                                            f"{elastic_role}.id": person_id
+                                            f"{role_in_query}.id": person_id
                                         }
                                     }
                                 }
@@ -393,7 +240,7 @@ class ElasticPerson(BaseElasticService):
             }
 
             try:
-                doc2 = await self.elastic.search(index="movies", body=query)
+                doc2 = await self.full_text_search.search(index="movies", body=query)
                 film_ids = [hit["_source"]['id'] for hit in doc2["hits"]["hits"]]
             except NotFoundError:
                 film_ids = []
@@ -402,7 +249,7 @@ class ElasticPerson(BaseElasticService):
 
         return persons
 
-    async def count_persons_in_elastic(self, search: str) -> int:
+    async def count_persons(self, search: str) -> int:
         query = {
             "query": {
                 "multi_match": {
@@ -413,32 +260,21 @@ class ElasticPerson(BaseElasticService):
             }
         }
 
-        count = await self.elastic.count(index=self.index, body=query)
+        count = await self.full_text_search.count(index=self.index, body=query)
         return count["count"]
 
 
-class BaseFilmService(BaseCacheStorage, ElasticFilm):
-    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncElasticsearch, **kwargs):
-        super().__init__(cache=cache, elastic=elastic, **kwargs)
-
-        self.index = "movies"
-        self.model = Film
-        self.elastic = elastic
-
-
-class BasePersonService(BaseCacheStorage, ElasticPerson):
-    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncElasticsearch, **kwargs):
-        super().__init__(cache=cache, elastic=elastic, **kwargs)
+class BaseSearchPersonService(BaseCacheStorage, FullTextSearchPerson):
+    def __init__(self, cache: AsyncCacheStorage, full_text_search: AsyncFullTextSearchStorage, **kwargs):
+        super().__init__(cache=cache, full_text_search=full_text_search, **kwargs)
 
         self.index = "persons"
         self.model = Person
-        self.elastic = elastic
 
 
-class BaseGenreService(BaseCacheStorage, BaseElasticService):
-    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncElasticsearch, **kwargs):
-        super().__init__(cache=cache, elastic=elastic, **kwargs)
+class BaseGenreService(BaseCacheStorage, BaseFullTextSearchStorage):
+    def __init__(self, cache: AsyncCacheStorage, full_text_search: AsyncFullTextSearchStorage, **kwargs):
+        super().__init__(cache=cache, full_text_search=full_text_search, **kwargs)
 
         self.index = "genres"
         self.model = Genre
-        self.elastic = elastic

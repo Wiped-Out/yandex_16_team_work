@@ -34,7 +34,7 @@ async def search_persons(
             status_code=HTTPStatus.NOT_FOUND, detail=answers.PERSONS_NOT_FOUND
         )
 
-    total_records = await persons_service.count_persons_in_elastic(search=query)
+    total_records = await persons_service.count_persons(search=query)
     return utils.paginate(
         items=[Person(**person.dict()) for person in persons],
         total=total_records, page=page, size=page_size
@@ -60,7 +60,7 @@ async def films_by_person(
             status_code=HTTPStatus.NOT_FOUND, detail=answers.FILMS_NOT_FOUND,
         )
 
-    total_records = await films_service.count_films_for_person_in_elastic(person_id)
+    total_records = await films_service.count_films_for_person(person_id)
     return utils.paginate(
         items=[FilmMainPage(**film.dict()) for film in films],
         total=total_records, page=page, size=page_size
@@ -77,7 +77,7 @@ async def get_person(
         person_service: PersonsService = Depends(get_persons_service),
 ) -> list[Person]:
     cache_key = f"{request.url.path}_{person_id=}"
-    persons = await person_service._get_persons_by_id(
+    persons = await person_service.get_persons_by_id(
         person_id=person_id, cache_key=cache_key,
     )
     if not persons:

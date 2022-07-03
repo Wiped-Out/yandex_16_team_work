@@ -37,7 +37,7 @@ async def search_for_films(
             status_code=HTTPStatus.NOT_FOUND, detail=answers.FILMS_NOT_FOUND,
         )
 
-    total_records = await films_service.count_items_in_elastic(search=query)
+    total_records = await films_service.count_items(search=query)
     return utils.paginate(
         items=[FilmMainPage(**film.dict()) for film in films],
         total=total_records, page=page, size=page_size
@@ -82,14 +82,14 @@ async def get_films_for_main_page(
     cache_key = f"{request.url.path}_{sort=}_{page_size=}_{page=}"
     films = await films_service.get_films(
         sort_param=sort, genre_id=genre_id, page=page,
-        page_size=page_size, cache_key=cache_key,
+        page_size=page_size, cache_key=cache_key
     )
     if not films:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail=answers.FILMS_NOT_FOUND,
         )
 
-    total_records = await films_service.count_items_in_elastic(genre_id=genre_id)
+    total_records = await films_service.count_items(genre_id=genre_id)
     return utils.paginate(
         items=[FilmMainPage(**film.dict()) for film in films],
         total=total_records, page=page, size=page_size,

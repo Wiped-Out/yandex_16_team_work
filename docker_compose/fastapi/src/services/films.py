@@ -1,13 +1,12 @@
 from functools import lru_cache
 from typing import Optional
 
-from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
-from db.elastic import get_elastic
-from db.redis import get_redis
+from db.db import get_elastic
+from db.cache_db import get_redis
 from models.film import Film
-from services.base import BaseFilmService, AsyncCacheStorage
+from services.base import BaseFilmService, AsyncCacheStorage, AsyncFullTextSearchStorage
 
 
 class FilmService(BaseFilmService):
@@ -38,7 +37,7 @@ class FilmsService(BaseFilmService):
         films = await self.get_items_from_cache(cache_key=cache_key, model=Film)
 
         if not films:
-            films = await self._get_films_from_elastic(
+            films = await self.get_films_from_db(
                 sort_param=sort_param,
                 search=search,
                 genre_id=genre_id,
@@ -55,14 +54,14 @@ class FilmsService(BaseFilmService):
 @lru_cache()
 def get_film_service(
         cache: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic)
+        full_text_search: AsyncFullTextSearchStorage = Depends(get_elastic)
 ) -> FilmService:
-    return FilmService(cache=cache, elastic=elastic)
+    return FilmService(cache=cache, full_text_search=full_text_search)
 
 
 @lru_cache()
 def get_films_service(
         cache: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic)
+        full_text_search: AsyncFullTextSearchStorage = Depends(get_elastic)
 ) -> FilmsService:
-    return FilmsService(cache=cache, elastic=elastic)
+    return FilmsService(cache=cache, full_text_search=full_text_search)
