@@ -1,24 +1,34 @@
 import json
 from typing import Optional
 
-from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from elasticsearch import NotFoundError
 
 from models.film import Film
 from models.genre import Genre
 from models.person import Person, PersonType
+from abc import ABC, abstractmethod
 
 
-class BaseRedisService:
-    def __init__(self, redis: Redis, **kwargs):
+class AsyncCacheStorage(ABC):
+    @abstractmethod
+    async def get(self, key: str, **kwargs):
+        pass
+
+    @abstractmethod
+    async def set(self, key: str, value: str, expire: int, **kwargs):
+        pass
+
+
+class BaseCacheStorage:
+    def __init__(self, cache: AsyncCacheStorage, **kwargs):
         super().__init__(**kwargs)
 
-        self.redis = redis
+        self.cache = cache
         self.CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
     async def get_one_item_from_cache(self, cache_key: str, model):
-        data = await self.redis.get(key=cache_key)
+        data = await self.cache.get(key=cache_key)
 
         if not data:
             return None
@@ -26,21 +36,21 @@ class BaseRedisService:
         return model.parse_raw(data)
 
     async def put_one_item_to_cache(self, cache_key: str, item):
-        await self.redis.set(
+        await self.cache.set(
             key=cache_key,
             value=item.json(),
             expire=self.CACHE_EXPIRE_IN_SECONDS,
         )
 
     async def get_items_from_cache(self, cache_key: str, model):
-        data = await self.redis.get(key=cache_key)
+        data = await self.cache.get(key=cache_key)
         if not data:
             return []
 
         return [model.parse_raw(item) for item in json.loads(data)]
 
     async def put_items_to_cache(self, cache_key: str, items: list):
-        await self.redis.set(
+        await self.cache.set(
             key=cache_key,
             value=json.dumps([item.json() for item in items]),
             expire=self.CACHE_EXPIRE_IN_SECONDS,
@@ -394,31 +404,28 @@ class ElasticPerson(BaseElasticService):
         return count["count"]
 
 
-class BaseFilmService(BaseRedisService, ElasticFilm):
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, **kwargs):
-        super().__init__(redis=redis, elastic=elastic, **kwargs)
+class BaseFilmService(BaseCacheStorage, ElasticFilm):
+    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncElasticsearch, **kwargs):
+        super().__init__(cache=cache, elastic=elastic, **kwargs)
 
         self.index = "movies"
         self.model = Film
-        self.redis = redis
         self.elastic = elastic
 
 
-class BasePersonService(BaseRedisService, ElasticPerson):
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, **kwargs):
-        super().__init__(redis=redis, elastic=elastic, **kwargs)
+class BasePersonService(BaseCacheStorage, ElasticPerson):
+    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncElasticsearch, **kwargs):
+        super().__init__(cache=cache, elastic=elastic, **kwargs)
 
         self.index = "persons"
         self.model = Person
-        self.redis = redis
         self.elastic = elastic
 
 
-class BaseGenreService(BaseRedisService, BaseElasticService):
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, **kwargs):
-        super().__init__(redis=redis, elastic=elastic, **kwargs)
+class BaseGenreService(BaseCacheStorage, BaseElasticService):
+    def __init__(self, cache: AsyncCacheStorage, elastic: AsyncElasticsearch, **kwargs):
+        super().__init__(cache=cache, elastic=elastic, **kwargs)
 
         self.index = "genres"
         self.model = Genre
-        self.redis = redis
         self.elastic = elastic
