@@ -2,6 +2,7 @@ import pytest
 import json
 from elasticsearch import AsyncElasticsearch
 import aioredis
+from http import HTTPStatus
 
 
 @pytest.mark.asyncio
@@ -34,7 +35,7 @@ async def test_search_persons(
     response = await make_get_request(f'/persons/search', params)
 
     # Проверка результата
-    assert response.status == 200
+    assert response.status == HTTPStatus.OK
 
     with open(response_json_path) as expected_response:
         expected = json.load(expected_response)
@@ -73,7 +74,7 @@ async def test_get_person_by_id(
     response = await make_get_request(f'/persons/{person_id}', dict())
 
     # Проверка результата
-    assert response.status == 200
+    assert response.status == HTTPStatus.OK
 
     with open(response_json_path) as expected_response:
         expected = json.load(expected_response)
@@ -118,7 +119,7 @@ async def test_get_films_for_person(
     response = await make_get_request(f'/persons/{person_id}/film', dict())
 
     # Проверка результата
-    assert response.status == 200
+    assert response.status == HTTPStatus.OK
 
     with open(response_json_path) as expected_response:
         expected = json.load(expected_response)
