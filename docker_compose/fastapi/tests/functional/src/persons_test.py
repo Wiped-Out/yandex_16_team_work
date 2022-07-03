@@ -11,7 +11,7 @@ from http import HTTPStatus
     (
             (
                     {"query": "andrea"},
-                    "../testdata/responses/search_persons.json",
+                    "testdata/responses/search_persons.json",
                     "persons",
                     "persons.json",
             ),
@@ -50,7 +50,7 @@ async def test_search_persons(
     (
             (
                     "3c9eef22-b727-4354-80b6-8f836ab5e860",
-                    "../testdata/responses/get_person_by_id.json",
+                    "testdata/responses/get_person_by_id.json",
                     "persons",
                     "persons.json",
             ),
@@ -89,7 +89,7 @@ async def test_get_person_by_id(
     (
             (
                     "958acb12-9cd3-4784-b374-42c4fc8face2",
-                    "../testdata/responses/get_films_for_person.json",
+                    "testdata/responses/get_films_for_person.json",
                     "persons",
                     "persons.json",
                     "movies",

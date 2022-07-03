@@ -11,7 +11,7 @@ from http import HTTPStatus
     (
             (
                     "c34a40c0-24ee-40db-9c47-58045917841a",
-                    "../testdata/responses/get_genre_by_id.json",
+                    "testdata/responses/get_genre_by_id.json",
                     "genres",
                     "genres.json",
             ),
@@ -49,7 +49,7 @@ async def test_get_genre_by_id(
     "response_json_path, index, filename",
     (
             (
-                    "../testdata/responses/get_genres.json",
+                    "testdata/responses/get_genres.json",
                     "genres",
                     "genres.json",
             ),

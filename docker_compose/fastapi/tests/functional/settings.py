@@ -14,9 +14,9 @@ class Settings(BaseSettings):
     API_URL = os.getenv('API_URL', 'http://127.0.0.1')
 
     INDEXES_NAMES_MAPPINGS = {
-        "movies": "../testdata/indexes_mapping/movies.json",
-        "persons": "../testdata/indexes_mapping/persons.json",
-        "genres": "../testdata/indexes_mapping/genres.json",
+        "movies": "testdata/indexes_mapping/movies.json",
+        "persons": "testdata/indexes_mapping/persons.json",
+        "genres": "testdata/indexes_mapping/genres.json",
     }
 
     class Config:

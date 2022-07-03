@@ -1,4 +1,5 @@
 import asyncio
+from glob import glob
 
 import aiohttp
 import pytest
@@ -6,13 +7,16 @@ import pytest
 from typing import Optional
 from dataclasses import dataclass
 from multidict import CIMultiDictProxy
-from .settings import settings
+from settings import settings
+
+
+def refactor(string: str) -> str:
+    return string.replace("/", ".").replace("\\", ".").replace(".py", "")
+
 
 pytest_plugins = [
-    "fixtures.elastic",
-    "fixtures.redis",
+    refactor(fixture) for fixture in glob("fixtures/*.py") if "__" not in fixture
 ]
-
 
 @dataclass
 class HTTPResponse:

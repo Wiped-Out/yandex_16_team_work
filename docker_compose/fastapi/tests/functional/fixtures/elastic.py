@@ -1,8 +1,12 @@
-import pytest
-
-from elasticsearch import AsyncElasticsearch
 import json
-from .settings import settings
+import sys
+
+import pytest
+from elasticsearch import AsyncElasticsearch
+
+sys.path.append("..")
+
+from settings import settings
 
 
 @pytest.fixture(scope='session')
@@ -28,7 +32,7 @@ def create_index(es_client: AsyncElasticsearch):
 @pytest.fixture
 def load_data(es_client: AsyncElasticsearch):
     async def inner(index: str, filename: str):
-        with open(f"../testdata/prepared_data/{filename}") as data:
+        with open(f"testdata/prepared_data/{filename}") as data:
             loaded_json = json.load(data)
             items = loaded_json['items']
             items_for_bulk = []

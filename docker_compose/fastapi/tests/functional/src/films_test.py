@@ -11,7 +11,7 @@ from http import HTTPStatus
     (
             (
                     {"query": "last"},
-                    "../testdata/responses/search_films.json",
+                    "testdata/responses/search_films.json",
                     "movies",
                     "movies.json",
             ),
@@ -32,7 +32,7 @@ async def test_search_films(
     await prepare_for_test(index=index, filename=filename)
 
     # Выполнение запроса
-    response = await make_get_request(f'/films/search', params)
+    response = await make_get_request('/films/search', params)
 
     # Проверка результата
     assert response.status == HTTPStatus.OK
@@ -50,7 +50,7 @@ async def test_search_films(
     (
             (
                     "4415f91e-53db-4579-a757-d4023b1fa604",
-                    "../testdata/responses/get_film_by_id.json",
+                    "testdata/responses/get_film_by_id.json",
                     "movies",
                     "movies.json",
             ),
@@ -88,7 +88,7 @@ async def test_get_film_by_id(
     "response_json_path, index, filename",
     (
             (
-                    "../testdata/responses/get_films.json",
+                    "testdata/responses/get_films.json",
                     "movies",
                     "movies.json",
             ),

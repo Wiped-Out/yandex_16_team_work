@@ -1,7 +1,11 @@
+import sys
+
 import aioredis
 import pytest
 
-from .settings import settings
+sys.path.append("..")
+
+from settings import settings
 
 
 @pytest.fixture
