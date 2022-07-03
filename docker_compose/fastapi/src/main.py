@@ -4,9 +4,11 @@ from elasticsearch import AsyncElasticsearch
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
+
 from api.v1 import films, persons, genres
 from core.config import settings
 from db import elastic, redis
+from services.base import BaseRedisStorage
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -19,9 +21,9 @@ app = FastAPI(
 
 @app.on_event('startup')
 async def startup():
-    redis.redis = await aioredis.create_redis_pool((
+    redis.redis = BaseRedisStorage(redis=await aioredis.create_redis_pool((
         settings.REDIS_HOST, settings.REDIS_PORT
-    ), minsize=10, maxsize=20)
+    ), minsize=10, maxsize=20))
     elastic.es = AsyncElasticsearch(
         hosts=[f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}']
     )

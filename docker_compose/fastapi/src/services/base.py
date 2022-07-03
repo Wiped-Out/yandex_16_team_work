@@ -1,4 +1,5 @@
 import json
+from abc import ABC, abstractmethod
 from typing import Optional
 
 from elasticsearch import AsyncElasticsearch
@@ -7,7 +8,6 @@ from elasticsearch import NotFoundError
 from models.film import Film
 from models.genre import Genre
 from models.person import Person, PersonType
-from abc import ABC, abstractmethod
 
 
 class AsyncCacheStorage(ABC):
@@ -18,6 +18,19 @@ class AsyncCacheStorage(ABC):
     @abstractmethod
     async def set(self, key: str, value: str, expire: int, **kwargs):
         pass
+
+
+class BaseRedisStorage(AsyncCacheStorage):
+    def __init__(self, redis):
+        self.redis = redis
+
+    async def get(self, key: str, **kwargs):
+        return await self.redis.get(key=key)
+
+    async def set(self, key: str, value: str, expire: int, **kwargs):
+        return await self.redis.set(key=key,
+                                    value=value,
+                                    expire=expire)
 
 
 class BaseCacheStorage:
