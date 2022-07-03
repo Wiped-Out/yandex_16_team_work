@@ -4,4 +4,4 @@ WORKDIR /functional
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-CMD python prepare_env.py && cd src && pytest . --html=../report/pytest_report.html
+CMD python prepare_env.py && cd src && python -m pytest . --html=../report/pytest_report.html

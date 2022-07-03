@@ -8,7 +8,8 @@ from fastapi.staticfiles import StaticFiles
 from api.v1 import films, persons, genres
 from core.config import settings
 from db import db, cache_db
-from services.base import BaseRedisStorage, BaseElasticStorage
+from services.base_cache import BaseRedisStorage
+from services.base_full_text_search import BaseElasticStorage
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
