@@ -6,8 +6,8 @@ services:
       context: ./postgres
     env_file:
       - .env
-    ports:
-      - 5434:5432
+#    ports:
+#      - 5434:5432
     volumes:
       - movies_db:/var/lib/postgresql/data
     restart: always
