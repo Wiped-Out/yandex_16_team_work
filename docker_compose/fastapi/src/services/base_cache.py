@@ -13,6 +13,10 @@ class AsyncCacheStorage(ABC):
     async def set(self, key: str, value: str, expire: int, **kwargs):
         pass
 
+    @abstractmethod
+    async def close(self):
+        pass
+
 
 class BaseRedisStorage(AsyncCacheStorage):
     def __init__(self, redis: Redis):
@@ -24,6 +28,9 @@ class BaseRedisStorage(AsyncCacheStorage):
     async def set(self, key: str, value: str, expire: int, **kwargs):
         return await self.redis.set(key=key, value=value, expire=expire)
 
+    async def close(self):
+        self.redis.close()
+        await self.redis.wait_closed()
 
 class BaseCacheStorage:
     def __init__(self, cache: AsyncCacheStorage, **kwargs):

@@ -1,9 +1,10 @@
 from typing import Optional
-from elasticsearch import AsyncElasticsearch
 
-full_text_search: Optional[AsyncElasticsearch] = None
+from services.base_full_text_search import AsyncFullTextSearchStorage
+
+full_text_search: Optional[AsyncFullTextSearchStorage] = None
 
 
 # Функция понадобится при внедрении зависимостей
-async def get_elastic() -> AsyncElasticsearch:
+async def get_db() -> AsyncFullTextSearchStorage:
     return full_text_search

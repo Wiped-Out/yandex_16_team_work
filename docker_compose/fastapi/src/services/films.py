@@ -3,8 +3,8 @@ from typing import Optional
 
 from fastapi import Depends
 
-from db.db import get_elastic
-from db.cache_db import get_redis
+from db.db import get_db
+from db.cache_db import get_cache_db
 from models.film import Film
 from services.base import BaseFilmService, AsyncCacheStorage, AsyncFullTextSearchStorage
 
@@ -53,15 +53,15 @@ class FilmsService(BaseFilmService):
 
 @lru_cache()
 def get_film_service(
-        cache: AsyncCacheStorage = Depends(get_redis),
-        full_text_search: AsyncFullTextSearchStorage = Depends(get_elastic)
+        cache: AsyncCacheStorage = Depends(get_cache_db),
+        full_text_search: AsyncFullTextSearchStorage = Depends(get_db)
 ) -> FilmService:
     return FilmService(cache=cache, full_text_search=full_text_search)
 
 
 @lru_cache()
 def get_films_service(
-        cache: AsyncCacheStorage = Depends(get_redis),
-        full_text_search: AsyncFullTextSearchStorage = Depends(get_elastic)
+        cache: AsyncCacheStorage = Depends(get_cache_db),
+        full_text_search: AsyncFullTextSearchStorage = Depends(get_db)
 ) -> FilmsService:
     return FilmsService(cache=cache, full_text_search=full_text_search)

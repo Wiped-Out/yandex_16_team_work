@@ -32,8 +32,7 @@ async def startup():
 
 @app.on_event('shutdown')
 async def shutdown():
-    cache_db.cache.close()
-    await cache_db.cache.wait_closed()
+    await cache_db.cache.close()
     await db.full_text_search.close()
 
 

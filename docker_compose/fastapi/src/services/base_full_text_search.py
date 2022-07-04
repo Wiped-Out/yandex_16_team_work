@@ -25,6 +25,10 @@ class AsyncFullTextSearchStorage(ABC):
     async def count(self, index: str, body: Optional[dict] = None, **kwargs):
         pass
 
+    @abstractmethod
+    async def close(self):
+        pass
+
 
 class BaseElasticStorage(AsyncFullTextSearchStorage):
     def __init__(self, elastic: AsyncElasticsearch):
@@ -45,6 +49,9 @@ class BaseElasticStorage(AsyncFullTextSearchStorage):
 
     async def count(self, index: str, body: Optional[dict] = None, **kwargs):
         return await self.elastic.count(index=index, body=body)
+
+    async def close(self):
+        await self.elastic.close()
 
 
 class BaseFullTextSearchStorage:
