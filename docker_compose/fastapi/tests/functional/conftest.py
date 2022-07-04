@@ -1,13 +1,6 @@
 import asyncio
 from glob import glob
-
-import aiohttp
 import pytest
-
-from typing import Optional
-from dataclasses import dataclass
-from multidict import CIMultiDictProxy
-from settings import settings
 
 
 def refactor(string: str) -> str:
@@ -18,12 +11,6 @@ pytest_plugins = [
     refactor(fixture) for fixture in glob("fixtures/*.py") if "__" not in fixture
 ]
 
-@dataclass
-class HTTPResponse:
-    body: dict
-    headers: CIMultiDictProxy[str]
-    status: int
-
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -32,33 +19,11 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope='session')
-async def session():
-    session = aiohttp.ClientSession()
-    yield session
-    await session.close()
-
-
-@pytest.fixture
-def make_get_request(session):
-    async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
-        params = params or {}
-        url = f'{settings.API_URL}/api/v1{method}'
-        async with session.get(url, params=params) as response:
-            return HTTPResponse(
-                body=await response.json(),
-                headers=response.headers,
-                status=response.status,
-            )
-
-    return inner
-
-
 @pytest.fixture
 def prepare_for_test(
         create_index,
         load_data,
-        flush_redis
+        flush_redis,
 ):
     async def inner(index: str, filename: str):
         await create_index(index=index)
