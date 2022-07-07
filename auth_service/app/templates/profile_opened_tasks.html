@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+<div id="content" class="content p-0">
+    <div class="profile-header">
+        <div class="profile-header-cover"></div>
+        <div class="profile-header-content">
+            <div class="profile-header-img mb-4">
+                <img {%if user.profile_picture_finded %} src="/static/img/{{user.id}}_profile_picture.png" {%else%} src="/static/img/standart_profile_picture.png" {%endif%} class="mb-4" alt="" />
+            </div>
+
+            <div class="profile-header-info">
+                <h4 class="m-t-sm">{{user.name}} {{user.surname}}</h4>
+            </div>
+        </div>
+
+        <ul class="profile-header-tab nav nav-tabs">
+            <li class="nav-item"><a href="/profile_opened_tasks/{{user.id}}" class="nav-link active show" data-toggle="tab">Открытые мероприятия</a></li>
+            <li class="nav-item"><a href="/profile/{{user.id}}" class="nav-link" data-toggle="tab">Друзья</a></li>
+            {% if current_user.id == user.id %}
+                <li class="nav-item"><a href="/profile_edit/{{user.id}}" class="nav-link" data-toggle="tab">Редактировать</a></li>
+                <li class="nav-item"><a href="/profile_find_friends" class="nav-link" data-toggle="tab">Найти друзей</a></li>
+                <li class="nav-item"><a href="/profile_friend_requests" class="nav-link" data-toggle="tab">Заявки в друзья</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="profile-container">
+        <div class="col-md6 border rounded">
+            <div class="album py-5 bg-light">
+                <div class="container">
+                  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+                  {% for item in tasks%}
+                    <div class="col">
+                      <div class="card shadow-sm">
+                        <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>
+                            {{item.title}}</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">{{item.description}}</text></svg>
+                        <div class="card-body">
+                          <p class="card-text">{%for information in item.displayable_information%}
+                          {{information}}<br>
+                          {%endfor%}</p>
+                          <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                              <a class="btn btn-sm btn-outline-secondary" href="/task_info/{{ item.id }}">View</a>
+                            </div>
+                            <small class="text-muted">{{ item.remaining_time}}</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                  </div>
+                </div>
+          </div>
+        </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

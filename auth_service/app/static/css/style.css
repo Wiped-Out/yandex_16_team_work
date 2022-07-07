@@ -1,0 +1,13 @@
+h1,h2 {text-align:center}
+form{
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 450px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 10px;
+}
+form.search_tasks {padding: 5px;max-height:150px;border:0px;max-width:75%}
+form.search_friends {margin-left: 0px; padding: 5px;max-height: 150px;hspace:10px;vspace:10px;border:0px}
+div.search {display:flex;justify-content: space-between;margin-left:auto}
+ul.find_friends {margin-top:10px}
