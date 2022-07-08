@@ -1,11 +1,12 @@
 import uuid
 
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy_serializer import SerializerMixin
 
 from db.db import db
 
 
-class User(db.Model):
+class User(db.Model, SerializerMixin):
     __table_args__ = {'schema': 'content'}
     __tablename__ = 'users'
 
