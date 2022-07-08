@@ -15,7 +15,6 @@ class Settings(BaseSettings):
     POSTGRES_USER = os.getenv('POSTGRES_USER', 'user')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'password')
 
-
     class Config:
         env_file = ".env"
 

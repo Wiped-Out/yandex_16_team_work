@@ -6,15 +6,15 @@ services:
       context: ./postgres
     env_file:
       - ./postgres/.env
-    ports:
-      - 5432:5432
+#    ports:
+#      - 5432:5432
     volumes:
       - auth_db:/var/lib/postgresql/data
     restart: always
 
   flask:
     build:
-      context: ./app
+      context: ./auth_service/app
     depends_on:
       - postgres
       - redis
