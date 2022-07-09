@@ -1,7 +1,7 @@
 from flask import Flask
 
 from db.db import init_db, db
-from models.user import User
+from models.models import User
 
 
 def init_app(name: str) -> Flask:
