@@ -2,15 +2,21 @@ import uuid
 
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy import orm
+from sqlalchemy.ext.declarative import declared_attr
 
 from db.db import db
 
 
 class IdMixin(object):
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    @declared_attr
+    def id(self):
+        return db.Column(
+            UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False
+        )
 
 
-class User(IdMixin, db.Model, SerializerMixin):
+class User(db.Model, IdMixin, SerializerMixin):
     __table_args__ = {"schema": 'content'}
     __tablename__ = "users"
 
@@ -18,15 +24,19 @@ class User(IdMixin, db.Model, SerializerMixin):
     password = db.Column(db.String, nullable=False)
     email = db.Column(db.String, nullable=False)
 
+    roles = orm.relationship("Role", secondary="UserRole", back_populates="users")
+
     def __repr__(self):
         return f'<User {self.login}>'
 
 
 class UserIdMixin(object):
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=False)
+    @declared_attr
+    def user_id(self):
+        return db.Column(UUID(as_uuid=True), db.ForeignKey(User.id), nullable=False)
 
 
-class RefreshToken(IdMixin, UserIdMixin, db.Model, SerializerMixin):
+class RefreshToken(db.Model, IdMixin, UserIdMixin, SerializerMixin):
     __table_args__ = {"schema": "content"}
     __tablename__ = "refresh_tokens"
 
@@ -35,7 +45,7 @@ class RefreshToken(IdMixin, UserIdMixin, db.Model, SerializerMixin):
     to = db.Column(db.TIMESTAMP, nullable=False)
 
 
-class Log(IdMixin, UserIdMixin, db.Model, SerializerMixin):
+class Log(db.Model, IdMixin, UserIdMixin, SerializerMixin):
     __table_args__ = {"schema": "content"}
     __tablename__ = "logs"
 
@@ -44,15 +54,17 @@ class Log(IdMixin, UserIdMixin, db.Model, SerializerMixin):
     action = db.Column(db.String, nullable=False)
 
 
-class Role(IdMixin, UserIdMixin, db.Model, SerializerMixin):
+class Role(db.Model, IdMixin, SerializerMixin):
     __table_args__ = {"schema": "content"}
     __tablename__ = "roles"
 
     name = db.Column(db.String, nullable=False)
     level = db.Column(db.INTEGER, nullable=False)
 
+    users = orm.relationship("User", secondary="UserRole", back_populates="roles")
 
-class UserRole(IdMixin, db.Model, SerializerMixin):
+
+class UserRole(db.Model, IdMixin, SerializerMixin):
     __table_args__ = {"schema": "content"}
     __tablename__ = "user_roles"
 
