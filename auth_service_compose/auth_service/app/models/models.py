@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declared_attr
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from db.db import db
 
@@ -26,8 +27,16 @@ class User(db.Model, IdMixin, SerializerMixin):
 
     roles = orm.relationship("Role", secondary="UserRole", back_populates="users")
 
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
+
     def __repr__(self):
         return f'<User {self.login}>'
+
 
 
 class UserIdMixin(object):

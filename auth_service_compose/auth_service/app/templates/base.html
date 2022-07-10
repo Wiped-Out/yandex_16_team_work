@@ -13,11 +13,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
     <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/album/">
     <link rel="stylesheet" type="text/css" href="/static/css/style.css" />
-    {% if required_css %}
-      {% for item in required_css %}
-        <link rel="stylesheet" type="text/css" href="/static/css/{{item}}.css" />
-      {% endfor %}
-    {% endif %}
     <style>
       .bd-placeholder-img {
         font-size: 1.125rem;
@@ -44,27 +39,13 @@
       <div class="row">
         <div class="col-sm-8 col-md-7 py-4">
           <h4 class="text-white">Информация</h4>
-          <p class="text-muted">Планируйте мероприятия, находите мероприятия вам по вкусу и многое другое!</p>
-          {% if current_user.is_authenticated %}
-            <a href="/logout" class="navbar-brand d-flex align-items-center">
-            Выйти
-            </a>
-          {%endif%}
+          <p class="text-muted">Сервис авторизации</p>
         </div>
       </div>
     </div>
   </div>
   <div class="navbar navbar-dark bg-dark shadow-sm">
     <div class="container">
-      {% if current_user.is_authenticated %}
-            <a class="navbar-brand" href="/profile/{{current_user.id}}">{{ current_user.name }}</a>
-            <a class="navbar-brand" href="/">Главная</a>
-      {% else %}
-            <div class="align-items-center">
-                <a class="btn btn-outline-primary " href="/register">Зарегистрироваться</a>
-                <a class="btn btn-outline-success" href="/login">Войти</a>
-            </div>
-      {% endif %}
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -76,18 +57,8 @@
   <section class="py-5 text-center container">
     <div class="row py-lg-5">
       <div class="col-lg-6 col-md-8 mx-auto">
-        <h1 class="fw-light">Планировщик</h1>
+        <h1 class="fw-light"></h1>
         <p class="lead text-muted"></p>
-        {% if current_user.is_authenticated and type%}
-        <p>
-          <a href="tasks" class="btn btn-primary my-2">Добавить мероприятие</a>
-          {% if type == 'private' %}
-            <a href="public" class="btn btn-secondary my-2">Перейти к открытым мероприятиям</a>
-          {%else%}
-            <a href="/" class="btn btn-secondary my-2">Перейти к личным мероприятиям</a>
-          {%endif%}
-        </p>
-        {% endif %}
       </div>
     </div>
   </section>
