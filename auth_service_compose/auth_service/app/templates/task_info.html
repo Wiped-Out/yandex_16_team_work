@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card info" >
+  <div class="img">{%if task.is_address_displayed%} <img class="card-img-top" src="/static/img/{{task.id}}_map_picture.jpg">{%endif%}</div>
+  <div class="card-body">
+    <h3 class="card-title">{{task.title}}</h3>
+    <p class="card-text">{{task.description}}</p>
+  </div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item"><p>Тип мероприятия: {{task.type_name}}</p></li>
+    <li class="list-group-item"><p>Страна проведения: {{task.country_name}}</p></li>
+    <li class="list-group-item">{%if task.is_address_displayed%}<a class='btn-outline-secondary' href='https://yandex.ru/maps/?mode=search&text={{task.address}}' target="_blank">Адрес: {{task.address}}<a/> {%else%}<p>Адрес: {{task.address}}</p>{%endif%}</li>
+    <li class="list-group-item"><p>Дата (МСК): {{task.date}}</p>
+    <li class="list-group-item"><p>До начала: {{task.remaining_time}}</p>
+  </ul>
+  <div class="card-body">
+    <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Имя</th>
+          <th scope="col">Фамилия</th>
+          <th scope="col">Профиль</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in members %}
+          <tr>
+            <th scope="row">{{loop.index}}</th>
+            <td>{{item.name}}</a></td>
+            <td>{{item.surname}}</td>
+            <th scope="row"><a class='btn-outline-secondary' href="/profile/{{item.id}}">Открыть<a/></th>
+          </tr>
+        {%endfor%}
+      </tbody>
+    </table>
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="btn-group">
+        {% if current_user.id == task.creator_id %}
+            <a class="btn btn-sm btn-outline-success" href="/tasks/{{ task.id }}">Edit</a>
+            <a class="btn btn-sm btn-outline-danger" href="/task_delete/{{ task.id }}">Delete</a>
+        {% elif task.current_user_is_participating %}
+          <a class="btn btn-sm btn-outline-danger" href="/task_leave/{{ task.id }}">Leave</a>
+        {% elif not task.current_user_is_participating and not task.is_private%}
+          <a class="btn btn-sm btn-outline-success" href="/task_join/{{ task.id }}">Join</a>
+        {%endif%}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+<div id="content" class="content p-0">
+    <div class="profile-header">
+        <div class="profile-header-cover"></div>
+        <div class="profile-header-content">
+            <div class="profile-header-img mb-4">
+                <img {%if user.profile_picture_finded %} src="/static/img/{{user.id}}_profile_picture.png" {%else%} src="/static/img/standart_profile_picture.png" {%endif%} class="mb-4" alt="" />
+            </div>
+            <div class="profile-header-info">
+                <h4 class="m-t-sm">{{user.name}} {{user.surname}}</h4>
+            </div>
+        </div>
+
+        <ul class="profile-header-tab nav nav-tabs">
+            <li class="nav-item"><a href="/profile_opened_tasks/{{user.id}}" class="nav-link" data-toggle="tab">Открытые мероприятия</a></li>
+            <li class="nav-item"><a href="/profile/{{user.id}}" class="nav-link" data-toggle="tab">Друзья</a></li>
+            {% if current_user.id == user.id %}
+                <li class="nav-item"><a href="/profile_edit/{{user.id}}" class="nav-link active show" data-toggle="tab">Редактировать</a></li>
+                <li class="nav-item"><a href="/profile_find_friends" class="nav-link" data-toggle="tab">Найти друзей</a></li>
+                <li class="nav-item"><a href="/profile_friend_requests" class="nav-link" data-toggle="tab">Заявки в друзья</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="profile-container">
+        <div class="row row-space-20">
+            <div class="col-md-8">
+                <div class="tab-content p-0">
+                    <form action="" method="post" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        <p>
+                            {{ form.name.label }}<br>
+                            {{ form.name(class="form-control") }}<br>
+                            {% for error in form.name.errors %}
+                                <p class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </p>
+                        <p>
+                            {{ form.surname.label }}<br>
+                            {{ form.surname(class="form-control") }}<br>
+                            {% for error in form.surname.errors %}
+                                <p class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </p>
+                        <p>
+                            {{ form.country_from.label }}<br>
+                            {{ form.country_from(class="form-control")}}<br>
+                            {% for error in form.country_from.errors %}
+                                <p class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </p>
+                        <p>
+                            {{ form.city_from.label }}<br>
+                            {{ form.city_from(class="form-control") }}<br>
+                            {% for error in form.city_from.errors %}
+                                <p class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </p>
+                        <p>
+                            {{ form.picture.label }}<br>
+                            {{ form.picture(class="form-control-file",type="file") }}<br>
+                            {% for error in form.picture.errors %}
+                                <p class="alert alert-danger" role="alert">
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </p>
+                        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+                        {{message}}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

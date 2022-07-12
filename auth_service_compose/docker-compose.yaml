@@ -1,0 +1,46 @@
+# Файл должен начинаться с тега версии. Используем последнюю.
+version: '3'
+services:
+  postgres:
+    build:
+      context: ./postgres
+    env_file:
+      - ./postgres/.env
+    ports:
+      - 5434:5432
+    volumes:
+      - auth_db:/var/lib/postgresql/data
+    restart: always
+
+  flask:
+    build:
+      context: ./auth_service/app
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - flask_static:/app/static
+    restart: always
+
+  nginx:
+    image: nginx:1.23.0
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - flask_static:/data/static
+    depends_on:
+      - flask
+    ports:
+      - 80:80
+    restart: always
+
+  redis:
+    image: redis:7.0
+    volumes:
+      - redisdata:/data
+
+# Указываем Docker, какие именованные тома потребуются сервисам
+volumes:
+  auth_db:
+  redisdata:
+  flask_static:

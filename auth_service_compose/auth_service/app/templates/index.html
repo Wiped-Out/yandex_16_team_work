@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Список запланированных мероприятий</h1>
+<form action="" method="post" class="search_tasks">
+    <div class="row" class="search">
+      {{ form.hidden_tag() }}
+      <div class="col">
+          <br>
+          {{ form.search_line(class="form-control",placeholder=form.search_line.label.text) }}
+          {% for error in form.search_line.errors %}
+              <p class="alert alert-danger" role="alert">
+                  {{ error }}
+              </p>
+          {% endfor %}
+      </div>
+      <div class="col">
+          {{ form.search_item.label }}
+          {{ form.search_item(class="form-control") }}
+          {% for error in form.search_item.errors %}
+              <p class="alert alert-danger" role="alert">
+                  {{ error }}
+              </p>
+          {% endfor %}
+      </div>
+      <div class="col">
+          {{ form.country.label }}
+          {{ form.country(class="form-control") }}
+          {% for error in form.country.errors %}
+              <p class="alert alert-danger" role="alert">
+                  {{ error }}
+              </p>
+          {% endfor %}
+      </div>
+      <div class="col">
+          {{ form.type.label }}
+          {{ form.type(class="form-control") }}
+          {% for error in form.type.errors %}
+              <p class="alert alert-danger" role="alert">
+                  {{ error }}
+              </p>
+          {% endfor %}
+      </div>
+      <div class="col"><br>{{ form.submit(type="submit", class="btn btn-outline-primary") }}</div>
+    {{message}}
+  </div>
+</form>
+<div class="col-md6 border rounded">
+    <div class="album py-5 bg-light">
+        <div class="container">
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+          {% for item in tasks%}
+            <div class="col">
+              <div class="card shadow-sm">
+                <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>
+                    {{item.title}}</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">{{item.description}}</text></svg>
+                <div class="card-body">
+                  <p class="card-text">{%for information in item.displayable_information%}
+                  {{information}}<br>
+                  {%endfor%}</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <a class="btn btn-sm btn-outline-secondary" href="/task_info/{{ item.id }}">View</a>
+                      {% if current_user.id == item.creator_id %}
+                          <a class="btn btn-sm btn-outline-success" href="/tasks/{{ item.id }}">Edit</a>
+                          <a class="btn btn-sm btn-outline-danger" href="/task_delete/{{ item.id }}">Delete</a>
+                      {% elif item.current_user_is_participating %}
+                        <a class="btn btn-sm btn-outline-danger" href="/task_leave/{{ item.id }}">Leave</a>
+                      {% elif not item.current_user_is_participating and not item.is_private%}
+                        <a class="btn btn-sm btn-outline-success" href="/task_join/{{ item.id }}">Join</a>
+                      {%endif%}
+                    </div>
+                    <small class="text-muted">{{ item.remaining_time}}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+          </div>
+        </div>
+  </div>
+</div>
+
+{% endblock %}
