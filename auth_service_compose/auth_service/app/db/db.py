@@ -12,4 +12,9 @@ def init_db(app: Flask):
         f'{settings.POSTGRES_HOST}/' \
         f'{settings.POSTGRES_DB}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+    db.metadata.schema = "content"
     db.init_app(app)
+
+
+def get_db() -> SQLAlchemy:
+    return db

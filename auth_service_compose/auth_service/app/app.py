@@ -3,23 +3,38 @@ from flask_jwt_extended import JWTManager, jwt_required, current_user
 
 from db.db import init_db, db
 from models.models import User
-from utils.utils import register_blueprints
+from utils.utils import register_blueprints, register_resources
+from typing import Tuple
+from flask_restful import Api
+from db import cache_db
+from services.base_cache import BaseRedisStorage
+import redis
+from core.settings import settings
 
 
-def init_app(name: str) -> Flask:
+def init_cache_db():
+    cache_db.cache = BaseRedisStorage(
+        redis=redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
+    )
+
+
+def init_app(name: str) -> Tuple[Flask, Api]:
     app = Flask(name)
+    api = Api(app)
     register_blueprints(app)
+    register_resources(api)
     app.config['SECRET_KEY'] = 'secret'
     app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies", "json", "query_string"]
     init_db(app)
+    init_cache_db()
     with app.app_context():
         db.create_all()
         db.session.commit()
 
-    return app
+    return app, api
 
 
-app = init_app(__name__)
+app, api = init_app(__name__)
 jwt = JWTManager(app)
 
 
