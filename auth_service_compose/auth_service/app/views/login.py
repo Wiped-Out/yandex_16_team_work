@@ -5,7 +5,7 @@ from flask_jwt_extended import create_access_token, set_access_cookies, jwt_requ
 
 from forms.login_form import LoginForm
 from models.models import User
-from utils.utils import log_activity, handle_csrf
+from utils.utils import log_activity, handle_csrf, save_activity
 
 login_view = Blueprint('login', __name__, template_folder='templates')
 
@@ -24,6 +24,8 @@ def login():
                 token = create_access_token(identity=user, expires_delta=timedelta(seconds=10))
                 response = redirect("/happy")
                 set_access_cookies(response, token)
+
+                save_activity(user)
                 return response
 
             return render_template('login.html',

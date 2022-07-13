@@ -9,7 +9,19 @@ from flask_jwt_extended import current_user, get_csrf_token, get_jwt_request_loc
 from flask_restful import Api
 
 from db.db import db
-from models.models import Log
+from models.models import Log, User
+
+
+def save_activity(user: User):
+    action = f"{request.method}:{request.url}"
+    device = f"{request.user_agent}"
+    log = Log(user_id=user.id,
+              when=datetime.now(),
+              action=action,
+              device=device
+              )
+    db.session.add(log)
+    db.session.commit()
 
 
 def register_blueprints(app: Flask):
@@ -62,15 +74,7 @@ def log_activity():
             result = func(*args, **kwargs)
             if not current_user:
                 return result
-            action = f"{request.method}:{request.url}"
-            device = f"{request.user_agent}"
-            log = Log(user_id=current_user.id,
-                      when=datetime.now(),
-                      action=action,
-                      device=device
-                      )
-            db.session.add(log)
-            db.session.commit()
+            save_activity(current_user)
             return result
 
         return inner
