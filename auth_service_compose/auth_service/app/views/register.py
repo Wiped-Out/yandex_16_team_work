@@ -1,4 +1,5 @@
-from flask import render_template, redirect, Blueprint,current_app
+from flask import render_template, redirect, Blueprint, current_app
+
 from db.db import db
 from forms.register_form import RegisterForm
 from models.models import User

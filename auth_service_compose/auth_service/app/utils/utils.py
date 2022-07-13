@@ -1,10 +1,15 @@
 import glob
 import importlib
-from os.path import join
+from datetime import datetime
 from functools import wraps
+from os.path import join
 
-from flask import Flask
+from flask import Flask, current_app, request
+from flask_jwt_extended import current_user
 from flask_restful import Api
+
+from db.db import db
+from models.models import Log
 
 
 def register_blueprints(app: Flask):
@@ -29,6 +34,30 @@ def work_in_context(app):
         def inner(*args, **kwargs):
             with app.app_context():
                 return func(*args, **kwargs)
+
+        return inner
+
+    return func_wrapper
+
+
+def log_activity():
+    def func_wrapper(func):
+        @wraps(func)
+        @work_in_context(current_app)
+        def inner(*args, **kwargs):
+            result = func(*args, **kwargs)
+            if not current_user:
+                return result
+            action = f"{request.method}:{request.url}"
+            device = f"{request.user_agent}"
+            log = Log(user_id=current_user.id,
+                      when=datetime.now(),
+                      action=action,
+                      device=device
+                      )
+            db.session.add(log)
+            db.session.commit()
+            return result
 
         return inner
 

@@ -3,7 +3,7 @@ from flask_jwt_extended import JWTManager, jwt_required, current_user
 
 from db.db import init_db, db
 from models.models import User
-from utils.utils import register_blueprints, register_resources
+from utils.utils import register_blueprints, register_resources, log_activity
 from typing import Tuple
 from flask_restful import Api
 from db import cache_db
@@ -50,12 +50,15 @@ def user_lookup_callback(_jwt_header, jwt_data):
 
 
 @app.route('/', methods=["GET"])
+@jwt_required(optional=True)
+@log_activity()
 def hello_world():
     return ':)'
 
 
 @app.route('/happy', methods=["GET"])
 @jwt_required()
+@log_activity()
 def happy():
     return render_template('hi.html', title='Hi!', current_user=current_user)
 
