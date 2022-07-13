@@ -21,7 +21,7 @@ def login():
             user = User.query.filter_by(login=form.login.data).first()
 
             if user and user.check_password(form.password.data):
-                token = create_access_token(identity=user, expires_delta=timedelta(seconds=10))
+                token = create_access_token(identity=user, expires_delta=timedelta(seconds=5000))
                 response = redirect("/happy")
                 set_access_cookies(response, token)
 

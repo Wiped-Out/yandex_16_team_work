@@ -15,6 +15,6 @@ class URL:
 
 
 urls = [
-    URL(Role, "/api/v1/role", "/api/v1/<role_id>"),
+    URL(Role, "/api/v1/role", "/api/v1/role/<role_id>"),
     URL(Roles, "/api/v1/roles"),
 ]
