@@ -1,32 +1,32 @@
 from flask_restful import Resource
-from flask_jwt_extended import jwt_required
 from services.role import get_role_service
-from flask import jsonify, current_app, request, Response
-from utils.utils import work_in_context
+from flask import jsonify, request, Response
 from schemas import schemas
 from http import HTTPStatus
+from flask_jwt_extended import jwt_required
+from utils.utils import log_activity
 
 
 class Role(Resource):
     @jwt_required()
-    @work_in_context(current_app)
+    @log_activity()
     def delete(self, role_id: str) -> Response:
         role_service = get_role_service()
-        role_service.delete_role(role_id=role_id)
+        role_service.delete(item_id=role_id)
 
         return Response(status=HTTPStatus.NO_CONTENT)
 
     @jwt_required()
-    @work_in_context(current_app)
+    @log_activity()
     def put(self, role_id: str) -> Response:
         role_service = get_role_service()
 
         role_service.update_role(role_id=role_id, body=request.json)
 
-        return Response(status=HTTPStatus.OK)
+        return Response(status=HTTPStatus.NO_CONTENT)
 
     @jwt_required()
-    @work_in_context(current_app)
+    @log_activity()
     def post(self) -> Response:
         role_service = get_role_service()
         db_role = role_service.create_role(body=request.json)
@@ -38,7 +38,7 @@ class Role(Resource):
         )
 
     @jwt_required()
-    @work_in_context(current_app)
+    @log_activity()
     def get(self, role_id: str) -> Response:
         role_service = get_role_service()
         cache_key = request.base_url

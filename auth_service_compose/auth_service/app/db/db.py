@@ -1,20 +1,27 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from core.settings import settings
+from services.base_main import MainStorage, BaseSQLAlchemyStorage
+from typing import Optional
+from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+db: Optional[MainStorage] = None
+sqlalchemy = SQLAlchemy()
 
 
-def init_db(app: Flask):
+def init_sqlalchemy(app: Flask, storage: BaseSQLAlchemyStorage):
     app.config['SQLALCHEMY_DATABASE_URI'] = \
         f'postgresql://{settings.POSTGRES_USER}:' \
         f'{settings.POSTGRES_PASSWORD}@' \
         f'{settings.POSTGRES_HOST}/' \
-        f'{settings.POSTGRES_DB}'
+        f'{settings.POSTGRES_DB}?options=-c%20search_path=content'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-    db.metadata.schema = "content"
-    db.init_app(app)
+
+    storage.db.init_app(app)
+
+    with app.app_context():
+        storage.db.create_all()
+        storage.db.session.commit()
 
 
-def get_db() -> SQLAlchemy:
+def get_db() -> MainStorage:
     return db

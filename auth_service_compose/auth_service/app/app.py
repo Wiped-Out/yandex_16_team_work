@@ -6,10 +6,10 @@ from flask_jwt_extended import JWTManager, jwt_required, current_user
 from flask_restful import Api
 
 from core.settings import settings
-from db import cache_db
-from db.db import init_db, db
+from db import cache_db, db
 from models.models import User
 from services.base_cache import BaseRedisStorage
+from services.base_main import BaseSQLAlchemyStorage
 from utils.utils import register_blueprints, register_resources, log_activity
 
 
@@ -17,6 +17,10 @@ def init_cache_db():
     cache_db.cache = BaseRedisStorage(
         redis=redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
     )
+
+
+def init_db():
+    db.db = BaseSQLAlchemyStorage(db=db.sqlalchemy)
 
 
 def init_app(name: str) -> Tuple[Flask, Api]:
@@ -27,11 +31,10 @@ def init_app(name: str) -> Tuple[Flask, Api]:
     app.config['SECRET_KEY'] = 'secret'
     app.config['PROPAGATE_EXCEPTIONS'] = True
     app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies", "json", "query_string"]
-    init_db(app)
+
+    init_db()
+    db.init_sqlalchemy(app=app, storage=db.db)
     init_cache_db()
-    with app.app_context():
-        db.create_all()
-        db.session.commit()
 
     return app, api
 
