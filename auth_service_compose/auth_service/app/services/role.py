@@ -5,6 +5,7 @@ from db.cache_db import get_cache_db
 from db.db import get_db
 from pydantic import BaseModel
 from pydantic.types import UUID4
+from functools import lru_cache
 
 
 class CacheRole(BaseModel):
@@ -14,7 +15,6 @@ class CacheRole(BaseModel):
 
 
 class RoleService(BaseCacheStorage, BaseMainStorage):
-    db_model = models.Role
     cache_model = CacheRole
 
     def get_roles(self, cache_key: str) -> list[cache_model]:
@@ -35,14 +35,15 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
                 self.put_one_item_to_cache(cache_key=cache_key, item=role)
         return role
 
-    def update_role(self, role_id: str, body: dict):
-        self.update(item_id=role_id, level=int(body["level"]), name=body["name"])
+    def update_role(self, role_id: str, params: dict):
+        self.update(item_id=role_id, **params)
 
-    def create_role(self, body: dict) -> cache_model:
-        role = self.create(level=int(body["level"]), name=body["name"])
+    def create_role(self, params: dict) -> cache_model:
+        role = self.create(**params)
         return self.cache_model(**role.to_dict())
 
 
+@lru_cache()
 def get_role_service(
         cache: CacheStorage = None,
         main_db: MainStorage = None

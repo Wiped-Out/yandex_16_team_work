@@ -33,6 +33,8 @@ class User(sqlalchemy.Model, IdMixin, SerializerMixin):
 
     roles = sqlalchemy.relation("Role", secondary=user_roles, back_populates="users")
 
+    logs = sqlalchemy.relation("Log")
+
     def set_password(self, password):
         self.password = generate_password_hash(password)
 

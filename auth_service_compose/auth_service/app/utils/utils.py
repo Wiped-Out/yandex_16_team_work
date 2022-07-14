@@ -1,15 +1,17 @@
 import glob
 import importlib
+import typing
 from datetime import datetime
 from functools import wraps
 from os.path import join
 
-from flask import Flask, current_app, request
+from flask import Flask, current_app, request, Response
 from flask_jwt_extended import current_user, get_csrf_token, get_jwt_request_location
 from flask_restful import Api
 
-from db.db import db
+from db.db import sqlalchemy
 from models.models import Log, User
+from http import HTTPStatus
 
 
 def save_activity(user: User):
@@ -20,8 +22,8 @@ def save_activity(user: User):
               action=action,
               device=device
               )
-    db.session.add(log)
-    db.session.commit()
+    sqlalchemy.session.add(log)
+    sqlalchemy.session.commit()
 
 
 def register_blueprints(app: Flask):
@@ -76,6 +78,23 @@ def log_activity():
                 return result
             save_activity(current_user)
             return result
+
+        return inner
+
+    return func_wrapper
+
+
+def required_role_level(level: int):
+    def func_wrapper(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            if any(role.level >= level for role in current_user.roles):
+                return Response(
+                    response={'msg': 'Role level is not enough'},
+                    status=HTTPStatus.FORBIDDEN,
+                    content_type="application/json"
+                )
+            return func(*args, **kwargs)
 
         return inner
 

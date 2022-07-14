@@ -39,10 +39,12 @@ class BaseSQLAlchemyStorage(MainStorage):
     def get(self, item_id: str, model, **kwargs):
         return model.query.filter(model.id == item_id).first()
 
-    def create(self, model, **kwargs):
+    def create(self, model, need_commit: bool = True, **kwargs):
         item = model(**kwargs)
         self.add(item)
-        self.commit()
+
+        if need_commit:
+            self.commit()
         return item
 
     def update(self, item_id: str, model, **kwargs):
