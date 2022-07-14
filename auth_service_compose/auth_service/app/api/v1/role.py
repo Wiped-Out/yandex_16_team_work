@@ -5,9 +5,15 @@ from schemas import schemas
 from http import HTTPStatus
 from flask_jwt_extended import jwt_required
 from utils.utils import log_activity
+from flask_restful import reqparse
 
 
 class Role(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('level', type=int)
+        self.parser.add_argument('name', type=str)
+
     @jwt_required()
     @log_activity()
     def delete(self, role_id: str) -> Response:
@@ -21,7 +27,7 @@ class Role(Resource):
     def put(self, role_id: str) -> Response:
         role_service = get_role_service()
 
-        role_service.update_role(role_id=role_id, body=request.json)
+        role_service.update_role(role_id=role_id, body=self.parser.parse_args())
 
         return Response(status=HTTPStatus.NO_CONTENT)
 
@@ -29,7 +35,7 @@ class Role(Resource):
     @log_activity()
     def post(self) -> Response:
         role_service = get_role_service()
-        db_role = role_service.create_role(body=request.json)
+        db_role = role_service.create_role(body=self.parser.parse_args())
 
         return Response(
             schemas.Role(**db_role.dict()).json(),
