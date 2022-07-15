@@ -1,6 +1,8 @@
 from typing import Type
 
 from flask_restful import Resource
+
+from api.v1.jwt_tokens import JWTLogin, JWTLogout, JWTRefresh
 from api.v1.role import Role
 from api.v1.roles import Roles
 from api.v1.user import User
@@ -20,5 +22,8 @@ urls = [
     URL(Role, "/api/v1/role", "/api/v1/role/<role_id>"),
     URL(Roles, "/api/v1/roles"),
     URL(User, "/api/v1/user", "/api/v1/user/<user_id>"),
-    URL(LoginHistory, "/api/v1/user/<user_id>/login_history")
+    URL(LoginHistory, "/api/v1/user/<user_id>/login_history"),
+    URL(JWTLogin, "/api/v1/login"),
+    URL(JWTLogout, "/api/v1/logout"),
+    URL(JWTRefresh, "/api/v1/refresh"),
 ]

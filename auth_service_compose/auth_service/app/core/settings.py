@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
@@ -14,6 +15,8 @@ class Settings(BaseSettings):
     POSTGRES_DB = os.getenv('POSTGRES_DB', 'db')
     POSTGRES_USER = os.getenv('POSTGRES_USER', 'user')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'password')
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
     class Config:
         env_file = ".env"

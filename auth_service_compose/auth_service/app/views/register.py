@@ -1,8 +1,7 @@
-from flask import render_template, redirect, Blueprint, current_app
+from flask import render_template, redirect, Blueprint, make_response
 
-from db.db import sqlalchemy
 from forms.register_form import RegisterForm
-from models.models import User
+from services.user import get_user_service
 
 register_view = Blueprint('register', __name__, template_folder='templates')
 
@@ -11,23 +10,17 @@ register_view = Blueprint('register', __name__, template_folder='templates')
 def reqister():
     form = RegisterForm()
     if form.validate_on_submit():
-        with current_app.app_context():
-            if form.password.data != form.password_again.data:
-                return render_template('register.html', title='Регистрация',
-                                       form=form,
-                                       message="Пароли не совпадают")
-
-            if User.query.filter_by(email=form.email.data).first():
-                return render_template('register.html', title='Регистрация',
-                                       form=form,
-                                       message="Такой пользователь уже есть")
-            user = User(
-                email=form.email.data,
-                login=form.login.data)
-            user.set_password(form.password.data)
-
-            sqlalchemy.session.add(user)
-            sqlalchemy.session.commit()
-            return redirect('/login')
+        if form.password.data != form.password_again.data:
+            return render_template('register.html', title='Регистрация',
+                                   form=form,
+                                   message="Пароли не совпадают")
+        user_service = get_user_service()
+        if user_service.filter_by(email=form.email.data, _first=True) or \
+                user_service.filter_by(login=form.login.data, _first=True):
+            return render_template('register.html', title='Регистрация',
+                                   form=form,
+                                   message="Такой пользователь уже есть")
+        user_service.create_user(form.data)
+        return make_response(redirect('/login'))
 
     return render_template('register.html', title='Регистрация', form=form)
