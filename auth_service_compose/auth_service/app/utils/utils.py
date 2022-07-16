@@ -107,25 +107,3 @@ def make_error_response(msg: str, status: int):
         status=status,
         content_type="application/json"
     )
-
-
-def sqalchemy_additional_actions():
-    def func_wrapper(func):
-        @wraps(func)
-        def inner(*args, **kwargs):
-            actions = {item.value: kwargs.pop(item.value) if item.value in kwargs else None
-                       for item in AdditionalActions}
-            result: Query = func(*args, **kwargs)
-            model = kwargs["model"]
-            if value := actions[AdditionalActions._sort_by]:
-                if value.startswith("-"):
-                    result.order_by(getattr(model, value).desc())
-                else:
-                    result.order_by(getattr(model, value))
-            if value := actions[AdditionalActions._first]:
-                result = result.first()
-            return result
-
-        return inner
-
-    return func_wrapper
