@@ -74,3 +74,4 @@ class Role(sqlalchemy.Model, IdMixin, SerializerMixin):
     level = sqlalchemy.Column(sqlalchemy.INTEGER, nullable=False)
 
     users = sqlalchemy.relation("User", secondary=user_roles, back_populates="roles")
+

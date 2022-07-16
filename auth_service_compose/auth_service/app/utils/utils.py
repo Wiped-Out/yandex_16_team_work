@@ -1,29 +1,29 @@
 import glob
 import importlib
-import typing
 from datetime import datetime
 from functools import wraps
+from http import HTTPStatus
 from os.path import join
 
 from flask import Flask, current_app, request, Response
 from flask_jwt_extended import current_user, get_csrf_token, get_jwt_request_location
 from flask_restful import Api
+from sqlalchemy.orm import Query
 
-from db.db import sqlalchemy
-from models.models import Log, User
-from http import HTTPStatus
+from models.models import User
+from services.logs_service import get_logs_service
 
 
 def save_activity(user: User):
     action = f"{request.method}:{request.url}"
     device = f"{request.user_agent}"
-    log = Log(user_id=user.id,
-              when=datetime.now(),
-              action=action,
-              device=device
-              )
-    sqlalchemy.session.add(log)
-    sqlalchemy.session.commit()
+
+    log_service = get_logs_service()
+
+    log_service.create_log(user_id=user.id,
+                           when=datetime.now(),
+                           action=action,
+                           device=device)
 
 
 def register_blueprints(app: Flask):
@@ -99,3 +99,11 @@ def required_role_level(level: int):
         return inner
 
     return func_wrapper
+
+
+def make_error_response(msg: str, status: int):
+    return Response(
+        response={'msg': msg},
+        status=status,
+        content_type="application/json"
+    )
