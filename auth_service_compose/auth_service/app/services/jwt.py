@@ -35,9 +35,9 @@ class JWTService(BaseCacheStorage, BaseMainStorage):
             params={"user_id": user.id,
                     "token": token,
                     "from_": datetime.now(timezone.utc),
-                    "to": datetime.now(timezone.utc) +
-                                             current_app.config[
-                                                 "JWT_REFRESH_TOKEN_EXPIRES"]})
+                    "to": datetime.now(timezone.utc) + current_app.config["JWT_REFRESH_TOKEN_EXPIRES"]
+                    }
+        )
         return token
 
     def block_token(self, cache_key: str, expire: timedelta):

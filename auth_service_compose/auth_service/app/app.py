@@ -1,10 +1,9 @@
-from datetime import timedelta, datetime, timezone
 from typing import Tuple
 
 import flask
 import redis
 from flask import Flask, render_template
-from flask_jwt_extended import JWTManager, jwt_required, current_user, get_jwt, set_access_cookies
+from flask_jwt_extended import JWTManager, jwt_required, current_user
 from flask_restful import Api
 from flask_migrate import Migrate
 from sqlalchemy import exc
@@ -14,7 +13,6 @@ from db import cache_db, db
 from extensions import jwt
 from services.base_cache import BaseRedisStorage
 from services.base_main import BaseSQLAlchemyStorage
-from services.jwt import get_jwt_service
 from utils.utils import register_blueprints, register_resources, log_activity
 
 
