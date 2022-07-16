@@ -1,6 +1,6 @@
 from flask import render_template, redirect, Blueprint, current_app
 
-from db.db import db
+from db.db import sqlalchemy
 from forms.register_form import RegisterForm
 from models.models import User
 
@@ -26,8 +26,8 @@ def reqister():
                 login=form.login.data)
             user.set_password(form.password.data)
 
-            db.session.add(user)
-            db.session.commit()
+            sqlalchemy.session.add(user)
+            sqlalchemy.session.commit()
             return redirect('/login')
 
     return render_template('register.html', title='Регистрация', form=form)

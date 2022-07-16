@@ -1,9 +1,11 @@
 from typing import Tuple
 
+import flask
 import redis
 from flask import Flask, render_template, request, redirect, jsonify
 from flask_jwt_extended import JWTManager, jwt_required, current_user
 from flask_restful import Api
+from flask_migrate import Migrate
 
 from core.settings import settings
 from db import cache_db, db
@@ -11,6 +13,7 @@ from models.models import User
 from services.base_cache import BaseRedisStorage
 from services.base_main import BaseSQLAlchemyStorage
 from utils.utils import register_blueprints, register_resources, log_activity
+from sqlalchemy import exc
 
 
 def init_cache_db():
@@ -36,11 +39,19 @@ def init_app(name: str) -> Tuple[Flask, Api]:
     db.init_sqlalchemy(app=app, storage=db.db)
     init_cache_db()
 
+    migrate = Migrate(app, db.sqlalchemy)
+
     return app, api
 
 
 app, api = init_app(__name__)
 jwt = JWTManager(app)
+
+
+@app.errorhandler(exc.SQLAlchemyError)
+def handle_db_exceptions(error):
+    db.sqlalchemy.session.rollback()
+    return flask.Response(status=400)
 
 
 @jwt.expired_token_loader
