@@ -5,6 +5,7 @@ import redis
 from flask import Flask, render_template, request, redirect, jsonify
 from flask_jwt_extended import JWTManager, jwt_required, current_user
 from flask_restful import Api
+from flask_migrate import Migrate
 
 from core.settings import settings
 from db import cache_db, db
@@ -37,6 +38,8 @@ def init_app(name: str) -> Tuple[Flask, Api]:
     init_db()
     db.init_sqlalchemy(app=app, storage=db.db)
     init_cache_db()
+
+    migrate = Migrate(app, db.sqlalchemy)
 
     return app, api
 

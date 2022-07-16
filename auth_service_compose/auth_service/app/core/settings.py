@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
     REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
     POSTGRES_HOST = os.getenv('POSTGRES_HOST', '127.0.0.1')
-    POSTGRES_PORT = int(os.getenv('POSTGRES_PORT', 5432))
+    POSTGRES_PORT = int(os.getenv('POSTGRES_PORT', 5434))
     POSTGRES_DB = os.getenv('POSTGRES_DB', 'db')
     POSTGRES_USER = os.getenv('POSTGRES_USER', 'user')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'password')
