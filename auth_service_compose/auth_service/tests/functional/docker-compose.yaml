@@ -2,33 +2,29 @@
 version: '3'
 services:
 
-  elastic:
-    image: elasticsearch:7.14.0
+  postgres:
+    build:
+      context: ../../../postgres
     ports:
-      - 9200:9200
-    environment:
-      discovery.type: "single-node"
-      ES_JAVA_OPTS: "-Xms1000m -Xmx1000m"
+      - 5434:5432
 
   redis:
     image: redis:7.0
     ports:
       - 6379:6379
 
-  fastapi:
+  flask:
     build:
-      context: ../../.
-    ports:
-      - 8001:8001
+      context: ../../app
     depends_on:
-      - elastic
+      - postgres
       - redis
 
   tests:
     build:
       context: .
     depends_on:
-      - elastic
+      - postgres
       - redis
     volumes:
       - ./report:/functional/report
