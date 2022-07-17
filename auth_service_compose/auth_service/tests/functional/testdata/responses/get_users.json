@@ -1,0 +1,17 @@
+[
+  {
+    "email": "some_email@google.com",
+    "id": "34b94f10-35da-4918-a199-985af3c8160b",
+    "login": "AAaaa"
+  },
+  {
+    "email": "some_email@outlook.com",
+    "id": "619f7e14-a847-4e71-b31a-27193e17da3d",
+    "login": "BBB"
+  },
+  {
+    "email": "user@example.com",
+    "id": "ed5b50a1-2f79-43e9-918d-87140bb9afd9",
+    "login": "user"
+  }
+]
