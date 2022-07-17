@@ -1,5 +1,7 @@
 import glob
 import importlib
+import os
+import re
 from datetime import datetime
 from functools import wraps
 from http import HTTPStatus
@@ -7,8 +9,7 @@ from os.path import join
 
 from flask import Flask, current_app, request, Response
 from flask_jwt_extended import current_user, get_csrf_token, get_jwt_request_location
-from flask_restful import Api
-from sqlalchemy.orm import Query
+from flask_restx import Api
 
 from models.models import User
 from services.logs_service import get_logs_service
@@ -36,10 +37,14 @@ def register_blueprints(app: Flask):
             app.register_blueprint(getattr(module, f"{name}_view"))
 
 
-def register_resources(api: Api):
-    module = importlib.import_module('urls')
-    for url in getattr(module, "urls"):
-        api.add_resource(*url)
+def register_namespaces(api: Api):
+    for path in os.walk('api'):
+        for module_name in path[2]:
+            module_path = f"{path[0]}/{module_name}".replace('/', '.')[:-3]
+            if not re.search('__.*__.py', module_name) and re.search("py$", module_name):
+                module = importlib.import_module(module_path)
+                namespace = getattr(module, module_name[:-3])
+                api.add_namespace(namespace)
 
 
 def handle_csrf():

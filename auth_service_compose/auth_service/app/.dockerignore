@@ -3,3 +3,4 @@ setup.cfg
 Dockerfile
 docker-compose.*
 .env.sample
+__pycache__

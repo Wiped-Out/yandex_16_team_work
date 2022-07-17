@@ -1,6 +1,6 @@
 from typing import Type
 
-from flask_restful import Resource
+from flask_restx import Resource
 
 from api.v1.jwt_tokens import JWTLogin, JWTLogout, JWTRefresh
 from api.v1.role import Role

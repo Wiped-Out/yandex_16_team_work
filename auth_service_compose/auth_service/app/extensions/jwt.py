@@ -1,15 +1,20 @@
 from datetime import datetime, timezone
 from http import HTTPStatus
 from typing import Optional
-from jwt.exceptions import ExpiredSignatureError
+
 from flask import request, redirect, current_app, make_response
 from flask_jwt_extended import JWTManager, set_access_cookies, unset_jwt_cookies, get_jti
+from flask_restx import reqparse
+from jwt.exceptions import ExpiredSignatureError
 
 from services.jwt import get_jwt_service
 from services.user import get_user_service
 from utils.utils import make_error_response, work_in_context
 
 jwt_manager: Optional[JWTManager] = None
+
+jwt_parser = reqparse.RequestParser()
+jwt_parser.add_argument('Authorization', location="headers")
 
 
 def set_jwt_callbacks():

@@ -41,6 +41,7 @@ class JWTService(BaseCacheStorage, BaseMainStorage):
         return token
 
     def block_token(self, cache_key: str, expire: timedelta):
+
         self.put_one_item_to_cache(cache_key=cache_key,
                                    item=self.cache_model(jti=cache_key),
                                    expire=expire)
