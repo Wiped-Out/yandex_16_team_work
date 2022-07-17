@@ -11,7 +11,7 @@ from schemas.v1 import schemas
 from services.logs_service import get_logs_service
 from utils.utils import log_activity
 
-login_history = Namespace('Login history', path=f"{base_url}/user", description='')
+login_history = Namespace('Login history', path=f"{base_url}/users", description='')
 
 _LoginHistory = login_history.model("LoginHistory",
                                     {

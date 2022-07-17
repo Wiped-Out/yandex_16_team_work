@@ -27,6 +27,15 @@ class UserService(BaseCacheStorage, BaseMainStorage):
         self.db.commit()
         return self.cache_model(**user.to_dict())
 
+    def get_users(self, cache_key: str) -> list[cache_model]:
+        users = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
+        if not users:
+            db_users = self.get_all()
+            users = [self.cache_model(**user.to_dict()) for user in db_users]
+            if users:
+                self.put_items_to_cache(cache_key=cache_key, items=users)
+        return users
+
     def get_user(self, user_id: str, cache_key: str) -> cache_model:
         user = self.get_one_item_from_cache(
             cache_key=cache_key,

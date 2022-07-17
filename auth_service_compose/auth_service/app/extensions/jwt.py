@@ -5,7 +5,7 @@ from typing import Optional
 from flask import request, redirect, current_app, make_response
 from flask_jwt_extended import JWTManager, set_access_cookies, unset_jwt_cookies, get_jti
 from flask_restx import reqparse
-from jwt.exceptions import ExpiredSignatureError
+from jwt.exceptions import InvalidTokenError
 
 from services.jwt import get_jwt_service
 from services.user import get_user_service
@@ -38,7 +38,7 @@ def set_jwt_callbacks():
 
                 refresh_token = request.cookies.get(key=current_app.config["JWT_REFRESH_COOKIE_NAME"])
 
-                refresh_token_jti = get_jti(refresh_token)
+                get_jti(refresh_token)
 
                 exp_timestamp = jwt_payload["exp"]
                 now = datetime.now(timezone.utc)
@@ -53,7 +53,7 @@ def set_jwt_callbacks():
 
                 return response
 
-            except (RuntimeError, KeyError, ExpiredSignatureError):
+            except (RuntimeError, KeyError, InvalidTokenError):
                 response = make_response(redirect('/login'))
 
                 unset_jwt_cookies(response)

@@ -11,7 +11,7 @@ from schemas.v1 import schemas
 from services.user import get_user_service
 from utils.utils import log_activity
 
-user = Namespace('User', path=f"{base_url}/user", description='')
+user = Namespace('User', path=f"{base_url}/users", description='')
 
 _User = user.model("user",
                    {
@@ -36,7 +36,16 @@ user_put_parser.add_argument("new_password_repeat", required=False, location='js
 
 @user.route("/")
 @user.expect(jwt_parser)
-class User(Resource):
+class Users(Resource):
+    @jwt_required()
+    @log_activity()
+    @user.response(code=int(HTTPStatus.OK), description=" ", model=[_User])
+    def get(self) -> Response:
+        user_service = get_user_service()
+        cache_key = request.base_url
+
+        db_users = user_service.get_users(cache_key=cache_key)
+        return jsonify([schemas.User(**db_user.dict()).dict() for db_user in db_users])
 
     @log_activity()
     @jwt_required()
@@ -55,7 +64,7 @@ class User(Resource):
 
 @user.route("/<user_id>")
 @user.expect(jwt_parser)
-class User_id(Resource):
+class UserId(Resource):
     @log_activity()
     @jwt_required()
     @user.response(code=int(HTTPStatus.OK), description=" ", model=_User)
