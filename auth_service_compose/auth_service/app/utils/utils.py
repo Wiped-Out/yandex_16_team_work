@@ -7,7 +7,7 @@ from functools import wraps
 from http import HTTPStatus
 from os.path import join
 
-from flask import Flask, current_app, request, Response
+from flask import Flask, current_app, request, Response, json
 from flask_jwt_extended import current_user, get_csrf_token, get_jwt_request_location
 from flask_restx import Api
 
@@ -108,7 +108,7 @@ def required_role_level(level: int):
 
 def make_error_response(msg: str, status: int):
     return Response(
-        response={'msg': msg},
+        response=json.dumps({'msg': msg}),
         status=status,
         content_type="application/json"
     )

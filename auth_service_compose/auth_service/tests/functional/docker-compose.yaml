@@ -31,5 +31,6 @@ services:
     depends_on:
       - postgres
       - redis
+      - flask
     volumes:
       - ./report:/functional/report
