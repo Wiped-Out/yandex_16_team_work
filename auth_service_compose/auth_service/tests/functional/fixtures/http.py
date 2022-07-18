@@ -1,5 +1,4 @@
 import builtins
-
 import aiohttp
 import pytest
 
@@ -24,18 +23,49 @@ async def session():
 
 
 @pytest.fixture
-def make_get_request(session):
+def login_user(make_request):
+    async def inner() -> str:
+        response = await make_request(
+            method="/login",
+            http_method="POST",
+            json={"login": "user",
+                  "password": "hirnim-fogkuj-pUrhi4"
+                  }
+        )
+
+        return response.body.get("access_token")
+
+    return inner
+
+
+@pytest.fixture
+def get_access_token_headers(prepare_for_test, login_user):
+    async def inner() -> dict:
+        await prepare_for_test(table_name="users", filename="users.json")
+        access_token = await login_user()
+        return {"Authorization": f"Bearer {access_token}"}
+
+    return inner
+
+
+@pytest.fixture
+def make_request(session):
     async def inner(
             method: str,
-            request_method: str,
+            http_method: str,
+            headers: Optional[dict] = None,
             params: Optional[dict] = None,
+            json: Optional[dict] = None,
     ) -> HTTPResponse:
         params = params or {}
+        headers = headers or {}
+        json = json or {}
+
         url = f'{settings.API_URL}/api/v1{method}'
 
-        func = builtins.getattr(session, request_method.lower())
+        func = builtins.getattr(session, http_method.lower())
 
-        async with func(url, params=params) as response:
+        async with func(url, params=params, headers=headers, json=json) as response:
             return HTTPResponse(
                 body=await response.json(),
                 headers=response.headers,

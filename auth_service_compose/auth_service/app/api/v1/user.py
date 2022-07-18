@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 from flask import Response, request, jsonify
@@ -9,7 +10,7 @@ from api.v1.__base__ import base_url
 from extensions.jwt import jwt_parser
 from schemas.v1 import schemas
 from services.user import get_user_service
-from utils.utils import log_activity
+from utils.utils import log_activity, make_error_response
 
 user = Namespace('User', path=f"{base_url}/users", description='')
 
@@ -53,7 +54,10 @@ class Users(Resource):
     @user.expect(user_post_parser)
     def post(self):
         user_service = get_user_service()
-        db_user = user_service.create_user(params=user_post_parser.parse_args())
+        try:
+            db_user = user_service.create_user(params=user_post_parser.parse_args())
+        except IntegrityError:
+            return make_error_response(status=HTTPStatus.BAD_REQUEST, msg="User already exist")
 
         return Response(
             response=schemas.User(**db_user.dict()).json(),
@@ -86,25 +90,33 @@ class UserId(Resource):
     def put(self, user_id: str):
         user_service = get_user_service()
 
-        args = self.put_parser.parse_args()
+        args = user_put_parser.parse_args()
 
         user_db = user_service.get(item_id=user_id)
         # Передаваемый пароль не совпал с паролем в базе данных
         if not user_db.check_password(args.pop("password")):
-            return Response(status=HTTPStatus.BAD_REQUEST)
+            print("Падаю на проверке пароля", flush=True)
+            return make_error_response(status=HTTPStatus.BAD_REQUEST, msg="Incorrect password")
 
         new_password = args.pop("new_password")
         new_password_repeat = args.pop("new_password_repeat")
         if new_password or new_password_repeat:
-            if new_password == new_password_repeat:
-                user_service.update_password(user_id=user_id, password=new_password)
-                return Response(status=HTTPStatus.NO_CONTENT)
-            else:
-                return Response(status=HTTPStatus.BAD_REQUEST)
+            if new_password != new_password_repeat:
+                print("Пароли не совпадают", flush=True)
+                return make_error_response(status=HTTPStatus.BAD_REQUEST, msg="Passwords don't match")
+
+            user_service.update_password(user_id=user_id, password=new_password)
 
         try:
-            user_service.update(item_id=user_id, **args)
-        except IntegrityError:
-            return Response(status=HTTPStatus.CONFLICT)
+            args = {key: value for key, value in args.items() if value}
 
-        return Response(status=HTTPStatus.NO_CONTENT)
+            if args:
+                user_service.update(item_id=user_id, **args)
+        except IntegrityError:
+            return make_error_response(status=HTTPStatus.CONFLICT, msg="Can't update user")
+
+        return Response(
+            response=json.dumps({}),
+            status=HTTPStatus.NO_CONTENT,
+            content_type="application/json",
+        )

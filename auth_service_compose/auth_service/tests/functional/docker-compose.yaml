@@ -5,6 +5,8 @@ services:
   postgres:
     build:
       context: ../../../postgres
+    env_file:
+      - ../../../postgres/.env
     ports:
       - 5434:5432
 
@@ -16,6 +18,9 @@ services:
   flask:
     build:
       context: ../../app
+    command: sh -c "sleep 3 && python utils/collect_static.py && gunicorn -b 0.0.0.0:5000 "wsgi:app""
+    ports:
+      - 5000:5000
     depends_on:
       - postgres
       - redis

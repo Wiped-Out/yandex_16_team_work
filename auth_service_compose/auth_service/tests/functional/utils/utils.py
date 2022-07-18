@@ -35,6 +35,7 @@ def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10):
 
     return func_wrapper
 
+
 def backoff_on_true(start_sleep_time=0.1, factor=2, border_sleep_time=10):
     """
     Функция для повторного выполнения функции через некоторое время,

@@ -1,20 +1,22 @@
-[
-  {
-    "id": "34b94f10-35da-4918-a199-985af3c8160b",
-    "login": "AAaaa",
-    "email": "some_email@google.com",
-    "password": "pbkdf2:sha256:260000$BXMzQ9LnPI35NdK5$e746a29b72c31e36a01ec569c9a18fde71f8fbbcb08372387da39d5a30c74686"
-  },
-  {
-    "id": "619f7e14-a847-4e71-b31a-27193e17da3d",
-    "login": "BBB",
-    "email": "some_email@outlook.com",
-    "password": "pbkdf2:sha256:260000$A4tnpWBRSpybx0dR$c4fe3f2533d3b31b0181787acc8271827d901f927d082f38159e7ca470039cc4"
-  },
-  {
-    "id": "ed5b50a1-2f79-43e9-918d-87140bb9afd9",
-    "login": "user",
-    "email": "user@example.com",
-    "password": "pbkdf2:sha256:260000$jt3wuobOsfDoQHUq$961b1830025664d6715969a3f3e3a7dea6ec22f999c861c6996f8b3aeeb4f893"
-  }
-]
+{
+  "items": [
+    {
+      "id": "34b94f10-35da-4918-a199-985af3c8160b",
+      "login": "AAaaa",
+      "email": "some_email@google.com",
+      "password": "pbkdf2:sha256:260000$BXMzQ9LnPI35NdK5$e746a29b72c31e36a01ec569c9a18fde71f8fbbcb08372387da39d5a30c74686"
+    },
+    {
+      "id": "619f7e14-a847-4e71-b31a-27193e17da3d",
+      "login": "BBB",
+      "email": "some_email@outlook.com",
+      "password": "pbkdf2:sha256:260000$A4tnpWBRSpybx0dR$c4fe3f2533d3b31b0181787acc8271827d901f927d082f38159e7ca470039cc4"
+    },
+    {
+      "id": "ed5b50a1-2f79-43e9-918d-87140bb9afd9",
+      "login": "user",
+      "email": "user@example.com",
+      "password": "pbkdf2:sha256:260000$jt3wuobOsfDoQHUq$961b1830025664d6715969a3f3e3a7dea6ec22f999c861c6996f8b3aeeb4f893"
+    }
+  ]
+}
