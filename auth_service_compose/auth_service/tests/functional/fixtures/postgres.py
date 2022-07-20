@@ -167,9 +167,9 @@ def create_table(postgres_connection: _connection):
 def load_data(postgres_connection: _connection):
     async def inner(table_name: str, path: str):
         postgres_saver = PostgresSaver(postgres_connection, PG_PAGE_SIZE)
-        model, func = {"users": {"model": User, "function": postgres_saver.save_users},
-                       "roles": {"model": Role, "function": postgres_saver.save_roles},
-                       "user_roles": {"model": UserRole, "function": postgres_saver.save_user_roles}
+        model, func = {"users": [User, postgres_saver.save_users],
+                       "roles": [Role, postgres_saver.save_roles],
+                       "user_roles": [UserRole, postgres_saver.save_user_roles]
                        }[table_name]
 
         with open(path, "rt") as file:

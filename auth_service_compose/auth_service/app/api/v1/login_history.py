@@ -36,4 +36,6 @@ class LoginHistory(Resource):
             user_id=user_id,
             pattern="POST:.*login.*"
         )
-        return jsonify([schemas.LoginHistory(**log.dict()).dict() for log in logs])
+        return jsonify(
+            {"items": [schemas.LoginHistory(**log.dict()).dict() for log in logs]}
+        )

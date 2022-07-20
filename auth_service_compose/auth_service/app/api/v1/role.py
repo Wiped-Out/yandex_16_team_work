@@ -39,7 +39,9 @@ class Roles(Resource):
         cache_key = request.base_url
 
         db_roles = role_service.get_roles(cache_key=cache_key)
-        return jsonify([Role(**db_role.dict()).dict() for db_role in db_roles])
+        return jsonify(
+            {"items": [Role(**db_role.dict()).dict() for db_role in db_roles]}
+        )
 
     @jwt_required()
     @log_activity()

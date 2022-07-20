@@ -38,7 +38,7 @@ async def test_get_roles(
     assert response.status == HTTPStatus.OK
 
     with open(response_json_path) as expected_response:
-        expected = json.load(expected_response)["items"]
+        expected = json.load(expected_response)
         assert response.body == expected
 
     await delete_tables()

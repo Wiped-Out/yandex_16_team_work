@@ -50,7 +50,9 @@ class Users(Resource):
         cache_key = request.base_url
 
         db_users = user_service.get_users(cache_key=cache_key)
-        return jsonify([schemas.User(**db_user.dict()).dict() for db_user in db_users])
+        return jsonify(
+            {"items": [schemas.User(**db_user.dict()).dict() for db_user in db_users]}
+        )
 
     @log_activity()
     @jwt_required()
