@@ -23,6 +23,11 @@ _User = user.model("user",
                    }
                    )
 
+NestedUser = user.model("NestedUser",
+                        {
+                            "items": fields.Nested(_User, as_list=True)
+                        })
+
 user_post_parser = reqparse.RequestParser()
 user_post_parser.add_argument("email", type=str, location='json')
 user_post_parser.add_argument("login", type=str, location='json')
@@ -44,7 +49,7 @@ user_roles_parser.add_argument("role_id", type=str, location='json')
 class Users(Resource):
     @jwt_required()
     @log_activity()
-    @user.response(code=int(HTTPStatus.OK), description=" ", model=[_User])
+    @user.response(code=int(HTTPStatus.OK), description=" ", model=NestedUser)
     def get(self) -> Response:
         user_service = get_user_service()
         cache_key = request.base_url

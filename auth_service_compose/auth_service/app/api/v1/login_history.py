@@ -21,13 +21,18 @@ _LoginHistory = login_history.model("LoginHistory",
                                     }
                                     )
 
+NestedLoginHistory = login_history.model("NestedLoginHistory",
+                                         {
+                                             "items": fields.Nested(_LoginHistory, as_list=True)
+                                         })
+
 
 @login_history.route('/<user_id>/login_history')
 @login_history.expect(jwt_parser)
 class LoginHistory(Resource):
     @log_activity()
     @jwt_required()
-    @login_history.response(code=int(HTTPStatus.OK), description=" ", model=_LoginHistory)
+    @login_history.response(code=int(HTTPStatus.OK), description=" ", model=NestedLoginHistory)
     def get(self, user_id: str):
         logs_service = get_logs_service()
 
