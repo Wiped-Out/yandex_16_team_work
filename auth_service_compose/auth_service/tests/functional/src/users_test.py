@@ -7,14 +7,12 @@ from psycopg2.extensions import connection as _connection
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "params, response_json_path, table_name, filename, http_method",
+    "params, response_json_path, http_method",
     (
             (
                     {},
                     "testdata/responses/get_users.json",
-                    "users",
-                    "users.json",
-                    "GET"
+                    "GET",
             ),
     )
 )
@@ -23,12 +21,10 @@ async def test_get_users(
         redis_client: aioredis.Redis,
         get_access_token_headers,
         make_request,
-        delete_table,
+        delete_tables,
 
         params: dict,
         response_json_path: str,
-        table_name: str,
-        filename: str,
         http_method: str
 ):
     headers = await get_access_token_headers()
@@ -48,18 +44,16 @@ async def test_get_users(
         expected = json.load(expected_response)["items"]
         assert response.body == expected
 
-    await delete_table(table_name=table_name)
+    await delete_tables()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "json_data, table_name, filename, http_method",
+    "json_data, http_method",
     (
             (
                     {"email": "some_email1@example.com", "login": "user1", "password": "user"},
-                    "users",
-                    "users.json",
-                    "POST"
+                    "POST",
             ),
     )
 )
@@ -68,12 +62,10 @@ async def test_create_user(
         redis_client: aioredis.Redis,
         get_access_token_headers,
         make_request,
-        delete_table,
+        delete_tables,
 
         json_data: dict,
-        table_name: str,
-        filename: str,
-        http_method: str
+        http_method: str,
 
 ):
     headers = await get_access_token_headers()
@@ -91,19 +83,17 @@ async def test_create_user(
 
     assert response.body["email"] == json_data["email"] and response.body["login"] == json_data["login"]
 
-    await delete_table(table_name=table_name)
+    await delete_tables()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "user_id, response_json_path, table_name, filename, http_method",
+    "user_id, response_json_path, http_method",
     (
             (
                     "34b94f10-35da-4918-a199-985af3c8160b",
                     "testdata/responses/get_user.json",
-                    "users",
-                    "users.json",
-                    "GET"
+                    "GET",
             ),
     )
 )
@@ -112,12 +102,10 @@ async def test_get_user(
         redis_client: aioredis.Redis,
         get_access_token_headers,
         make_request,
-        delete_table,
+        delete_tables,
 
         user_id: str,
         response_json_path: str,
-        table_name: str,
-        filename: str,
         http_method: str
 ):
     headers = await get_access_token_headers()
@@ -137,4 +125,4 @@ async def test_get_user(
         expected = json.load(expected_response)
         assert response.body == expected
 
-    await delete_table(table_name=table_name)
+    await delete_tables()

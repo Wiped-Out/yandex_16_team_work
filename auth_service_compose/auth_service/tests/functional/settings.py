@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     TABLES_NAMES_MAPPINGS = {
         "users": "testdata/sql_tables/users.sql",
         "roles": "testdata/sql_tables/roles.sql",
+        "user_roles": "testdata/sql_tables/user_roles.sql",
     }
 
     class Config:
@@ -28,4 +29,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-

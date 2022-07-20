@@ -50,6 +50,13 @@ class Role(BaseDataclass):
     level: int
 
 
+@validate_arguments
+@dataclass
+class UserRole(BaseDataclass):
+    user_id: str
+    role_id: str
+
+
 @dataclass
 class PostgresSaver:
     """Класс для загрузки данных в PostgreSQL"""
@@ -90,6 +97,23 @@ class PostgresSaver:
             )
         self.pgconn.commit()
 
+    def save_user_roles(self, user_roles: list[UserRole]):
+        with self.pgconn.cursor() as cur:
+            sql_query = """
+            INSERT INTO content.user_roles
+            (user_id, role_id)
+            VALUES (%s, %s)
+            ON CONFLICT (id) DO NOTHING;
+            """
+            unpacked_user_roles = tuple(tuple(i) for i in user_roles)
+            execute_batch(
+                cur,
+                sql_query,
+                unpacked_user_roles,
+                page_size=self.page_size
+            )
+        self.pgconn.commit()
+
 
 @pytest.fixture(scope='session')
 async def postgres_connection():
@@ -118,11 +142,24 @@ class PostgresManager:
 
 
 @pytest.fixture
+def prepare_tables(prepare_for_test):
+    async def inner():
+        table_to_file = {"roles": "roles.json", "users": "users.json", "user_roles": "user_roles.json"}
+        for key, value in table_to_file:
+            await prepare_for_test(table_name=key, filename=value)
+
+        return inner
+
+
+@pytest.fixture
 def create_table(postgres_connection: _connection):
     async def inner(table_name: str):
         with open(settings.TABLES_NAMES_MAPPINGS[table_name], "rt") as file:
             with postgres_connection.cursor() as cursor:
                 cursor.execute(file.read())
+                print(f"Создал таблицу {table_name}")
+
+                postgres_connection.commit()
 
     return inner
 
@@ -134,16 +171,18 @@ def load_data(postgres_connection: _connection):
         if table_name == "users":
             with open(path, "rt") as file:
                 users: list[User] = [User(**user) for user in json.loads(file.read())["items"]]
-            print("Сохранил данные в базу данных")
             postgres_saver.save_users(users)
+            print("Сохранил данные в базу данных")
         elif table_name == "roles":
             with open(path, "rt") as file:
                 roles: list[Role] = [Role(**role) for role in json.loads(file.read())["items"]]
-            print("Сохранил данные в базу данных")
             postgres_saver.save_roles(roles)
+            print("Сохранил данные в базу данных")
         elif table_name == "user_roles":
-            # todo
-            pass
+            with open(path, "rt") as file:
+                user_roles: list[UserRole] = [UserRole(**user_role) for user_role in json.loads(file.read())["items"]]
+            postgres_saver.save_user_roles(user_roles)
+            print("Сохранил данные в базу данных")
         else:
             raise ValueError("Incorrect table name")
 
@@ -151,10 +190,13 @@ def load_data(postgres_connection: _connection):
 
 
 @pytest.fixture
-def delete_table(postgres_connection: _connection):
-    async def inner(table_name: str):
+def delete_tables(postgres_connection: _connection):
+    async def inner():
         schema = "content"
-        with postgres_connection.cursor() as cursor:
-            cursor.execute(f"DROP TABLE {schema}.{table_name} CASCADE;")
+        tables = ["user_roles", "roles", "users"]
+        for table in tables:
+            with postgres_connection.cursor() as cursor:
+                cursor.execute(f"DROP TABLE {schema}.{table} CASCADE;")
+                postgres_connection.commit()
 
     return inner

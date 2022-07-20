@@ -41,7 +41,10 @@ def login_user(make_request):
 @pytest.fixture
 def get_access_token_headers(prepare_for_test, login_user):
     async def inner() -> dict:
-        await prepare_for_test(table_name="users", filename="users.json")
+        table_to_file = {"roles": "roles.json", "users": "users.json", "user_roles": "user_roles.json"}
+        for key, value in table_to_file.items():
+            await prepare_for_test(table_name=key, filename=value)
+
         access_token = await login_user()
         return {"Authorization": f"Bearer {access_token}"}
 
@@ -66,6 +69,7 @@ def make_request(session):
         func = builtins.getattr(session, http_method.lower())
 
         async with func(url, params=params, headers=headers, json=json) as response:
+            print("респонс", response)
             return HTTPResponse(
                 body=await response.json(),
                 headers=response.headers,

@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 from flask import current_app, Response
@@ -11,7 +12,7 @@ from schemas.v1 import schemas
 from services.jwt import get_jwt_service
 from services.refresh_token import get_refresh_token_service
 from services.user import get_user_service
-from utils.utils import log_activity, save_activity
+from utils.utils import log_activity, save_activity, make_error_response
 
 jwt_tokens = Namespace('JWT', path=f"{base_url}/", description='')
 
@@ -68,7 +69,7 @@ class JWTLogin(Resource):
                 status=HTTPStatus.OK,
                 content_type="application/json")
         else:
-            return Response(status=HTTPStatus.BAD_REQUEST)
+            return make_error_response(msg="Problems with user", status=HTTPStatus.BAD_REQUEST)
 
 
 @jwt_tokens.route("/logout")

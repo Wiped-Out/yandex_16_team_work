@@ -6,7 +6,7 @@ from psycopg2.extensions import connection as _connection
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "user_id, json, table_name, filename, http_method",
+    "user_id, json, http_method",
     (
             (
                     "ed5b50a1-2f79-43e9-918d-87140bb9afd9",
@@ -14,9 +14,7 @@ from psycopg2.extensions import connection as _connection
                      "new_password": "NewNewPassword",
                      "new_password_repeat": "NewNewPassword"
                      },
-                    "users",
-                    "users.json",
-                    "PUT"
+                    "PUT",
             ),
     )
 )
@@ -25,12 +23,10 @@ async def test_update_user_password(
         redis_client: aioredis.Redis,
         get_access_token_headers,
         make_request,
-        delete_table,
+        delete_tables,
 
         user_id: str,
         json: dict,
-        table_name: str,
-        filename: str,
         http_method: str
 ):
     headers = await get_access_token_headers()
@@ -46,21 +42,19 @@ async def test_update_user_password(
     # Проверка результата
     assert response.status == HTTPStatus.NO_CONTENT
 
-    await delete_table(table_name=table_name)
+    await delete_tables()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "user_id, json, table_name, filename, http_method",
+    "user_id, json, http_method",
     (
             (
                     "ed5b50a1-2f79-43e9-918d-87140bb9afd9",
                     {"password": "hirnim-fogkuj-pUrhi4",
                      "login": "test",
                      },
-                    "users",
-                    "users.json",
-                    "PUT"
+                    "PUT",
             ),
     )
 )
@@ -69,12 +63,10 @@ async def test_update_user_login(
         redis_client: aioredis.Redis,
         get_access_token_headers,
         make_request,
-        delete_table,
+        delete_tables,
 
         user_id: str,
         json: dict,
-        table_name: str,
-        filename: str,
         http_method: str,
 ):
     headers = await get_access_token_headers()
@@ -90,21 +82,19 @@ async def test_update_user_login(
     # Проверка результата
     assert response.status == HTTPStatus.NO_CONTENT
 
-    await delete_table(table_name=table_name)
+    await delete_tables()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "user_id, json, table_name, filename, http_method",
+    "user_id, json, http_method",
     (
             (
                     "ed5b50a1-2f79-43e9-918d-87140bb9afd9",
                     {"password": "hirnim-fogkuj-pUrhi4",
                      "email": "new_email@mail.com"
                      },
-                    "users",
-                    "users.json",
-                    "PUT"
+                    "PUT",
             ),
     )
 )
@@ -113,12 +103,10 @@ async def test_update_user_email(
         redis_client: aioredis.Redis,
         get_access_token_headers,
         make_request,
-        delete_table,
+        delete_tables,
 
         user_id: str,
         json: dict,
-        table_name: str,
-        filename: str,
         http_method: str
 ):
     headers = await get_access_token_headers()
@@ -134,12 +122,12 @@ async def test_update_user_email(
     # Проверка результата
     assert response.status == HTTPStatus.NO_CONTENT
 
-    await delete_table(table_name=table_name)
+    await delete_tables()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "user_id, json, table_name, filename, http_method",
+    "user_id, json, http_method",
     (
             (
                     "ed5b50a1-2f79-43e9-918d-87140bb9afd9",
@@ -147,9 +135,7 @@ async def test_update_user_email(
                      "email": "new_email@mail.com",
                      "login": "test",
                      },
-                    "users",
-                    "users.json",
-                    "PUT"
+                    "PUT",
             ),
     )
 )
@@ -158,12 +144,10 @@ async def test_update_user_login_and_email(
         redis_client: aioredis.Redis,
         get_access_token_headers,
         make_request,
-        delete_table,
+        delete_tables,
 
         user_id: dict,
         json: dict,
-        table_name: str,
-        filename: str,
         http_method: str
 ):
     headers = await get_access_token_headers()
@@ -179,21 +163,19 @@ async def test_update_user_login_and_email(
     # Проверка результата
     assert response.status == HTTPStatus.NO_CONTENT
 
-    await delete_table(table_name=table_name)
+    await delete_tables()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "user_id, json, table_name, filename, http_method",
+    "user_id, json, http_method",
     (
             (
                     "ed5b50a1-2f79-43e9-918d-87140bb9afd9",
                     {"password": "hirnim-fogkuj-pUrhi4",
                      "new_password": "NewNewPassword",
                      },
-                    "users",
-                    "users.json",
-                    "PUT"
+                    "PUT",
             ),
     )
 )
@@ -202,12 +184,10 @@ async def test_update_password_without_confirmation(
         redis_client: aioredis.Redis,
         get_access_token_headers,
         make_request,
-        delete_table,
+        delete_tables,
 
         user_id: str,
         json: dict,
-        table_name: str,
-        filename: str,
         http_method: str
 ):
     headers = await get_access_token_headers()
@@ -223,4 +203,4 @@ async def test_update_password_without_confirmation(
     # Проверка результата
     assert response.status == HTTPStatus.BAD_REQUEST
 
-    await delete_table(table_name=table_name)
+    await delete_tables()
