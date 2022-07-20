@@ -99,14 +99,12 @@ class UserId(Resource):
         user_db = user_service.get(item_id=user_id)
         # Передаваемый пароль не совпал с паролем в базе данных
         if not user_db.check_password(args.pop("password")):
-            print("Падаю на проверке пароля", flush=True)
             return make_error_response(status=HTTPStatus.BAD_REQUEST, msg="Incorrect password")
 
         new_password = args.pop("new_password")
         new_password_repeat = args.pop("new_password_repeat")
         if new_password or new_password_repeat:
             if new_password != new_password_repeat:
-                print("Пароли не совпадают", flush=True)
                 return make_error_response(status=HTTPStatus.BAD_REQUEST, msg="Passwords don't match")
 
             user_service.update_password(user_id=user_id, password=new_password)

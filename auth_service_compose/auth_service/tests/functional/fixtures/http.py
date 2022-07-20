@@ -69,7 +69,6 @@ def make_request(session):
         func = builtins.getattr(session, http_method.lower())
 
         async with func(url, params=params, headers=headers, json=json) as response:
-            print("респонс", response)
             return HTTPResponse(
                 body=await response.json(),
                 headers=response.headers,

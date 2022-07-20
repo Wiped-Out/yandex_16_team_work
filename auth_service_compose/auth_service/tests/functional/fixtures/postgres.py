@@ -157,7 +157,6 @@ def create_table(postgres_connection: _connection):
         with open(settings.TABLES_NAMES_MAPPINGS[table_name], "rt") as file:
             with postgres_connection.cursor() as cursor:
                 cursor.execute(file.read())
-                print(f"Создал таблицу {table_name}")
 
                 postgres_connection.commit()
 
@@ -168,23 +167,14 @@ def create_table(postgres_connection: _connection):
 def load_data(postgres_connection: _connection):
     async def inner(table_name: str, path: str):
         postgres_saver = PostgresSaver(postgres_connection, PG_PAGE_SIZE)
-        if table_name == "users":
-            with open(path, "rt") as file:
-                users: list[User] = [User(**user) for user in json.loads(file.read())["items"]]
-            postgres_saver.save_users(users)
-            print("Сохранил данные в базу данных")
-        elif table_name == "roles":
-            with open(path, "rt") as file:
-                roles: list[Role] = [Role(**role) for role in json.loads(file.read())["items"]]
-            postgres_saver.save_roles(roles)
-            print("Сохранил данные в базу данных")
-        elif table_name == "user_roles":
-            with open(path, "rt") as file:
-                user_roles: list[UserRole] = [UserRole(**user_role) for user_role in json.loads(file.read())["items"]]
-            postgres_saver.save_user_roles(user_roles)
-            print("Сохранил данные в базу данных")
-        else:
-            raise ValueError("Incorrect table name")
+        model, func = {"users": {"model": User, "function": postgres_saver.save_users},
+                       "roles": {"model": Role, "function": postgres_saver.save_roles},
+                       "user_roles": {"model": UserRole, "function": postgres_saver.save_user_roles}
+                       }[table_name]
+
+        with open(path, "rt") as file:
+            items = [model(**item) for item in json.loads(file.read())["items"]]
+        func(items)
 
     return inner
 

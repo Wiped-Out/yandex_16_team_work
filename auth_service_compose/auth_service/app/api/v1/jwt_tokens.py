@@ -52,10 +52,7 @@ class JWTLogin(Resource):
         jwt_service = get_jwt_service()
         user_service = get_user_service()
 
-        print("arggggs", args)
         user = user_service.filter_by(login=args['login'], _first=True)
-        print(user_service.get_users(cache_key=";asdflj"))
-        print("userrfj;ljsfasf", user, flush=True)
 
         if user and user.check_password(args['password']):
             refresh_token = jwt_service.create_refresh_token(user=user)

@@ -30,6 +30,5 @@ def prepare_for_test(
         await load_data(table_name=table_name, path=f"./testdata/prepared_data/{filename}")
         await asyncio.sleep(1)
         await flush_redis()
-        print("Зафлашил редис")
 
     return inner
