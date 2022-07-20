@@ -10,6 +10,7 @@ from api.v1.__base__ import base_url
 from extensions.jwt import jwt_parser
 from schemas.v1 import schemas
 from services.user import get_user_service
+from services.user_roles import get_user_roles_service
 from utils.utils import log_activity, make_error_response
 
 user = Namespace('User', path=f"{base_url}/users", description='')
@@ -33,6 +34,9 @@ user_put_parser.add_argument("login", type=str, required=False, location='json')
 user_put_parser.add_argument("email", type=str, required=False, location='json')
 user_put_parser.add_argument("new_password", type=str, required=False, location='json')
 user_put_parser.add_argument("new_password_repeat", required=False, location='json')
+
+user_roles_parser = reqparse.RequestParser()
+user_roles_parser.add_argument("role_id", type=str, location='json')
 
 
 @user.route("/")
@@ -114,6 +118,53 @@ class UserId(Resource):
                 user_service.update(item_id=user_id, **args)
         except IntegrityError:
             return make_error_response(status=HTTPStatus.CONFLICT, msg="Can't update user")
+
+        return Response(
+            response=json.dumps({}),
+            status=HTTPStatus.NO_CONTENT,
+            content_type="application/json",
+        )
+
+
+@user.route("/<user_id>/role")
+class UserRoleCreate(Resource):
+    @log_activity()
+    @jwt_required()
+    @user.response(code=int(HTTPStatus.NO_CONTENT), description=" ")
+    @user.response(code=int(HTTPStatus.BAD_REQUEST), description=" ")
+    @user.response(code=int(HTTPStatus.CONFLICT), description=" ")
+    def post(self, user_id: str):
+        user_roles_service = get_user_roles_service()
+
+        try:
+            user_roles_service.add_role_to_user(
+                user_id,
+                **user_roles_parser.parse_args()
+            )
+        except IntegrityError:
+            return make_error_response(status=HTTPStatus.CONFLICT, msg="Can't add role to user")
+
+        return Response(
+            response=json.dumps({}),
+            status=HTTPStatus.NO_CONTENT,
+            content_type="application/json",
+        )
+
+
+@user.route("/<user_id>/role/<role_id>")
+class UserRoleDelete(Resource):
+    @log_activity()
+    @jwt_required()
+    @user.response(code=int(HTTPStatus.NO_CONTENT), description=" ")
+    def delete(self, user_id: str, role_id: str):
+        user_roles_service = get_user_roles_service()
+
+        try:
+            user_roles_service.delete_role_from_user(
+                user_id=user_id, role_id=role_id,
+            )
+        except IntegrityError:
+            return make_error_response(status=HTTPStatus.CONFLICT, msg="Can't add role to user")
 
         return Response(
             response=json.dumps({}),

@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 from flask import jsonify, request, Response
@@ -69,7 +70,11 @@ class RoleId(Resource):
             params=role_parser.parse_args(),
         )
 
-        return Response(status=HTTPStatus.NO_CONTENT)
+        return Response(
+            response=json.dumps({}),
+            status=HTTPStatus.NO_CONTENT,
+            content_type="application/json"
+        )
 
     @jwt_required()
     @log_activity()
@@ -88,4 +93,8 @@ class RoleId(Resource):
         role_service = get_role_service()
         role_service.delete(item_id=role_id)
 
-        return Response(status=HTTPStatus.NO_CONTENT)
+        return Response(
+            response=json.dumps({}),
+            status=HTTPStatus.NO_CONTENT,
+            content_type="application/json"
+        )

@@ -1,6 +1,5 @@
 import json
 import sys
-import uuid
 from dataclasses import dataclass, astuple
 
 import psycopg2
@@ -14,25 +13,16 @@ from pydantic import validate_arguments
 sys.path.append("..")
 
 from settings import settings
-import os
 
 PG_PAGE_SIZE = 500
 
 
 class PostgresDSL(BaseSettings):
-    dbname: str = 'auth_db'
-    user: str = "app"
-    password: str = '123qwe'
-    host: str = os.environ.get('DB_HOST', 'postgres')
-    port: int = os.environ.get('DB_PORT', 5432)
-
-
-# class PostgresDSL(BaseSettings):
-#     dbname: str = settings.POSTGRES_DB_NAME
-#     user: str = settings.POSTGRES_USER
-#     password: str = settings.POSTGRES_PASSWORD
-#     host: str = settings.POSTGRES_HOST
-#     port: int = settings.POSTGRES_PORT
+    dbname: str = settings.POSTGRES_DB_NAME
+    user: str = settings.POSTGRES_USER
+    password: str = settings.POSTGRES_PASSWORD
+    host: str = settings.POSTGRES_HOST
+    port: int = settings.POSTGRES_PORT
 
 
 # Наследуемый класс для базовых функций
@@ -50,6 +40,14 @@ class User(BaseDataclass):
     login: str
     email: str
     password: str
+
+
+@validate_arguments
+@dataclass
+class Role(BaseDataclass):
+    id: str
+    name: str
+    level: int
 
 
 @dataclass
@@ -71,6 +69,23 @@ class PostgresSaver:
                 cur,
                 sql_query,
                 unpacked_users,
+                page_size=self.page_size
+            )
+        self.pgconn.commit()
+
+    def save_roles(self, roles: list[Role]):
+        with self.pgconn.cursor() as cur:
+            sql_query = """
+            INSERT INTO content.roles
+            (id, name, level)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (id) DO NOTHING;
+            """
+            unpacked_roles = tuple(tuple(i) for i in roles)
+            execute_batch(
+                cur,
+                sql_query,
+                unpacked_roles,
                 page_size=self.page_size
             )
         self.pgconn.commit()
@@ -122,8 +137,13 @@ def load_data(postgres_connection: _connection):
             print("Сохранил данные в базу данных")
             postgres_saver.save_users(users)
         elif table_name == "roles":
+            with open(path, "rt") as file:
+                roles: list[Role] = [Role(**role) for role in json.loads(file.read())["items"]]
+            print("Сохранил данные в базу данных")
+            postgres_saver.save_roles(roles)
+        elif table_name == "user_roles":
             # todo
-            raise ValueError("Incorrect table name")
+            pass
         else:
             raise ValueError("Incorrect table name")
 

@@ -31,7 +31,11 @@ class User(sqlalchemy.Model, IdMixin, SerializerMixin):
     password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     email = sqlalchemy.Column(sqlalchemy.String, nullable=False)
 
-    roles = sqlalchemy.relation("Role", secondary=user_roles, back_populates="users")
+    roles = sqlalchemy.relation(
+        "Role",
+        secondary=user_roles,
+        back_populates="users"
+    )
 
     logs = sqlalchemy.relation("Log")
 
@@ -73,5 +77,8 @@ class Role(sqlalchemy.Model, IdMixin, SerializerMixin):
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     level = sqlalchemy.Column(sqlalchemy.INTEGER, nullable=False)
 
-    users = sqlalchemy.relation("User", secondary=user_roles, back_populates="roles")
-
+    users = sqlalchemy.relation(
+        "User",
+        secondary=user_roles,
+        back_populates="roles"
+    )
