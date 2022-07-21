@@ -3,8 +3,9 @@ import aioredis
 from http import HTTPStatus
 from psycopg2.extensions import connection as _connection
 
+pytestmark = pytest.mark.asyncio
 
-@pytest.mark.asyncio
+
 @pytest.mark.parametrize(
     "user_id, json, http_method",
     (
@@ -45,7 +46,6 @@ async def test_update_user_password(
     await delete_tables()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "user_id, json, http_method",
     (
@@ -85,7 +85,6 @@ async def test_update_user_login(
     await delete_tables()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "user_id, json, http_method",
     (
@@ -125,7 +124,6 @@ async def test_update_user_email(
     await delete_tables()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "user_id, json, http_method",
     (
@@ -166,7 +164,6 @@ async def test_update_user_login_and_email(
     await delete_tables()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "user_id, json, http_method",
     (

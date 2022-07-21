@@ -6,8 +6,6 @@ services:
       context: ./postgres
     env_file:
       - ./postgres/.env
-    ports:
-      - 5434:5432
     volumes:
       - auth_db:/var/lib/postgresql/data
     restart: always

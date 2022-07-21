@@ -12,6 +12,7 @@ from schemas.v1 import schemas
 from services.user import get_user_service
 from services.user_roles import get_user_roles_service
 from utils.utils import log_activity, make_error_response
+from api.responses import responses
 
 user = Namespace('User', path=f"{base_url}/users", description='')
 
@@ -63,7 +64,10 @@ class Users(Resource):
         try:
             db_user = user_service.create_user(params=user_post_parser.parse_args())
         except IntegrityError:
-            return make_error_response(status=HTTPStatus.BAD_REQUEST, msg="User already exist")
+            return make_error_response(
+                status=HTTPStatus.BAD_REQUEST,
+                msg=responses.USER_ALREADY_EXIST,
+            )
 
         return Response(
             response=schemas.User(**db_user.dict()).json(),
@@ -101,13 +105,19 @@ class UserId(Resource):
         user_db = user_service.get(item_id=user_id)
         # Передаваемый пароль не совпал с паролем в базе данных
         if not user_db.check_password(args.pop("password")):
-            return make_error_response(status=HTTPStatus.BAD_REQUEST, msg="Incorrect password")
+            return make_error_response(
+                status=HTTPStatus.BAD_REQUEST,
+                msg=responses.INCORRECT_PASSWORD,
+            )
 
         new_password = args.pop("new_password")
         new_password_repeat = args.pop("new_password_repeat")
         if new_password or new_password_repeat:
             if new_password != new_password_repeat:
-                return make_error_response(status=HTTPStatus.BAD_REQUEST, msg="Passwords don't match")
+                return make_error_response(
+                    status=HTTPStatus.BAD_REQUEST,
+                    msg=responses.PASSWORDS_DID_NOT_MATCH,
+                )
 
             user_service.update_password(user_id=user_id, password=new_password)
 
@@ -117,7 +127,10 @@ class UserId(Resource):
             if args:
                 user_service.update(item_id=user_id, **args)
         except IntegrityError:
-            return make_error_response(status=HTTPStatus.CONFLICT, msg="Can't update user")
+            return make_error_response(
+                status=HTTPStatus.CONFLICT,
+                msg=responses.CANT_UPDATE_USER,
+            )
 
         return Response(
             response=json.dumps({}),
@@ -142,7 +155,10 @@ class UserRoleCreate(Resource):
                 **user_roles_parser.parse_args()
             )
         except IntegrityError:
-            return make_error_response(status=HTTPStatus.CONFLICT, msg="Can't add role to user")
+            return make_error_response(
+                status=HTTPStatus.CONFLICT,
+                msg=responses.CANT_ADD_ROLE_TO_USER,
+            )
 
         return Response(
             response=json.dumps({}),
@@ -164,7 +180,10 @@ class UserRoleDelete(Resource):
                 user_id=user_id, role_id=role_id,
             )
         except IntegrityError:
-            return make_error_response(status=HTTPStatus.CONFLICT, msg="Can't add role to user")
+            return make_error_response(
+                status=HTTPStatus.CONFLICT,
+                msg=responses.CANT_DELETE_ROLE_FROM_USER,
+            )
 
         return Response(
             response=json.dumps({}),

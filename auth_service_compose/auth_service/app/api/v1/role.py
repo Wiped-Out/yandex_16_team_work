@@ -12,6 +12,7 @@ from schemas.v1 import schemas
 from services.role import get_role_service
 from utils.utils import log_activity
 from schemas.v1.schemas import Role
+from api.responses import responses
 
 role = Namespace('Role', path=f"{base_url}/roles", description='')
 
@@ -45,7 +46,7 @@ class Roles(Resource):
 
     @jwt_required()
     @log_activity()
-    @role.response(code=int(HTTPStatus.CREATED), description="Role created", model=_Role)
+    @role.response(code=int(HTTPStatus.CREATED), description=responses.ROLE_CREATED, model=_Role)
     @role.expect(role_parser)
     def post(self) -> Response:
         role_service = get_role_service()
@@ -63,7 +64,7 @@ class Roles(Resource):
 class RoleId(Resource):
     @jwt_required()
     @log_activity()
-    @role.response(code=int(HTTPStatus.NO_CONTENT), description="Role updated")
+    @role.response(code=int(HTTPStatus.NO_CONTENT), description=responses.ROLE_CREATED)
     @role.expect(role_parser)
     def put(self, role_id: str) -> Response:
         role_service = get_role_service()
@@ -90,7 +91,7 @@ class RoleId(Resource):
 
     @jwt_required()
     @log_activity()
-    @role.response(code=int(HTTPStatus.NO_CONTENT), description="Role deleted")
+    @role.response(code=int(HTTPStatus.NO_CONTENT), description=responses.ROLE_DELETED)
     def delete(self, role_id: str) -> Response:
         role_service = get_role_service()
         role_service.delete(item_id=role_id)
