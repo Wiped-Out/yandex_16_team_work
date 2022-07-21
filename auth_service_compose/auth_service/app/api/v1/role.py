@@ -24,6 +24,11 @@ _Role = role.model("Role",
                    }
                    )
 
+NestedRole = role.model("NestedRole",
+                        {
+                            "items": fields.Nested(_Role, as_list=True)
+                        })
+
 role_parser = reqparse.RequestParser()
 role_parser.add_argument('level', type=int, location='json')
 role_parser.add_argument('name', type=str, location='json')
@@ -34,7 +39,7 @@ role_parser.add_argument('name', type=str, location='json')
 class Roles(Resource):
     @jwt_required()
     @log_activity()
-    @role.response(code=int(HTTPStatus.OK), description=" ", model=[_Role])
+    @role.response(code=int(HTTPStatus.OK), description=" ", model=NestedRole)
     def get(self) -> Response:
         role_service = get_role_service()
         cache_key = request.base_url
