@@ -2,13 +2,12 @@ import flask
 import redis
 from flask import Flask, render_template
 from flask_jwt_extended import JWTManager, jwt_required, current_user
-from flask_migrate import Migrate
 from flask_restx import Api
 from sqlalchemy import exc
 
 from core.settings import settings
 from db import cache_db, db
-from extensions import jwt, flask_restx
+from extensions import jwt, flask_restx, flask_migrate
 from services.base_cache import BaseRedisStorage
 from services.base_main import BaseSQLAlchemyStorage
 from utils.utils import register_blueprints, register_namespaces, log_activity
@@ -37,6 +36,10 @@ def init_api(app: Flask):
     register_namespaces(flask_restx.api)
 
 
+def init_migration(app: Flask, sqlalchemy):
+    flask_migrate.migrate.init_app(app, sqlalchemy)
+
+
 def init_app(name: str) -> Flask:
     app = Flask(name)
 
@@ -52,8 +55,7 @@ def init_app(name: str) -> Flask:
     init_db()
     db.init_sqlalchemy(app=app, storage=db.db)
     init_cache_db()
-
-    migrate = Migrate(app, db.sqlalchemy)
+    init_migration(app, sqlalchemy=db.sqlalchemy)
 
     with app.app_context():
         init_jwt(app)

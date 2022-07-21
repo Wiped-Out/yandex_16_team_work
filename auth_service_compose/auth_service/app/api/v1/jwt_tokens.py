@@ -7,12 +7,11 @@ from flask_restx import fields
 
 from api.v1.__base__ import base_url
 from extensions.jwt import jwt_parser
-from schemas.v1 import schemas
+from schemas.v1 import schemas, responses
 from services.jwt import get_jwt_service
 from services.refresh_token import get_refresh_token_service
 from services.user import get_user_service
 from utils.utils import log_activity, save_activity, make_error_response
-from api.responses import responses
 
 jwt_tokens = Namespace('JWT', path=f"{base_url}/", description='')
 

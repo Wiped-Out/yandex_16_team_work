@@ -17,14 +17,27 @@ class CacheRole(BaseModel):
 class RoleService(BaseCacheStorage, BaseMainStorage):
     cache_model = CacheRole
 
-    def get_roles(self, cache_key: str) -> list[cache_model]:
+    def get_roles(
+            self,
+            cache_key: str,
+            page: int,
+            per_page: int,
+    ):
+        query = self.get_query()
+
         roles = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
         if not roles:
-            db_roles = self.get_all()
-            roles = [self.cache_model(**role.to_dict()) for role in db_roles]
+            paginated_roles = self.paginate(query=query, page=page, per_page=per_page)
+            roles = [self.cache_model(**role.to_dict()) for role in paginated_roles.items]
             if roles:
                 self.put_items_to_cache(cache_key=cache_key, items=roles)
-        return roles
+
+        return {
+            "items": roles,
+            "total": self.count(query),
+            "page": page,
+            "per_page": per_page
+        }
 
     def get_role(self, role_id: str, cache_key: str) -> cache_model:
         role = self.get_one_item_from_cache(cache_key=cache_key, model=self.cache_model)

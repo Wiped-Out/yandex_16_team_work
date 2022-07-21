@@ -8,11 +8,11 @@ from sqlalchemy.exc import IntegrityError
 
 from api.v1.__base__ import base_url
 from extensions.jwt import jwt_parser
-from schemas.v1 import schemas
+from schemas.v1 import schemas, responses
 from services.user import get_user_service
 from services.user_roles import get_user_roles_service
 from utils.utils import log_activity, make_error_response
-from api.responses import responses
+from extensions.pagination import pagination_parser, PaginatedResponse
 
 user = Namespace('User', path=f"{base_url}/users", description='')
 
@@ -51,14 +51,25 @@ class Users(Resource):
     @jwt_required()
     @log_activity()
     @user.response(code=int(HTTPStatus.OK), description=" ", model=NestedUser)
+    @user.expect(pagination_parser)
     def get(self) -> Response:
         user_service = get_user_service()
         cache_key = request.base_url
 
-        db_users = user_service.get_users(cache_key=cache_key)
-        return jsonify(
-            {"items": [schemas.User(**db_user.dict()).dict() for db_user in db_users]}
+        params = pagination_parser.parse_args()
+        page = params["page"]
+        per_page = params["per_page"]
+
+        answer = user_service.get_users(
+            cache_key=cache_key + f"?{page=}&{per_page=}",
+            page=page,
+            per_page=per_page
         )
+
+        ans = PaginatedResponse(**answer)
+        ans.prepare_items_for_answer(model=schemas.User)
+
+        return jsonify(ans.dict())
 
     @log_activity()
     @jwt_required()

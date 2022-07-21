@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from functools import lru_cache
 from typing import Optional
@@ -11,7 +10,6 @@ from db.db import get_db
 from models import models
 from services.base_cache import BaseCacheStorage, CacheStorage
 from services.base_main import BaseMainStorage, MainStorage
-from services.user import get_user_service
 
 
 class CacheLog(BaseModel):
@@ -28,20 +26,26 @@ class LogsService(BaseCacheStorage, BaseMainStorage):
         log = self.create(**params)
         return self.cache_model(**log.to_dict())
 
-    def get_logs(self, cache_key: str, user_id: str, pattern: Optional[str] = None) -> cache_model:
+    def get_logs(
+            self,
+            cache_key: str,
+            user_id: str,
+            page: int,
+            per_page: int,
+            pattern: Optional[str] = None,
+    ):
+        query = self.filter_by(user_id=user_id)
+        query = self.like(query, pattern=pattern, field="action")
+
         history = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
         if not history:
-            user_service = get_user_service()
-            user_db = user_service.get(item_id=user_id)
+            paginated_answer = self.paginate(query=query, page=page, per_page=per_page)
 
-            history = self._get_logs_by_pattern(user_db=user_db, pattern=pattern)
-            history = [self.cache_model(**h.to_dict()) for h in history]
+            history = [self.cache_model(**h.to_dict()) for h in paginated_answer.items]
             if history:
                 self.put_items_to_cache(cache_key=cache_key, items=history)
-        return history
 
-    def _get_logs_by_pattern(self, user_db, pattern: Optional[str] = None):
-        return [log for log in user_db.logs if re.search(pattern, log.action)] if pattern else user_db.logs
+        return {"items": history, "total": self.count(query), "page": page, "per_page": per_page}
 
 
 @lru_cache()

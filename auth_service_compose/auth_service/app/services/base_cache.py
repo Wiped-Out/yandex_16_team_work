@@ -37,7 +37,7 @@ class BaseCacheStorage:
         super().__init__(**kwargs)
 
         self.cache = cache
-        self.CACHE_EXPIRE_IN_SECONDS = 60 * 5
+        self.CACHE_EXPIRE_IN_SECONDS = 3
 
     def get_one_item_from_cache(self, cache_key: str, model):
         data = self.cache.get(key=cache_key)

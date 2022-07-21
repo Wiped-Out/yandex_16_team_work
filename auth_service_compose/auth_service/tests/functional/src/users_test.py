@@ -43,7 +43,7 @@ async def test_get_users(
 
     with open(response_json_path) as expected_response:
         expected = json.load(expected_response)
-        assert response.body == expected
+        assert response.body["items"] == expected["items"]
 
     await delete_tables()
 

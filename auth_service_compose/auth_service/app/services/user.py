@@ -27,14 +27,26 @@ class UserService(BaseCacheStorage, BaseMainStorage):
         self.db.commit()
         return self.cache_model(**user.to_dict())
 
-    def get_users(self, cache_key: str) -> list[cache_model]:
+    def get_users(
+            self,
+            cache_key: str,
+            page: int,
+            per_page: int,
+    ):
+        query = self.get_query()
+
         users = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
         if not users:
-            db_users = self.get_all()
-            users = [self.cache_model(**user.to_dict()) for user in db_users]
+            paginated_users = self.paginate(query=query, page=page, per_page=per_page)
+            users = [self.cache_model(**user.to_dict()) for user in paginated_users.items]
             if users:
                 self.put_items_to_cache(cache_key=cache_key, items=users)
-        return users
+        return {
+            "items": users,
+            "total": self.count(query),
+            "page": page,
+            "per_page": per_page,
+        }
 
     def get_user(self, user_id: str, cache_key: str) -> cache_model:
         user = self.get_one_item_from_cache(

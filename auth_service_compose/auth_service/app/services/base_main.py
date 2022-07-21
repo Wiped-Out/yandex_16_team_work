@@ -11,7 +11,7 @@ class AdditionalActions(str, Enum):
     _first = "_first"
 
 
-def sqalchemy_additional_actions():
+def sqlalchemy_additional_actions():
     def func_wrapper(func):
         @wraps(func)
         def inner(*args, **kwargs):
@@ -19,12 +19,16 @@ def sqalchemy_additional_actions():
                        for item in AdditionalActions}
             result: Query = func(*args, **kwargs)
             model = kwargs["model"]
+
+            # Сортировка
             if value := actions[AdditionalActions._sort_by]:
                 if value.startswith("-"):
                     result.order_by(getattr(model, value).desc())
                 else:
                     result.order_by(getattr(model, value))
-            if value := actions[AdditionalActions._first]:
+
+            # Если необходимо получить один элемент
+            if actions[AdditionalActions._first]:
                 result = result.first()
             return result
 
@@ -70,6 +74,22 @@ class MainStorage(ABC):
     def filter(self, *args, **kwargs):
         pass
 
+    @abstractmethod
+    def paginate(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def count(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def like(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def get_query(self, *args, **kwargs):
+        pass
+
 
 class BaseSQLAlchemyStorage(MainStorage):
     def __init__(self, db: SQLAlchemy):
@@ -90,13 +110,13 @@ class BaseSQLAlchemyStorage(MainStorage):
         model.query.filter_by(id=item_id).update(kwargs)
         self.commit()
 
-    @sqalchemy_additional_actions()
+    @sqlalchemy_additional_actions()
     def filter_by(self, model, **kwargs):
         return model.query.filter_by(**kwargs)
 
-    @sqalchemy_additional_actions()
+    @sqlalchemy_additional_actions()
     def filter(self, model, *args, **kwargs):
-        return model.query.filter(*args)
+        return model.query.filter(*args, **kwargs)
 
     def commit(self, **kwargs):
         return self.db.session.commit(**kwargs)
@@ -111,9 +131,22 @@ class BaseSQLAlchemyStorage(MainStorage):
     def get_all(self, model, **kwargs):
         return model.query.all()
 
+    def paginate(self, query: Query, page: int, per_page: int, **kwargs):
+        return query.paginate(page, per_page, error_out=False)
+
+    def count(self, query: Query, **kwargs):
+        return query.count()
+
+    def like(self, model, query: Query, field, pattern: str, **kwargs):
+        model_field = getattr(model, field)
+        return query.filter(model_field.like(pattern))
+
+    def get_query(self, model, *args, **kwargs):
+        return model.query
+
 
 class BaseMainStorage:
-    def __init__(self, db: MainStorage, db_model, **kwargs):
+    def __init__(self, db: BaseSQLAlchemyStorage, db_model, **kwargs):
         super().__init__(**kwargs)
 
         self.db = db
@@ -129,7 +162,7 @@ class BaseMainStorage:
         return self.db.filter_by(model=self.model, _first=_first, **kwargs)
 
     def filter(self, _first=None, _sort_by=None, *args, **kwargs):
-        return self.db.filter(model=self.model, _first=_first, *args)
+        return self.db.filter(model=self.model, _first=_first, *args, **kwargs)
 
     def create(self, **kwargs):
         return self.db.create(model=self.model, **kwargs)
@@ -139,3 +172,21 @@ class BaseMainStorage:
 
     def get_all(self, **kwargs):
         return self.db.get_all(model=self.model, **kwargs)
+
+    def paginate(self, query, page: int, per_page: int, **kwargs):
+        return self.db.paginate(query=query, page=page, per_page=per_page, **kwargs)
+
+    def count(self, query, **kwargs) -> int:
+        return self.db.count(query, **kwargs)
+
+    def like(self, query, field, pattern: str, **kwargs):
+        return self.db.like(
+            query=query,
+            model=self.model,
+            field=field,
+            pattern=pattern,
+            **kwargs,
+        )
+
+    def get_query(self, **kwargs):
+        return self.db.get_query(model=self.model, **kwargs)

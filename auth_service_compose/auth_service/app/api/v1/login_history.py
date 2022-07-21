@@ -7,9 +7,11 @@ from flask_restx import fields
 
 from api.v1.__base__ import base_url
 from extensions.jwt import jwt_parser
-from schemas.v1 import schemas
+from schemas.v1 import schemas, responses
 from services.logs_service import get_logs_service
-from utils.utils import log_activity
+from utils.utils import log_activity, make_error_response
+from sqlalchemy.exc import IntegrityError
+from extensions.pagination import pagination_parser, PaginatedResponse
 
 login_history = Namespace('Login history', path=f"{base_url}/users", description='')
 
@@ -21,10 +23,14 @@ _LoginHistory = login_history.model("LoginHistory",
                                     }
                                     )
 
-NestedLoginHistory = login_history.model("NestedLoginHistory",
-                                         {
-                                             "items": fields.Nested(_LoginHistory, as_list=True)
-                                         })
+PaginatedLoginHistory = login_history.model("PaginatedLoginHistory",
+                                            {
+                                                "items": fields.Nested(_LoginHistory, as_list=True),
+                                                "total": fields.Integer,
+                                                "page": fields.Integer,
+                                                "per_page": fields.Integer
+                                            }
+                                            )
 
 
 @login_history.route('/<user_id>/login_history')
@@ -32,15 +38,29 @@ NestedLoginHistory = login_history.model("NestedLoginHistory",
 class LoginHistory(Resource):
     @log_activity()
     @jwt_required()
-    @login_history.response(code=int(HTTPStatus.OK), description=" ", model=NestedLoginHistory)
+    @login_history.response(code=int(HTTPStatus.OK), description=" ", model=PaginatedLoginHistory)
+    @login_history.expect(pagination_parser)
     def get(self, user_id: str):
         logs_service = get_logs_service()
 
-        logs = logs_service.get_logs(
-            cache_key=request.base_url,
-            user_id=user_id,
-            pattern="POST:.*login.*"
-        )
-        return jsonify(
-            {"items": [schemas.LoginHistory(**log.dict()).dict() for log in logs]}
-        )
+        params = pagination_parser.parse_args()
+        page = params["page"]
+        per_page = params["per_page"]
+        try:
+            answer = logs_service.get_logs(
+                cache_key=request.base_url + f"?{page=}&{per_page=}",
+                user_id=user_id,
+                pattern="POST%login%",
+                page=page,
+                per_page=per_page,
+            )
+        except IntegrityError:
+            return make_error_response(
+                msg=responses.WRONG_PARAMS,
+                status=HTTPStatus.BAD_REQUEST,
+            )
+
+        ans = PaginatedResponse(**answer)
+        ans.prepare_items_for_answer(model=schemas.LoginHistory)
+
+        return jsonify(ans.dict())

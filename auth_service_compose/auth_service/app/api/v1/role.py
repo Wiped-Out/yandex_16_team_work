@@ -8,11 +8,11 @@ from flask_restx import Resource, reqparse, fields
 from api.v1.__base__ import base_url
 from extensions.flask_restx import Namespace
 from extensions.jwt import jwt_parser
-from schemas.v1 import schemas
 from services.role import get_role_service
 from utils.utils import log_activity
 from schemas.v1.schemas import Role
-from api.responses import responses
+from schemas.v1 import responses
+from extensions.pagination import PaginatedResponse, pagination_parser
 
 role = Namespace('Role', path=f"{base_url}/roles", description='')
 
@@ -40,14 +40,25 @@ class Roles(Resource):
     @jwt_required()
     @log_activity()
     @role.response(code=int(HTTPStatus.OK), description=" ", model=NestedRole)
+    @role.expect(pagination_parser)
     def get(self) -> Response:
         role_service = get_role_service()
         cache_key = request.base_url
 
-        db_roles = role_service.get_roles(cache_key=cache_key)
-        return jsonify(
-            {"items": [Role(**db_role.dict()).dict() for db_role in db_roles]}
+        params = pagination_parser.parse_args()
+        page = params["page"]
+        per_page = params["per_page"]
+
+        answer = role_service.get_roles(
+            cache_key=cache_key + f"?{page=}&{per_page=}",
+            page=page,
+            per_page=per_page
         )
+
+        ans = PaginatedResponse(**answer)
+        ans.prepare_items_for_answer(model=Role)
+
+        return jsonify(ans.dict())
 
     @jwt_required()
     @log_activity()
@@ -58,7 +69,7 @@ class Roles(Resource):
         db_role = role_service.create_role(params=role_parser.parse_args())
 
         return Response(
-            response=schemas.Role(**db_role.dict()).json(),
+            response=Role(**db_role.dict()).json(),
             status=HTTPStatus.CREATED,
             content_type="application/json"
         )
@@ -92,7 +103,7 @@ class RoleId(Resource):
         cache_key = request.base_url
 
         db_role = role_service.get_role(role_id=role_id, cache_key=cache_key)
-        return jsonify(schemas.Role(**db_role.dict()).dict())
+        return jsonify(Role(**db_role.dict()).dict())
 
     @jwt_required()
     @log_activity()

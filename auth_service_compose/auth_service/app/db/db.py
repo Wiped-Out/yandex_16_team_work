@@ -18,9 +18,9 @@ def init_sqlalchemy(app: Flask, storage: BaseSQLAlchemyStorage):
 
     storage.db.init_app(app)
 
-    with app.app_context():
-        storage.db.create_all()
-        storage.db.session.commit()
+    # with app.app_context():
+    # storage.db.create_all()
+    # storage.db.session.commit()
 
 
 def get_db() -> MainStorage:
