@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import flask
 import redis
 from flask import Flask, render_template, request
@@ -8,9 +10,11 @@ from sqlalchemy import exc
 from core.settings import settings
 from db import cache_db, db
 from extensions import jwt, flask_restx, flask_migrate, tracer
+from extensions.rate_limiter import rate_limit
+from schemas.base.responses import REQUEST_ID_REQUIRED
 from services.base_cache import BaseRedisStorage
 from services.base_main import BaseSQLAlchemyStorage
-from utils.utils import register_blueprints, register_namespaces, log_activity
+from utils.utils import register_blueprints, register_namespaces, log_activity, make_error_response
 
 
 def init_cache_db():
@@ -79,7 +83,10 @@ app = init_app(__name__)
 def before_request_callback():
     request_id = request.headers.get('X-Request-Id')
     if not request_id:
-        raise RuntimeError('request id is required')
+        return make_error_response(msg=REQUEST_ID_REQUIRED,
+                                   status=HTTPStatus.BAD_REQUEST)
+    if result := rate_limit():
+        return result
 
 
 @app.errorhandler(exc.SQLAlchemyError)
