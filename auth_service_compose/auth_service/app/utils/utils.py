@@ -10,9 +10,7 @@ from os.path import join
 from flask import Flask, current_app, request, Response, json
 from flask_jwt_extended import current_user, get_csrf_token, get_jwt_request_location
 from flask_restx import Api
-from opentelemetry import trace
 
-from extensions import tracer
 from models.models import User
 from services.logs_service import get_logs_service
 
@@ -114,4 +112,3 @@ def make_error_response(msg: str, status: int):
         status=status,
         content_type="application/json"
     )
-
