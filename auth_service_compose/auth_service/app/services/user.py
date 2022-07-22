@@ -7,6 +7,8 @@ from db.cache_db import get_cache_db
 from db.db import get_db
 from functools import lru_cache
 
+from extensions.tracer import _trace
+
 
 class CacheUser(BaseModel):
     id: UUID4
@@ -17,6 +19,7 @@ class CacheUser(BaseModel):
 class UserService(BaseCacheStorage, BaseMainStorage):
     cache_model = CacheUser
 
+    @_trace()
     def create_user(self, params: dict) -> cache_model:
         user = self.create(
             need_commit=False,
@@ -27,6 +30,7 @@ class UserService(BaseCacheStorage, BaseMainStorage):
         self.db.commit()
         return self.cache_model(**user.to_dict())
 
+    @_trace()
     def get_users(
             self,
             cache_key: str,
@@ -48,6 +52,7 @@ class UserService(BaseCacheStorage, BaseMainStorage):
             "per_page": per_page,
         }
 
+    @_trace()
     def get_user(self, user_id: str, cache_key: str) -> cache_model:
         user = self.get_one_item_from_cache(
             cache_key=cache_key,
@@ -60,6 +65,7 @@ class UserService(BaseCacheStorage, BaseMainStorage):
                 self.put_one_item_to_cache(cache_key=cache_key, item=user)
         return user
 
+    @_trace()
     def update_password(self, user_id: str, password: str):
         user_db = self.get(item_id=user_id)
         user_db.set_password(password)

@@ -4,12 +4,14 @@ from models import models
 from functools import lru_cache
 from db.cache_db import get_cache_db
 from db.db import get_db
+from extensions.tracer import _trace
 
 
 class UserRolesService(BaseCacheStorage, BaseMainStorage):
     user_model = models.User
     role_model = models.Role
 
+    @_trace()
     def add_role_to_user(self, user_id: str, role_id: str):
         user = self.db.get(item_id=user_id, model=self.user_model)
         role = self.db.get(item_id=role_id, model=self.role_model)
@@ -19,6 +21,7 @@ class UserRolesService(BaseCacheStorage, BaseMainStorage):
         self.db.add(role)
         self.db.commit()
 
+    @_trace()
     def delete_role_from_user(self, user_id: str, role_id: str):
         user = self.db.get(item_id=user_id, model=self.user_model)
         role = self.db.get(item_id=role_id, model=self.role_model)

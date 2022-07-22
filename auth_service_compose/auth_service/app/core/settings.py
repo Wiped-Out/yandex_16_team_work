@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     POSTGRES_DB = os.getenv('POSTGRES_DB', 'db')
     POSTGRES_USER = os.getenv('POSTGRES_USER', 'user')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'password')
+    JAEGER_HOST = os.getenv("JAEGER_HOST")
+    JAEGER_PORT = int(os.getenv("JAEGER_PORT"))
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     API_URL = os.getenv('API_URL', '/api')

@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 
 from redis import Redis
 
+from extensions.tracer import _trace
+
 
 class CacheStorage(ABC):
     @abstractmethod
@@ -37,8 +39,9 @@ class BaseCacheStorage:
         super().__init__(**kwargs)
 
         self.cache = cache
-        self.CACHE_EXPIRE_IN_SECONDS = 3
+        self.CACHE_EXPIRE_IN_SECONDS = 10
 
+    @_trace()
     def get_one_item_from_cache(self, cache_key: str, model):
         data = self.cache.get(key=cache_key)
 
@@ -47,6 +50,7 @@ class BaseCacheStorage:
 
         return model.parse_raw(data)
 
+    @_trace()
     def put_one_item_to_cache(self, cache_key: str, item, expire=None):
         self.cache.set(
             key=cache_key,
@@ -54,6 +58,7 @@ class BaseCacheStorage:
             expire=self.CACHE_EXPIRE_IN_SECONDS if expire is None else expire,
         )
 
+    @_trace()
     def get_items_from_cache(self, cache_key: str, model):
         data = self.cache.get(key=cache_key)
         if not data:
@@ -61,6 +66,7 @@ class BaseCacheStorage:
 
         return [model.parse_raw(item) for item in json.loads(data)]
 
+    @_trace()
     def put_items_to_cache(self, cache_key: str, items: list, expire=None):
         self.cache.set(
             key=cache_key,

@@ -1,5 +1,6 @@
 from flask import render_template, redirect, Blueprint, make_response
 
+from extensions.tracer import _trace
 from forms.register_form import RegisterForm
 from services.user import get_user_service
 
@@ -7,6 +8,7 @@ register_view = Blueprint('register', __name__, template_folder='templates')
 
 
 @register_view.route('/register', methods=['GET', 'POST'])
+@_trace()
 def reqister():
     form = RegisterForm()
     if form.validate_on_submit():
