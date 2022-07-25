@@ -12,6 +12,7 @@ from models import models
 from services.base_cache import BaseCacheStorage, CacheStorage
 from services.base_main import BaseMainStorage, MainStorage
 from services.refresh_token import get_refresh_token_service
+from extensions.tracer import _trace
 
 
 class Token(BaseModel):
@@ -22,12 +23,14 @@ class JWTService(BaseCacheStorage, BaseMainStorage):
     cache_model = Token
     db_model = models.RefreshToken
 
+    @_trace()
     def create_access_token(self, user,
                             additional_claims: Optional[dict] = None) -> str:
         return create_access_token(identity=user,
                                    additional_claims=additional_claims,
                                    fresh=True)
 
+    @_trace()
     def create_refresh_token(self, user) -> str:
         token = create_refresh_token(identity=user)
         refresh_token_service = get_refresh_token_service()
@@ -40,12 +43,14 @@ class JWTService(BaseCacheStorage, BaseMainStorage):
         )
         return token
 
+    @_trace()
     def block_token(self, cache_key: str, expire: timedelta):
 
         self.put_one_item_to_cache(cache_key=cache_key,
                                    item=self.cache_model(jti=cache_key),
                                    expire=expire)
 
+    @_trace()
     def get_blocked_token(self, cache_key: str):
         return self.get_one_item_from_cache(cache_key=cache_key,
                                             model=self.cache_model)

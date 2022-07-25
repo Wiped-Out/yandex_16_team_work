@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from pydantic.types import UUID4
 from functools import lru_cache
 
+from extensions.tracer import _trace
+
 
 class CacheRole(BaseModel):
     id: UUID4
@@ -17,6 +19,7 @@ class CacheRole(BaseModel):
 class RoleService(BaseCacheStorage, BaseMainStorage):
     cache_model = CacheRole
 
+    @_trace()
     def get_roles(
             self,
             cache_key: str,
@@ -39,6 +42,7 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
             "per_page": per_page
         }
 
+    @_trace()
     def get_role(self, role_id: str, cache_key: str) -> cache_model:
         role = self.get_one_item_from_cache(cache_key=cache_key, model=self.cache_model)
         if not role:
@@ -48,9 +52,11 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
                 self.put_one_item_to_cache(cache_key=cache_key, item=role)
         return role
 
+    @_trace()
     def update_role(self, role_id: str, params: dict):
         self.update(item_id=role_id, **params)
 
+    @_trace()
     def create_role(self, params: dict) -> cache_model:
         role = self.create(**params)
         return self.cache_model(**role.to_dict())
