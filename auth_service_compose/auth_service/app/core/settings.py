@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     JAEGER_PORT = int(os.getenv("JAEGER_PORT"))
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    REQUEST_LIMIT_PER_MINUTE = int(os.getenv("REQUEST_LIMIT_PER_MINUTE"))
     API_URL = os.getenv('API_URL', '/api')
 
     class Config:

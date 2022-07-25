@@ -2,8 +2,23 @@ import json
 from abc import ABC, abstractmethod
 
 from redis import Redis
+from redis.client import Pipeline
 
 from extensions.tracer import _trace
+
+
+class CachePipeline(ABC):
+    @abstractmethod
+    def incr(self, key: str, amount: int, **kwargs):
+        pass
+
+    @abstractmethod
+    def expire(self, key: str, expire: int, **kwargs):
+        pass
+
+    @abstractmethod
+    def execute(self, **kwargs):
+        pass
 
 
 class CacheStorage(ABC):
@@ -19,6 +34,24 @@ class CacheStorage(ABC):
     def close(self):
         pass
 
+    @abstractmethod
+    def pipeline(self):
+        pass
+
+
+class BaseRedisPipeline(CachePipeline):
+    def __init__(self, pipeline: Pipeline):
+        self.pipeline = pipeline
+
+    def incr(self, key: str, amount: int, **kwargs):
+        self.pipeline.incr(key, amount)
+
+    def expire(self, key: str, expire: int, **kwargs):
+        self.pipeline.expire(key, expire)
+
+    def execute(self):
+        return self.pipeline.execute()
+
 
 class BaseRedisStorage(CacheStorage):
     def __init__(self, redis: Redis):
@@ -32,6 +65,9 @@ class BaseRedisStorage(CacheStorage):
 
     def close(self):
         self.redis.close()
+
+    def pipeline(self) -> CachePipeline:
+        return BaseRedisPipeline(pipeline=self.redis.pipeline())
 
 
 class BaseCacheStorage:
