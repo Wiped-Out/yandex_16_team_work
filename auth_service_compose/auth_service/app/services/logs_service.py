@@ -1,6 +1,5 @@
 from datetime import datetime
 from functools import lru_cache
-from typing import Optional
 
 from pydantic import BaseModel
 from pydantic.types import UUID4
@@ -16,6 +15,7 @@ class CacheLog(BaseModel):
     id: UUID4
     device: str
     action: str
+    method: str
     when: datetime
 
 
@@ -32,10 +32,9 @@ class LogsService(BaseCacheStorage, BaseMainStorage):
             user_id: str,
             page: int,
             per_page: int,
-            pattern: Optional[str] = None,
+            **kwargs
     ):
-        query = self.filter_by(user_id=user_id)
-        query = self.like(query, pattern=pattern, field="action")
+        query = self.filter_by(user_id=user_id, **kwargs)
 
         history = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
         if not history:

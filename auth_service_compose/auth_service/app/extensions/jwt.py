@@ -53,7 +53,7 @@ def set_jwt_callbacks():
 
                 return response
 
-            except (RuntimeError, KeyError, InvalidTokenError):
+            except (RuntimeError, KeyError, InvalidTokenError, AttributeError):
                 response = make_response(redirect('/login'))
 
                 unset_jwt_cookies(response)

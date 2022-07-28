@@ -1,6 +1,6 @@
 from flask import render_template, redirect, Blueprint, make_response
 from flask_jwt_extended import set_access_cookies, jwt_required, set_refresh_cookies
-
+from models.models import ActionsEnum
 from forms.login_form import LoginForm
 from services.jwt import get_jwt_service
 from services.user import get_user_service
@@ -29,7 +29,7 @@ def login():
             set_access_cookies(response, token)
             set_refresh_cookies(response, refresh_token)
 
-            save_activity(user)
+            save_activity(user, action=ActionsEnum.login)
             return response
 
         return render_template('login.html',

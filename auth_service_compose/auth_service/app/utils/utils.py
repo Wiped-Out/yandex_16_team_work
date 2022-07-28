@@ -11,20 +11,20 @@ from flask import Flask, current_app, request, Response, json
 from flask_jwt_extended import current_user, get_csrf_token, get_jwt_request_location
 from flask_restx import Api
 
-from models.models import User
+from models.models import User, MethodEnum
 from services.logs_service import get_logs_service
 
 
-def save_activity(user: User):
-    action = f"{request.method}:{request.url}"
+def save_activity(user: User, action=None):
     device = f"{request.user_agent}"
-
+    method = getattr(MethodEnum, request.method.lower())
     log_service = get_logs_service()
 
     log_service.create_log(user_id=user.id,
                            when=datetime.now(),
                            action=action,
-                           device=device)
+                           device=device,
+                           method=method)
 
 
 def register_blueprints(app: Flask):
@@ -73,7 +73,7 @@ def work_in_context(app):
     return func_wrapper
 
 
-def log_activity():
+def log_activity(action=None):
     def func_wrapper(func):
         @wraps(func)
         @work_in_context(current_app)
@@ -81,7 +81,7 @@ def log_activity():
             result = func(*args, **kwargs)
             if not current_user:
                 return result
-            save_activity(current_user)
+            save_activity(current_user, action=action)
             return result
 
         return inner
