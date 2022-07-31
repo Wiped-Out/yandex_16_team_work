@@ -12,7 +12,7 @@ def rate_limit():
     cache_db = get_cache_db()
     pipe = cache_db.pipeline()
 
-    key = request.remote_addr
+    key = current_user.id if current_user else request.remote_addr
 
     pipe.incr(key, 1)
     pipe.expire(key, 59)
