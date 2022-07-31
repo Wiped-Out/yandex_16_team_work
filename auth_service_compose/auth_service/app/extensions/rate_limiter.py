@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from flask import request
-
+from flask_jwt_extended import current_user
 from core.settings import settings
 from db.cache_db import get_cache_db
 from schemas.base.responses import TOO_MANY_REQUESTS
