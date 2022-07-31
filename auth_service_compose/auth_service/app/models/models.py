@@ -89,15 +89,15 @@ class Log(sqlalchemy.Model, UserIdMixin, SerializerMixin):
         default=uuid.uuid4,
         nullable=False)
     device = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    when = sqlalchemy.Column(sqlalchemy.TIMESTAMP, nullable=False)
+    when = sqlalchemy.Column(sqlalchemy.TIMESTAMP, nullable=False, primary_key=True)
     action = sqlalchemy.Column(sqlalchemy.Enum(ActionsEnum),
                                nullable=False,
-                               default=ActionsEnum.other,
-                               primary_key=True)
+                               default=ActionsEnum.other)
+
     method = sqlalchemy.Column(sqlalchemy.Enum(MethodEnum), nullable=False)
 
-    __table_args__ = (sqlalchemy.UniqueConstraint('id', 'action'),
-                      {"postgresql_partition_by": "list (action)"})
+    __table_args__ = (sqlalchemy.UniqueConstraint('id', 'when'),
+                      {"postgresql_partition_by": "range (when)"})
 
 
 class Role(sqlalchemy.Model, IdMixin, SerializerMixin):

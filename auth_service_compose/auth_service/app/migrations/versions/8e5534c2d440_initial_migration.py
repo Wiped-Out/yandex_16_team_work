@@ -43,9 +43,9 @@ def upgrade():
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('action', 'id'),
-    sa.UniqueConstraint('id', 'action'),
-    postgresql_partition_by='list (action)'
+    sa.PrimaryKeyConstraint('when', 'id'),
+    sa.UniqueConstraint('id', 'when'),
+    postgresql_partition_by='range ("when")'
     )
     op.create_table('refresh_tokens',
     sa.Column('token', sa.String(), nullable=False),
