@@ -9,6 +9,7 @@ from db.db import get_db
 from models import models
 from services.base_cache import BaseCacheStorage, CacheStorage
 from services.base_main import BaseMainStorage, MainStorage
+from extensions.tracer import _trace
 
 
 class CacheLog(BaseModel):
@@ -22,10 +23,12 @@ class CacheLog(BaseModel):
 class LogsService(BaseCacheStorage, BaseMainStorage):
     cache_model = CacheLog
 
+    @_trace()
     def create_log(self, **params) -> cache_model:
         log = self.create(**params)
         return self.cache_model(**log.to_dict())
 
+    @_trace()
     def get_logs(
             self,
             cache_key: str,

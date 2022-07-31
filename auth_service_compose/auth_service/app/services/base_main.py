@@ -6,6 +6,8 @@ from typing import Optional
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import Query
 
+from extensions.tracer import _trace
+
 
 class AdditionalActions(str, Enum):
     _sort_by = "_sort_by"
@@ -157,33 +159,43 @@ class BaseMainStorage:
         self.db = db
         self.model = db_model
 
+    @_trace()
     def get(self, item_id: str):
         return self.db.get(item_id=item_id, model=self.model)
+        
+    @_trace()
+    def delete(self, item_id: str):
+        return self.db.delete(item_id=item_id, model=self.model)
 
-    def delete(self, item_id: str, query=None):
-        return self.db.delete(item_id=item_id, model=self.model, query=query)
+    @_trace()
+    def filter_by(self, _first=None, _sort_by=None, **kwargs):
+        return self.db.filter_by(model=self.model, _first=_first, **kwargs)
 
-    def filter_by(self, query=None, _first=None, _sort_by=None, **kwargs):
-        return self.db.filter_by(model=self.model, _first=_first, query=query, **kwargs)
+    @_trace()
+    def filter(self, _first=None, _sort_by=None, *args, **kwargs):
+        return self.db.filter(model=self.model, _first=_first, *args, **kwargs)
 
-    def filter(self, query=None, _first=None, _sort_by=None, *args, **kwargs):
-        return self.db.filter(model=self.model, _first=_first, query=query * args, **kwargs)
-
+    @_trace()
     def create(self, **kwargs):
         return self.db.create(model=self.model, **kwargs)
 
+    @_trace()
     def update(self, item_id: str, **kwargs):
         return self.db.update(item_id=item_id, model=self.model, **kwargs)
 
+    @_trace()
     def get_all(self, **kwargs):
         return self.db.get_all(model=self.model, **kwargs)
 
+    @_trace()
     def paginate(self, query, page: int, per_page: int, **kwargs):
         return self.db.paginate(query=query, page=page, per_page=per_page, **kwargs)
 
+    @_trace()
     def count(self, query, **kwargs) -> int:
         return self.db.count(query, **kwargs)
 
+    @_trace()
     def like(self, query, field, pattern: str, **kwargs):
         return self.db.like(
             query=query,
@@ -193,5 +205,6 @@ class BaseMainStorage:
             **kwargs,
         )
 
+    @_trace()
     def get_query(self, **kwargs):
         return self.db.get_query(model=self.model, **kwargs)

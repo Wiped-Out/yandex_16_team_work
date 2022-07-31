@@ -1,16 +1,20 @@
+from http import HTTPStatus
+
 import flask
 import redis
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_jwt_extended import JWTManager, jwt_required, current_user
 from flask_restx import Api
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from sqlalchemy import exc
-
 from core.settings import settings
 from db import cache_db, db
-from extensions import jwt, flask_restx, flask_migrate
+from extensions import jwt, flask_restx, flask_migrate, tracer
+from extensions.rate_limiter import rate_limit
+from schemas.base.responses import REQUEST_ID_REQUIRED
 from services.base_cache import BaseRedisStorage
 from services.base_main import BaseSQLAlchemyStorage
-from utils.utils import register_blueprints, register_namespaces, log_activity
+from utils.utils import register_blueprints, register_namespaces, log_activity, make_error_response
 
 
 def init_cache_db():
@@ -35,6 +39,10 @@ def init_api(app: Flask):
                           authorizations=flask_restx.authorizations)
     register_namespaces(flask_restx.api)
 
+def init_tracer(app: Flask):
+    tracer.configure_tracer()
+    tracer.Instrumentor = FlaskInstrumentor().instrument_app(app)
+
 
 def init_migration(app: Flask, sqlalchemy):
     flask_migrate.migrate.init_app(app, sqlalchemy)
@@ -51,19 +59,34 @@ def init_app(name: str) -> Flask:
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = settings.JWT_ACCESS_TOKEN_EXPIRES
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = settings.JWT_REFRESH_TOKEN_EXPIRES
 
-    init_api(app)
+    init_api(app=app)
+
     init_db()
     db.init_sqlalchemy(app=app, storage=db.db)
+
     init_cache_db()
-    init_migration(app, sqlalchemy=db.sqlalchemy)
+
+    init_migration(app=app, sqlalchemy=db.sqlalchemy)
+
+    init_tracer(app=app)
 
     with app.app_context():
-        init_jwt(app)
+        init_jwt(app=app)
 
     return app
 
 
 app = init_app(__name__)
+
+
+@app.before_request
+def before_request_callback():
+    request_id = request.headers.get('X-Request-Id')
+    if not request_id:
+        return make_error_response(msg=REQUEST_ID_REQUIRED,
+                                   status=HTTPStatus.BAD_REQUEST)
+    if result := rate_limit():
+        return result
 
 
 @app.errorhandler(exc.SQLAlchemyError)
@@ -72,7 +95,7 @@ def handle_db_exceptions(error):
     return flask.Response(status=400)
 
 
-@app.route('/', methods=["GET"])
+@app.route('/index', methods=["GET"])
 @jwt_required(optional=True)
 @log_activity()
 def index():
