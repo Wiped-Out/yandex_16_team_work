@@ -7,6 +7,7 @@ from flask_restx import fields
 
 from api.v1.__base__ import base_url
 from extensions.jwt import jwt_parser
+from models.models import ActionsEnum
 from schemas.v1 import schemas, responses
 from services.jwt import get_jwt_service
 from services.refresh_token import get_refresh_token_service
@@ -63,7 +64,7 @@ class JWTLogin(Resource):
 
         token = jwt_service.create_access_token(user=user)
 
-        save_activity(user)
+        save_activity(user, action=ActionsEnum.login)
 
         return Response(
             response=schemas.JWT(access_token=token, refresh_token=refresh_token).json(),
@@ -76,7 +77,7 @@ class JWTLogin(Resource):
 @jwt_tokens.expect(jwt_parser)
 class JWTLogout(Resource):
 
-    @log_activity()
+    @log_activity(action=ActionsEnum.logout)
     @jwt_required()
     @jwt_tokens.response(code=int(HTTPStatus.NO_CONTENT), description=" ")
     @jwt_tokens.expect(logout_parser)
@@ -122,7 +123,7 @@ class JWTRefresh(Resource):
 @jwt_tokens.expect(jwt_parser)
 class JWTLogoutEverywhere(Resource):
 
-    @log_activity()
+    @log_activity(action=ActionsEnum.logout_everywhere)
     @jwt_required()
     @jwt_tokens.response(code=int(HTTPStatus.NO_CONTENT), description=" ")
     @jwt_tokens.response(code=int(HTTPStatus.BAD_REQUEST), description=" ")

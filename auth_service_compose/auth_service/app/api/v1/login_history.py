@@ -7,6 +7,7 @@ from flask_restx import fields
 
 from api.v1.__base__ import base_url
 from extensions.jwt import jwt_parser
+from models.models import MethodEnum, ActionsEnum
 from schemas.v1 import schemas, responses
 from services.logs_service import get_logs_service
 from utils.utils import log_activity, make_error_response
@@ -48,11 +49,12 @@ class LoginHistory(Resource):
         per_page = params["per_page"]
         try:
             answer = logs_service.get_logs(
-                cache_key=request.base_url + f"?{page=}&{per_page=}",
+                cache_key=f"{request.base_url}?{page=}&{per_page=}",
                 user_id=user_id,
-                pattern="POST%login%",
                 page=page,
                 per_page=per_page,
+                method=MethodEnum.post,
+                action=ActionsEnum.login,
             )
         except IntegrityError:
             return make_error_response(

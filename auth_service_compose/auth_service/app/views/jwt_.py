@@ -1,7 +1,9 @@
 from flask import Blueprint, redirect, current_app, request, make_response
 from flask_jwt_extended import jwt_required, get_jti, unset_jwt_cookies
 
+from models.models import ActionsEnum
 from extensions.tracer import _trace
+
 from services.jwt import get_jwt_service
 from services.refresh_token import get_refresh_token_service
 from utils.utils import log_activity
@@ -11,7 +13,7 @@ jwt__view = Blueprint('jwt_', __name__, template_folder='templates')
 
 @jwt__view.route('/logout', methods=['GET'])
 @jwt_required()
-@log_activity()
+@log_activity(action=ActionsEnum.logout)
 @_trace()
 def logout():
     jwt_service = get_jwt_service()

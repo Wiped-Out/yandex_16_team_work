@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from functools import wraps
+from typing import Optional
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import Query
@@ -113,11 +114,15 @@ class BaseSQLAlchemyStorage(MainStorage):
         self.commit()
 
     @sqlalchemy_additional_actions()
-    def filter_by(self, model, **kwargs):
+    def filter_by(self, model, query: Optional[Query] = None, **kwargs):
+        if query:
+            return query.filter_by(**kwargs)
         return model.query.filter_by(**kwargs)
 
     @sqlalchemy_additional_actions()
-    def filter(self, model, *args, **kwargs):
+    def filter(self, model, query: Optional[Query] = None, *args, **kwargs):
+        if query:
+            return query.filter(*args, **kwargs)
         return model.query.filter(*args, **kwargs)
 
     def commit(self, **kwargs):
@@ -157,7 +162,7 @@ class BaseMainStorage:
     @_trace()
     def get(self, item_id: str):
         return self.db.get(item_id=item_id, model=self.model)
-
+        
     @_trace()
     def delete(self, item_id: str):
         return self.db.delete(item_id=item_id, model=self.model)

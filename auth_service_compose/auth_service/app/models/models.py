@@ -1,11 +1,28 @@
 import uuid
+from enum import Enum
 
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from db.db import sqlalchemy
+
+
+class ActionsEnum(Enum):
+    login = "login"
+    logout = "logout"
+    logout_everywhere = "logout_everywhere"
+    other = "other"
+
+
+class MethodEnum(Enum):
+    post = "POST"
+    get = "GET"
+    put = "PUT"
+    delete = "DELETE"
+    update = "UPDATE"
+    patch = "PATCH"
 
 
 class IdMixin(object):
@@ -63,12 +80,24 @@ class RefreshToken(sqlalchemy.Model, IdMixin, UserIdMixin, SerializerMixin):
     to = sqlalchemy.Column(sqlalchemy.TIMESTAMP, nullable=False)
 
 
-class Log(sqlalchemy.Model, IdMixin, UserIdMixin, SerializerMixin):
+class Log(sqlalchemy.Model, UserIdMixin, SerializerMixin):
     __tablename__ = "logs"
 
+    id = sqlalchemy.Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        nullable=False)
     device = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    when = sqlalchemy.Column(sqlalchemy.TIMESTAMP, nullable=False)
-    action = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    when = sqlalchemy.Column(sqlalchemy.TIMESTAMP, nullable=False, primary_key=True)
+    action = sqlalchemy.Column(sqlalchemy.Enum(ActionsEnum),
+                               nullable=False,
+                               default=ActionsEnum.other)
+
+    method = sqlalchemy.Column(sqlalchemy.Enum(MethodEnum), nullable=False)
+
+    __table_args__ = (sqlalchemy.UniqueConstraint('id', 'when'),
+                      {"postgresql_partition_by": "range (when)"})
 
 
 class Role(sqlalchemy.Model, IdMixin, SerializerMixin):
