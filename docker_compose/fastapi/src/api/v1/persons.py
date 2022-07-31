@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi_pagination import Page
 
 from api.answers.v1 import answers
+from extensions.auth import security
+from models.auth import AuthUser
 from schemas.pagination import PaginatedParams
 from schemas.v1_schemas import Person, FilmMainPage
 from services.films import FilmsService, get_films_service
@@ -21,7 +23,8 @@ router = APIRouter()
 async def search_persons(
         query: str, request: Request,
         persons_service: PersonsService = Depends(get_persons_service),
-        paginated_params: PaginatedParams = Depends()
+        paginated_params: PaginatedParams = Depends(),
+        auth_user: AuthUser = Depends(security)
 ):
     page_size, page = paginated_params.page_size, paginated_params.page
 
@@ -49,7 +52,8 @@ async def search_persons(
 async def films_by_person(
         person_id: str,
         films_service: FilmsService = Depends(get_films_service),
-        paginated_params: PaginatedParams = Depends()
+        paginated_params: PaginatedParams = Depends(),
+        auth_user: AuthUser = Depends(security)
 ):
     page_size, page = paginated_params.page_size, paginated_params.page
     films = await films_service.get_films_for_person(
@@ -75,6 +79,7 @@ async def films_by_person(
 async def get_person(
         person_id: str, request: Request,
         person_service: PersonsService = Depends(get_persons_service),
+        auth_user: AuthUser = Depends(security)
 ) -> list[Person]:
     cache_key = f"{request.url.path}_{person_id=}"
     persons = await person_service.get_persons_by_id(

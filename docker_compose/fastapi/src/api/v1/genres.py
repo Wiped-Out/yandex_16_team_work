@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi_pagination import Page
 
 from api.answers.v1 import answers
+from extensions.auth import security
+from models.auth import AuthUser
 from schemas.pagination import PaginatedParams
 from schemas.v1_schemas import Genre
 from services.genres import (
@@ -21,7 +23,8 @@ router = APIRouter()
 )
 async def get_genre(
         genre_id: str, request: Request,
-        genre_service: GenreService = Depends(get_genre_service)
+        genre_service: GenreService = Depends(get_genre_service),
+        auth_user: AuthUser = Depends(security)
 ) -> Genre:
     cache_key = f"{request.url.path}_{genre_id=}"
     genre = await genre_service.get_genre(
@@ -43,7 +46,8 @@ async def get_genre(
 async def get_genres(
         request: Request,
         genres_service: GenresService = Depends(get_genres_service),
-        paginated_params: PaginatedParams = Depends()
+        paginated_params: PaginatedParams = Depends(),
+        auth_user: AuthUser = Depends(security)
 ):
     page_size, page = paginated_params.page_size, paginated_params.page
 
