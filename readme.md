@@ -9,6 +9,7 @@
 - docker_compose/app/config
 - docker_compose/etl
 - docker_compose/fastapi
+- docker_compose/fastapi/tests/functional
 - fake_data_to_postgres
 - auth_service_compose/auth_service/app
 - auth_service_compose/auth_service/tests/functional
