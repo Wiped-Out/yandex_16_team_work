@@ -66,21 +66,21 @@ def set_jwt_callbacks():
     @jwt_manager.token_verification_failed_loader
     def token_verification_failed_loader_callback(_jwt_header, jwt_data):
         if 'api' not in request.url:
-            return make_response(redirect('/'))
+            return make_response(redirect('/index'))
         return make_error_response(msg="Invalid JWT token",
                                    status=HTTPStatus.FORBIDDEN)
 
     @jwt_manager.unauthorized_loader
     def unauthorized_loader_callback(explain):
         if 'api' not in request.url:
-            return make_response(redirect('/'))
+            return make_response(redirect('/index'))
         return make_error_response(msg=explain,
                                    status=HTTPStatus.UNAUTHORIZED)
 
     @jwt_manager.invalid_token_loader
     def invalid_token_loader_callback(explain):
         if 'api' not in request.url:
-            return make_response(redirect('/'))
+            return make_response(redirect('/index'))
         return make_error_response(msg=explain,
                                    status=HTTPStatus.FORBIDDEN)
 

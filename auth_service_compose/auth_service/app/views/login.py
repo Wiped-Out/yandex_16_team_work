@@ -1,6 +1,8 @@
 from flask import render_template, redirect, Blueprint, make_response
 from flask_jwt_extended import set_access_cookies, jwt_required, set_refresh_cookies
+
 from models.models import ActionsEnum
+from extensions.tracer import _trace
 from forms.login_form import LoginForm
 from services.jwt import get_jwt_service
 from services.user import get_user_service
@@ -13,6 +15,7 @@ login_view = Blueprint('login', __name__, template_folder='templates')
 @jwt_required(optional=True)
 @log_activity()
 @handle_csrf()
+@_trace()
 def login():
     form = LoginForm()
     if form.validate_on_submit():
