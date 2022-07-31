@@ -9,12 +9,17 @@
 - docker_compose/app/config
 - docker_compose/etl
 - docker_compose/fastapi
-- sqlite_to_postgres
+- fake_data_to_postgres
+- auth_service_compose/auth_service/app
+- auth_service_compose/auth_service/tests/functional
 ````
-cd docker_compose
+docker network create services_network
+cd auth_service_compose
+docker-compose up -d
+cd ../docker_compose
 docker-compose up -d
 ````
-После этого лучше всего сразу выключить контейнер с ETL и запустить его только после загрузки данных в Postgres
+После этого лучше всего сразу выключить контейнер с ETL в docker_compose и запустить его только после загрузки данных в Postgres
 <!-- Лично у меня curl без minified json не выполнялся, смотрится так себе конечно -->
 Стоит подождать секунд 20 после запуска контейнеров чтобы elasticsearch правильно ответил на следующую команду
 ````

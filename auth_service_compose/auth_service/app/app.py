@@ -45,7 +45,8 @@ def init_app(name: str) -> Flask:
 
     register_blueprints(app)
 
-    app.config['SECRET_KEY'] = 'secret'
+    app.config['SECRET_KEY'] = settings.JWT_PUBLIC_KEY
+    app.config['PUBLIC_KEY'] = settings.JWT_PUBLIC_KEY
     app.config['PROPAGATE_EXCEPTIONS'] = True
     app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies", "json", "query_string"]
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = settings.JWT_ACCESS_TOKEN_EXPIRES

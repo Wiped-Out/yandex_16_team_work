@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
     ELASTIC_HOST = os.getenv('ELASTIC_HOST', '127.0.0.1')
     ELASTIC_PORT = int(os.getenv('ELASTIC_PORT', 9200))
+    AUTH_SERVICE_URL = os.getenv('AUTH_SERVICE_URL')
+    JWT_PUBLIC_KEY = os.getenv('JWT_PUBLIC_KEY')
+    NO_JWT = os.getenv('NO_JWT', False) == 'True'
 
     class Config:
         env_file = ".env"
