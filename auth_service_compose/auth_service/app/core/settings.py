@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     REQUEST_LIMIT_PER_MINUTE = int(os.getenv("REQUEST_LIMIT_PER_MINUTE"))
     API_URL = os.getenv('API_URL', '/api')
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+    JWT_PUBLIC_KEY = os.getenv('JWT_PUBLIC_KEY')
 
     class Config:
         env_file = ".env"

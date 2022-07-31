@@ -1,18 +1,17 @@
 import json
 from http import HTTPStatus
 
+from api.v1.__base__ import base_url
+from extensions.jwt import jwt_parser
+from extensions.pagination import pagination_parser, PaginatedResponse
 from flask import Response, request, jsonify
 from flask_jwt_extended import jwt_required
 from flask_restx import Resource, reqparse, fields, Namespace
-from sqlalchemy.exc import IntegrityError
-
-from api.v1.__base__ import base_url
-from extensions.jwt import jwt_parser
 from schemas.v1 import schemas, responses
 from services.user import get_user_service
 from services.user_roles import get_user_roles_service
+from sqlalchemy.exc import IntegrityError
 from utils.utils import log_activity, make_error_response
-from extensions.pagination import pagination_parser, PaginatedResponse
 
 user = Namespace('User', path=f"{base_url}/users", description='')
 
@@ -23,6 +22,14 @@ _User = user.model("user",
                        "email": fields.String
                    }
                    )
+
+HighestRoleLevel = user.model("HighestRoleLevel",
+                              {
+                                  "name": fields.String,
+                                  "level": fields.Integer
+
+                              }
+                              )
 
 NestedUser = user.model("NestedUser",
                         {
@@ -153,8 +160,7 @@ class UserId(Resource):
             status=HTTPStatus.NO_CONTENT,
             content_type="application/json",
         )
-
-
+@user.expect(jwt_parser)
 @user.route("/<user_id>/role")
 class UserRoleCreate(Resource):
     @log_activity()
@@ -182,7 +188,7 @@ class UserRoleCreate(Resource):
             content_type="application/json",
         )
 
-
+@user.expect(jwt_parser)
 @user.route("/<user_id>/role/<role_id>")
 class UserRoleDelete(Resource):
     @log_activity()
@@ -204,5 +210,23 @@ class UserRoleDelete(Resource):
         return Response(
             response=json.dumps({}),
             status=HTTPStatus.NO_CONTENT,
+            content_type="application/json",
+        )
+
+@user.expect(jwt_parser)
+@user.route("/<user_id>/role/highest_role")
+class UserHighestRole(Resource):
+    @log_activity()
+    @jwt_required()
+    @user.response(code=int(HTTPStatus.OK), description=" ", model=HighestRoleLevel)
+    def get(self, user_id: str):
+        user_roles_service = get_user_roles_service()
+
+        highest_role = user_roles_service.get_highest_role(
+            user_id=user_id
+        )
+        return Response(
+            response=schemas.Role(**highest_role.dict()).json(),
+            status=HTTPStatus.OK,
             content_type="application/json",
         )

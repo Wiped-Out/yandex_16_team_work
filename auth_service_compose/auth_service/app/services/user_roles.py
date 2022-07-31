@@ -1,22 +1,27 @@
-from services.base_cache import BaseCacheStorage, CacheStorage
-from services.base_main import BaseMainStorage, MainStorage
-from models import models
 from functools import lru_cache
+
 from db.cache_db import get_cache_db
 from db.db import get_db
+from models import models
+from services.base_cache import BaseCacheStorage, CacheStorage
+from services.base_main import BaseMainStorage, MainStorage
+from services.role import CacheRole
 from extensions.tracer import _trace
 
 
 class UserRolesService(BaseCacheStorage, BaseMainStorage):
     user_model = models.User
     role_model = models.Role
+    cache_model = CacheRole
 
     @_trace()
     def add_role_to_user(self, user_id: str, role_id: str):
         user = self.db.get(item_id=user_id, model=self.user_model)
         role = self.db.get(item_id=role_id, model=self.role_model)
+
         user.roles.append(role)
         role.users.append(user)
+
         self.db.add(user)
         self.db.add(role)
         self.db.commit()
@@ -32,6 +37,10 @@ class UserRolesService(BaseCacheStorage, BaseMainStorage):
 
         self.db.commit()
 
+    def get_highest_role(self, user_id: str):
+        user = self.db.get(item_id=user_id, model=self.user_model)
+        return CacheRole(**max(user.roles, key=lambda x: x.level).to_dict()) if user.roles else CacheRole(level=0, name='default')
+
 
 @lru_cache()
 def get_user_roles_service(
@@ -43,6 +52,6 @@ def get_user_roles_service(
     role_service = UserRolesService(
         cache=cache,
         db=main_db,
-        db_model=models.User,
+        db_model=None,
     )
     return role_service

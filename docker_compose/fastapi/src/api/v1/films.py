@@ -5,9 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi_pagination import Page
 
 from api.answers.v1 import answers
+from extensions.auth import security
+from models.auth import AuthUser
+from models.film import Film
 from schemas.pagination import PaginatedParams
 from schemas.v1_schemas import FilmMainPage
-from models.film import Film
 from services.films import (
     FilmService, get_film_service, get_films_service, FilmsService
 )
@@ -24,10 +26,11 @@ router = APIRouter()
 async def search_for_films(
         query: str, request: Request,
         films_service: FilmsService = Depends(get_films_service),
-        paginated_params: PaginatedParams = Depends()
+        paginated_params: PaginatedParams = Depends(),
+        auth_user: AuthUser = Depends(security)
 ):
     page_size, page = paginated_params.page_size, paginated_params.page
-
+    print(auth_user)
     cache_key = f"{request.url.path}_{query=}_{page_size=}_{page=}"
     films = await films_service.get_films(
         search=query, page_size=page_size, page=page, cache_key=cache_key,
@@ -52,7 +55,8 @@ async def search_for_films(
 )
 async def film_details(
         film_id: str, request: Request,
-        film_service: FilmService = Depends(get_film_service)
+        film_service: FilmService = Depends(get_film_service),
+        auth_user: AuthUser = Depends(security)
 ):
     cache_key = f"{request.url.path}_{film_id=}"
     film = await film_service.get_film_by_id(film_id=film_id, cache_key=cache_key)
@@ -75,7 +79,8 @@ async def get_films_for_main_page(
         films_service: FilmsService = Depends(get_films_service),
         sort: Optional[str] = None,
         genre_id: Optional[str] = Query(default=None, alias="filter[genre]"),
-        paginated_params: PaginatedParams = Depends()
+        paginated_params: PaginatedParams = Depends(),
+        auth_user: AuthUser = Depends(security)
 ):
     page_size, page = paginated_params.page_size, paginated_params.page
 

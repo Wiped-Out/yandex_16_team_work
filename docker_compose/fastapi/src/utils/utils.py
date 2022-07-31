@@ -1,8 +1,11 @@
 from typing import TypeVar, Sequence
 
+import jwt
 import orjson
 from fastapi_pagination import Params, Page
 from pydantic import conint
+
+from core.config import settings
 
 T = TypeVar("T")
 
@@ -19,3 +22,7 @@ def paginate(
 ) -> Page[T]:
     params = Params(page=page, size=size)
     return Page.create(items=items, total=total, params=params)
+
+
+def decode_jwt(token: str):
+    return jwt.decode(token, settings.JWT_PUBLIC_KEY, algorithms=["HS256"])

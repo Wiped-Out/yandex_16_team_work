@@ -11,3 +11,5 @@ fuzzywuzzy==0.18.0
 aiofiles==0.8.0
 gunicorn==20.1.0
 httptools==0.4.0
+aiohttp==3.7.2
+PyJWT==2.4.0

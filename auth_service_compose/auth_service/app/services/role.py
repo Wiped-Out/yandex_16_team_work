@@ -1,9 +1,11 @@
+import uuid
+
 from services.base_cache import BaseCacheStorage, CacheStorage
 from services.base_main import BaseMainStorage, MainStorage
 from models import models
 from db.cache_db import get_cache_db
 from db.db import get_db
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic.types import UUID4
 from functools import lru_cache
 
@@ -11,7 +13,7 @@ from extensions.tracer import _trace
 
 
 class CacheRole(BaseModel):
-    id: UUID4
+    id: UUID4 = Field(default_factory=uuid.uuid4)
     name: str
     level: int
 
