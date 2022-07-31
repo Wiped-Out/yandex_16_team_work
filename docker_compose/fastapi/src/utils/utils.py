@@ -2,6 +2,7 @@ from typing import TypeVar, Sequence
 
 import jwt
 import orjson
+from fastapi import HTTPException
 from fastapi_pagination import Params, Page
 from pydantic import conint
 
@@ -25,4 +26,7 @@ def paginate(
 
 
 def decode_jwt(token: str):
-    return jwt.decode(token, settings.JWT_PUBLIC_KEY, algorithms=["HS256"])
+    try:
+        return jwt.decode(token, settings.JWT_PUBLIC_KEY, algorithms=["HS256"])
+    except (jwt.exceptions.PyJWTError) as e:
+        raise HTTPException(status_code=404, detail=str(e))

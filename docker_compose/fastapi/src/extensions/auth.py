@@ -20,10 +20,7 @@ class JWTBearer(HTTPBearer):
         if credentials:
             if not credentials.scheme == "Bearer":
                 raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
-            try:
-                return await auth_service.auth_user(credentials.credentials)
-            except (jwt.exceptions.PyJWTError) as e:
-                raise HTTPException(status_code=404, detail=str(e))
+            return await auth_service.auth_user(credentials.credentials)
 
 
 security = JWTBearer()
