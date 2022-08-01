@@ -30,7 +30,6 @@ async def search_for_films(
         auth_user: AuthUser = Depends(security)
 ):
     page_size, page = paginated_params.page_size, paginated_params.page
-    print(auth_user)
     cache_key = f"{request.url.path}_{query=}_{page_size=}_{page=}"
     films = await films_service.get_films(
         search=query, page_size=page_size, page=page, cache_key=cache_key,

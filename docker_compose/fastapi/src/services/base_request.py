@@ -5,6 +5,9 @@ from typing import Optional
 import aiohttp
 from multidict import CIMultiDictProxy
 
+from utils.utils import backoff
+
+
 @dataclass
 class HTTPResponse:
     body: dict
@@ -74,6 +77,7 @@ class AsyncRequest(ABC):
 
 
 class AIOHTTPClient(AsyncRequest):
+    @backoff(factor=11, border_sleep_time=1)
     async def get(self,
                   url: str,
                   body: Optional[dict] = None,

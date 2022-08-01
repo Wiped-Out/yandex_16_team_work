@@ -18,14 +18,20 @@ class AuthService(BaseCacheStorage, BaseRequest):
             user = await self.get_one_item_from_cache(cache_key=Authorization, model=AuthUser)
             if user:
                 return user
+            exp_time = 300
             decoded_jwt = decode_jwt(token=Authorization)
-            response = await self.get(url=f"{settings.AUTH_SERVICE_URL}/users/{decoded_jwt['sub']}/role/highest_role",
-                                      headers={"Authorization": f"Bearer {Authorization}"})
-            user = AuthUser(highest_role=response.body['level'], uuid=decoded_jwt['sub'])
-            await self.put_one_item_to_cache(cache_key=Authorization, item=user, expire=300)
+            try:
+                response = await self.get(
+                    url=f"{settings.AUTH_SERVICE_URL}/users/{decoded_jwt['sub']}/role/highest_role",
+                    headers={"Authorization": f"Bearer {Authorization}"})
+                user = AuthUser(highest_role=response.body['level'], uuid=decoded_jwt['sub'])
+            except ConnectionError:
+                user = AuthUser(highest_role=0, uuid=decoded_jwt['sub'])
+                exp_time = 60
+            await self.put_one_item_to_cache(cache_key=Authorization, item=user, expire=exp_time)
             return user
-        except AttributeError:
-            raise HTTPException(status_code=404, detail=response['msg'])
+        except AttributeError as e:
+            raise HTTPException(status_code=404, detail=response['msg']) from e
 
 
 @lru_cache()
