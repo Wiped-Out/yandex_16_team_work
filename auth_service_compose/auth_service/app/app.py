@@ -1,6 +1,5 @@
 from http import HTTPStatus
 
-import flask
 import redis
 from flask import Flask, render_template, request
 from flask_jwt_extended import JWTManager, jwt_required, current_user
@@ -11,10 +10,12 @@ from core.settings import settings
 from db import cache_db, db
 from extensions import jwt, flask_restx, flask_migrate, tracer
 from extensions.rate_limiter import rate_limit
+from schemas.v1 import responses
 from schemas.base.responses import REQUEST_ID_REQUIRED
 from services.base_cache import BaseRedisStorage
 from services.base_main import BaseSQLAlchemyStorage
 from utils.utils import register_blueprints, register_namespaces, log_activity, make_error_response
+from werkzeug import exceptions
 
 
 def init_cache_db():
@@ -38,6 +39,7 @@ def init_api(app: Flask):
                           base_url=f"/{settings.API_URL}",
                           authorizations=flask_restx.authorizations)
     register_namespaces(flask_restx.api)
+
 
 def init_tracer(app: Flask):
     tracer.configure_tracer()
@@ -91,9 +93,20 @@ def before_request_callback():
 
 
 @app.errorhandler(exc.SQLAlchemyError)
-def handle_db_exceptions(error):
+def handle_db_exceptions(error: exc.SQLAlchemyError):
     db.sqlalchemy.session.rollback()
-    return flask.Response(status=400)
+    return make_error_response(
+        status=HTTPStatus.BAD_REQUEST,
+        msg=responses.BAD_REQUEST,
+    )
+
+
+@app.errorhandler(exceptions.HTTPException)
+def handle_bad_request(error: exceptions.HTTPException):
+    return make_error_response(
+        status=error.code,
+        msg=error.__str__(),
+    )
 
 
 @app.route('/index', methods=["GET"])

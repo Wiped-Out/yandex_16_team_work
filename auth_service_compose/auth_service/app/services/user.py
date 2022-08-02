@@ -60,8 +60,8 @@ class UserService(BaseCacheStorage, BaseMainStorage):
         )
         if not user:
             user_db = self.get(item_id=user_id)
-            user = self.cache_model(**user_db.to_dict())
-            if user:
+            if user_db:
+                user = self.cache_model(**user_db.to_dict())
                 self.put_one_item_to_cache(cache_key=cache_key, item=user)
         return user
 

@@ -49,8 +49,8 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
         role = self.get_one_item_from_cache(cache_key=cache_key, model=self.cache_model)
         if not role:
             db_role = self.get(item_id=role_id)
-            role = self.cache_model(**db_role.to_dict())
-            if role:
+            if db_role:
+                role = self.cache_model(**db_role.to_dict())
                 self.put_one_item_to_cache(cache_key=cache_key, item=role)
         return role
 

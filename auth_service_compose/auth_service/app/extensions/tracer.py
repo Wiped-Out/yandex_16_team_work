@@ -30,7 +30,8 @@ def configure_tracer() -> None:
         )
     )
     # Чтобы видеть трейсы в консоли
-    trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+    # trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+
 
 def _trace():
     def func_wrapper(func):
@@ -43,4 +44,3 @@ def _trace():
         return inner
 
     return func_wrapper
-

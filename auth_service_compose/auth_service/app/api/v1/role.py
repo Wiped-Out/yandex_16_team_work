@@ -1,6 +1,7 @@
 import json
 from http import HTTPStatus
 
+import werkzeug.exceptions
 from flask import jsonify, request, Response
 from flask_jwt_extended import jwt_required
 from flask_restx import Resource, reqparse, fields
@@ -84,6 +85,7 @@ class RoleId(Resource):
     @role.expect(role_parser)
     def put(self, role_id: str) -> Response:
         role_service = get_role_service()
+
         role_service.update_role(
             role_id=role_id,
             params=role_parser.parse_args(),
@@ -103,6 +105,10 @@ class RoleId(Resource):
         cache_key = request.base_url
 
         db_role = role_service.get_role(role_id=role_id, cache_key=cache_key)
+
+        if not db_role:
+            raise werkzeug.exceptions.NotFound(responses.CANT_FIND_ROLE)
+
         return jsonify(Role(**db_role.dict()).dict())
 
     @jwt_required()

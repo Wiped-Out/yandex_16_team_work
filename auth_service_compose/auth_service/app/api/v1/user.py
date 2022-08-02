@@ -1,6 +1,7 @@
 import json
 from http import HTTPStatus
 
+import werkzeug.exceptions
 from api.v1.__base__ import base_url
 from extensions.jwt import jwt_parser
 from extensions.pagination import pagination_parser, PaginatedResponse
@@ -87,10 +88,7 @@ class Users(Resource):
         try:
             db_user = user_service.create_user(params=user_post_parser.parse_args())
         except IntegrityError:
-            return make_error_response(
-                status=HTTPStatus.BAD_REQUEST,
-                msg=responses.USER_ALREADY_EXIST,
-            )
+            raise werkzeug.exceptions.BadRequest(responses.USER_ALREADY_EXIST)
 
         return Response(
             response=schemas.User(**db_user.dict()).json(),
@@ -112,6 +110,10 @@ class UserId(Resource):
             user_id=user_id,
             cache_key=request.base_url
         )
+
+        if not user:
+            raise werkzeug.exceptions.NotFound(responses.CANT_FIND_USER)
+
         return jsonify(schemas.User(**user.dict()).dict())
 
     @log_activity()
@@ -160,6 +162,8 @@ class UserId(Resource):
             status=HTTPStatus.NO_CONTENT,
             content_type="application/json",
         )
+
+
 @user.expect(jwt_parser)
 @user.route("/<user_id>/role")
 class UserRoleCreate(Resource):
@@ -188,6 +192,7 @@ class UserRoleCreate(Resource):
             content_type="application/json",
         )
 
+
 @user.expect(jwt_parser)
 @user.route("/<user_id>/role/<role_id>")
 class UserRoleDelete(Resource):
@@ -212,6 +217,7 @@ class UserRoleDelete(Resource):
             status=HTTPStatus.NO_CONTENT,
             content_type="application/json",
         )
+
 
 @user.expect(jwt_parser)
 @user.route("/<user_id>/role/highest_role")
