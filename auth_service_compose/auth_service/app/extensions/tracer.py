@@ -1,3 +1,4 @@
+import contextlib
 from functools import wraps
 from typing import Optional
 
@@ -37,9 +38,10 @@ def _trace():
     def func_wrapper(func):
         @wraps(func)
         def inner(*args, **kwargs):
-            tracer = trace.get_tracer(__name__)
-            with tracer.start_as_current_span(func.__name__):
-                return func(*args, **kwargs)
+            with contextlib.suppress(OSError):
+                tracer = trace.get_tracer(__name__)
+                with tracer.start_as_current_span(func.__name__):
+                    return func(*args, **kwargs)
 
         return inner
 

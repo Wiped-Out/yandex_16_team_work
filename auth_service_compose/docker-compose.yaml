@@ -21,6 +21,8 @@ services:
     ports:
       - "6831:6831/udp"
       - "16686:16686"
+    networks:
+      - backend
 
   flask:
     build:
@@ -44,7 +46,7 @@ services:
     depends_on:
       - flask
     ports:
-      - 81:81
+      - 80:80
     restart: always
     networks:
       - internal_bridge

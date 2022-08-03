@@ -2,6 +2,8 @@ import glob
 import importlib
 import os
 import re
+import secrets
+import string
 from datetime import datetime
 from functools import wraps
 from http import HTTPStatus
@@ -112,3 +114,8 @@ def make_error_response(msg: str, status: int):
         status=status,
         content_type="application/json"
     )
+
+
+def generate_password():
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for _ in range(20))

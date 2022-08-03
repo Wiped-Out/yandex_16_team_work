@@ -1,9 +1,10 @@
 from flask import render_template, redirect, Blueprint, make_response
 from flask_jwt_extended import set_access_cookies, jwt_required, set_refresh_cookies
 
-from models.models import ActionsEnum
+from core.settings import settings
 from extensions.tracer import _trace
 from forms.login_form import LoginForm
+from models.models import ActionsEnum
 from services.jwt import get_jwt_service
 from services.user import get_user_service
 from utils.utils import log_activity, handle_csrf, save_activity
@@ -37,6 +38,10 @@ def login():
 
         return render_template('login.html',
                                message="Неправильный логин или пароль",
-                               form=form, title='Авторизация')
+                               form=form, title='Авторизация',
+                               oauth_google_login_url=settings.GOOGLE_OAUTH_URL_LOGIN_REDIRECT)
 
-    return render_template('login.html', title='Авторизация', form=form)
+    return render_template('login.html',
+                           title='Авторизация',
+                           form=form,
+                           oauth_google_login_url=settings.GOOGLE_OAUTH_URL_LOGIN_REDIRECT)

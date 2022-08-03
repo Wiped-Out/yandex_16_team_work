@@ -6,9 +6,10 @@ from flask_jwt_extended import JWTManager, jwt_required, current_user
 from flask_restx import Api
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from sqlalchemy import exc
+
 from core.settings import settings
 from db import cache_db, db
-from extensions import jwt, flask_restx, flask_migrate, tracer
+from extensions import jwt, flask_restx, flask_migrate, tracer, oauth
 from extensions.rate_limiter import rate_limit
 from schemas.v1 import responses
 from schemas.base.responses import REQUEST_ID_REQUIRED
@@ -22,6 +23,10 @@ def init_cache_db():
     cache_db.cache = BaseRedisStorage(
         redis=redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
     )
+
+
+def init_oauth(app: Flask):
+    oauth.init_oauth(app)
 
 
 def init_db():
@@ -63,6 +68,7 @@ def init_app(name: str) -> Flask:
     app.config["JWT_REFRESH_TOKEN_EXPIRES"] = settings.JWT_REFRESH_TOKEN_EXPIRES
 
     init_api(app=app)
+    init_oauth(app=app)
 
     init_db()
     db.init_sqlalchemy(app=app, storage=db.db)
