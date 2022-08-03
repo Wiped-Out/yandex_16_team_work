@@ -36,7 +36,7 @@ services:
     depends_on:
       - backend
     ports:
-      - 80:80
+      - 81:81
     restart: always
     networks:
       - internal_bridge
