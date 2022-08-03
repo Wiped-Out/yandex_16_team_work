@@ -1,5 +1,6 @@
 from flask import render_template, redirect, Blueprint, make_response
 
+from core.settings import settings
 from extensions.tracer import _trace
 from forms.register_form import RegisterForm
 from services.user import get_user_service
@@ -15,14 +16,19 @@ def reqister():
         if form.password.data != form.password_again.data:
             return render_template('register.html', title='Регистрация',
                                    form=form,
-                                   message="Пароли не совпадают")
+                                   message="Пароли не совпадают",
+                                   oauth_google_url=settings.GOOGLE_OAUTH_URL_REGISTER_REDIRECT)
         user_service = get_user_service()
         if user_service.filter_by(email=form.email.data, _first=True) or \
                 user_service.filter_by(login=form.login.data, _first=True):
             return render_template('register.html', title='Регистрация',
                                    form=form,
-                                   message="Такой пользователь уже есть")
+                                   message="Такой пользователь уже есть",
+                                   oauth_google_url=settings.GOOGLE_OAUTH_URL_REGISTER_REDIRECT)
         user_service.create_user(form.data)
         return make_response(redirect('/login'))
 
-    return render_template('register.html', title='Регистрация', form=form)
+    return render_template('register.html', title='Регистрация', form=form,
+                           oauth_google_register_url=settings.GOOGLE_OAUTH_URL_REGISTER_REDIRECT)
+
+

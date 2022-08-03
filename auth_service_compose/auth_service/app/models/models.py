@@ -25,6 +25,10 @@ class MethodEnum(Enum):
     patch = "PATCH"
 
 
+class OAuthEnum(Enum):
+    google = "google"
+
+
 class IdMixin(object):
     @declared_attr
     def id(self):
@@ -55,6 +59,8 @@ class User(sqlalchemy.Model, IdMixin, SerializerMixin):
     )
 
     logs = sqlalchemy.relation("Log")
+
+    oauth = sqlalchemy.relation("Oauth")
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -111,3 +117,12 @@ class Role(sqlalchemy.Model, IdMixin, SerializerMixin):
         secondary=user_roles,
         back_populates="roles"
     )
+
+
+class Oauth(sqlalchemy.Model, IdMixin, UserIdMixin, SerializerMixin):
+    __tablename__ = "oauth"
+
+    type = sqlalchemy.Column(sqlalchemy.Enum(OAuthEnum),
+                             nullable=False)
+    sub = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+
