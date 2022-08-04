@@ -9,6 +9,7 @@ from core.settings import settings
 oauth: Optional[OAuth] = OAuth()
 google: Optional[LocalProxy] = None
 
+
 def init_oauth(app: Flask):
     oauth.init_app(app)
     global google
@@ -30,6 +31,7 @@ def init_oauth(app: Flask):
 
 def get_oauth() -> OAuth:
     return oauth
+
 
 def get_google_client() -> LocalProxy:
     return google
