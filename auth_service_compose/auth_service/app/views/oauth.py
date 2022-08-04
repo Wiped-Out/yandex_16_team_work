@@ -69,7 +69,7 @@ def google_oauth_login():
     user_data = google_oauth_service.get_user_data_from_token()
 
     if not user_data:
-        return make_response(redirect("/register"))
+        return make_response(redirect("/login"))
 
     jwt_service = get_jwt_service()
     user_service = get_user_service()
