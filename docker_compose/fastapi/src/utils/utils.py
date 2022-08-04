@@ -32,7 +32,7 @@ def paginate(
 def decode_jwt(token: str):
     try:
         return jwt.decode(token, settings.JWT_PUBLIC_KEY, algorithms=["HS256"])
-    except (jwt.exceptions.PyJWTError) as e:
+    except jwt.exceptions.PyJWTError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
 

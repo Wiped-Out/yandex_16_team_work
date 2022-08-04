@@ -9,6 +9,7 @@ from jwt.exceptions import InvalidTokenError
 
 from services.jwt import get_jwt_service
 from services.user import get_user_service
+from services.user_roles import get_user_roles_service
 from utils.utils import make_error_response, work_in_context
 
 jwt_manager: Optional[JWTManager] = None
@@ -95,6 +96,16 @@ def set_jwt_callbacks():
         identity = jwt_data["sub"]
         user_service = get_user_service()
         return user_service.get(item_id=identity)
+
+    @jwt_manager.additional_claims_loader
+    @work_in_context(current_app)
+    def add_claims_to_access_token(identity) -> dict:
+        user_roles_service = get_user_roles_service()
+        role = user_roles_service.get_highest_role(identity.id)
+
+        return {
+            "role": role.level
+        }
 
 
 def get_jwt_manager() -> JWTManager:

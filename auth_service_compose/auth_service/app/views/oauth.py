@@ -1,3 +1,4 @@
+import werkzeug.exceptions
 from flask import Blueprint, make_response, redirect
 from flask_jwt_extended import set_access_cookies, set_refresh_cookies
 
@@ -64,11 +65,18 @@ def google_oauth_login():
     google_oauth_service = get_google_oauth_client_service()
     user_data = google_oauth_service.get_user_data_from_token()
 
+    if not user_data:
+        return make_response(redirect("/register"))
+
     jwt_service = get_jwt_service()
     user_service = get_user_service()
     oauth_service = get_oauth_service()
 
     oauth = oauth_service.get_oauth(sub=user_data['sub'], type=OAuthEnum.google)
+
+    if not oauth:
+        return make_response(redirect("/register"))
+
     user = user_service.get(item_id=oauth.user_id)
 
     response = make_response(redirect('/happy'))

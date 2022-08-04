@@ -18,7 +18,7 @@ class JWTBearer(HTTPBearer):
         if settings.NO_JWT:
             return AuthUser(highest_role=0, uuid=uuid.uuid4())
         if credentials:
-            if not credentials.scheme == "Bearer":
+            if credentials.scheme != "Bearer":
                 raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
             return await auth_service.auth_user(credentials.credentials)
 

@@ -37,6 +37,7 @@ class UserRolesService(BaseCacheStorage, BaseMainStorage):
 
         self.db.commit()
 
+    @_trace()
     def get_highest_role(self, user_id: str):
         user = self.db.get(item_id=user_id, model=self.user_model)
         return CacheRole(**max(user.roles, key=lambda x: x.level).to_dict()) if user.roles else CacheRole(level=0, name='default')

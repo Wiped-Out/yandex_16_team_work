@@ -27,8 +27,9 @@ class AuthService(BaseCacheStorage, BaseRequest):
                     headers={"Authorization": f"Bearer {Authorization}"})
                 user = self.model(highest_role=response.body['level'], uuid=decoded_jwt['sub'])
             except ConnectionError:
-                user = self.model(highest_role=0, uuid=decoded_jwt['sub'])
+                user = self.model(highest_role=decoded_jwt["role"], uuid=decoded_jwt['sub'])
                 exp_time = 60
+
             await self.put_one_item_to_cache(cache_key=Authorization, item=user, expire=exp_time)
             return user
         except AttributeError as e:
