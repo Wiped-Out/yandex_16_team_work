@@ -31,14 +31,16 @@ class LogsService(BaseCacheStorage, BaseMainStorage):
     @_trace()
     def get_logs(
             self,
-            cache_key: str,
             user_id: str,
             page: int,
             per_page: int,
+            base_url: str,
             **kwargs
     ):
+
         query = self.filter_by(user_id=user_id, **kwargs)
 
+        cache_key = f"{base_url}?{page=}&{per_page=}"
         history = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
         if not history:
             paginated_answer = self.paginate(query=query, page=page, per_page=per_page)

@@ -26,9 +26,9 @@ async def get_genre(
         genre_service: GenreService = Depends(get_genre_service),
         auth_user: AuthUser = Depends(security)
 ) -> Genre:
-    cache_key = f"{request.url.path}_{genre_id=}"
+
     genre = await genre_service.get_genre(
-        genre_id=genre_id, cache_key=cache_key,
+        genre_id=genre_id, base_url=request.url.path,
     )
     if not genre:
         raise HTTPException(
@@ -51,9 +51,8 @@ async def get_genres(
 ):
     page_size, page = paginated_params.page_size, paginated_params.page
 
-    cache_key = f"{request.url.path}_{page_size=}_{page=}"
     genres_from_db = await genres_service.get_genres(
-        page_size=page_size, page=page, cache_key=cache_key,
+        page_size=page_size, page=page, base_url=request.url.path,
     )
     if not genres_from_db:
         raise HTTPException(

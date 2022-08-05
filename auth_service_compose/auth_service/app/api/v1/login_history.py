@@ -49,12 +49,12 @@ class LoginHistory(Resource):
         per_page = params["per_page"]
         try:
             answer = logs_service.get_logs(
-                cache_key=f"{request.base_url}?{page=}&{per_page=}",
                 user_id=user_id,
                 page=page,
                 per_page=per_page,
                 method=MethodEnum.post,
                 action=ActionsEnum.login,
+                base_url=request.base_url,
             )
         except IntegrityError:
             return make_error_response(

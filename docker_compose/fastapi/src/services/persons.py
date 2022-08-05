@@ -14,8 +14,9 @@ class PersonsService(BaseSearchPersonService):
             search: str,
             page: int,
             page_size: int,
-            cache_key: str
+            base_url: str,
     ) -> list[Person]:
+        cache_key = f"{base_url}_{search=}_{page_size=}_{page=}"
         persons = await self.get_items_from_cache(cache_key=cache_key, model=Person)
 
         if not persons:
@@ -33,9 +34,10 @@ class PersonsService(BaseSearchPersonService):
     async def get_persons_by_id(
             self,
             person_id: str,
-            cache_key: str
+            base_url: str,
     ) -> list[Person]:
 
+        cache_key = f"{base_url}_{person_id=}"
         persons = await self.get_items_from_cache(
             cache_key=cache_key,
             model=self.model

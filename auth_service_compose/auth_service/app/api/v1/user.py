@@ -62,16 +62,15 @@ class Users(Resource):
     @user.expect(pagination_parser)
     def get(self) -> Response:
         user_service = get_user_service()
-        cache_key = request.base_url
 
         params = pagination_parser.parse_args()
         page = params["page"]
         per_page = params["per_page"]
 
         answer = user_service.get_users(
-            cache_key=cache_key + f"?{page=}&{per_page=}",
             page=page,
-            per_page=per_page
+            per_page=per_page,
+            base_url=request.base_url
         )
 
         ans = PaginatedResponse(**answer)
@@ -108,7 +107,7 @@ class UserId(Resource):
 
         user = user_service.get_user(
             user_id=user_id,
-            cache_key=request.base_url
+            base_url=request.base_url
         )
 
         if not user:

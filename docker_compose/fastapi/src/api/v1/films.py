@@ -30,10 +30,10 @@ async def search_for_films(
         auth_user: AuthUser = Depends(security)
 ):
     page_size, page = paginated_params.page_size, paginated_params.page
-    cache_key = f"{request.url.path}_{query=}_{page_size=}_{page=}"
     films = await films_service.get_films(
-        search=query, page_size=page_size, page=page, cache_key=cache_key,
+        search=query, page_size=page_size, page=page, base_url=request.url.path,
     )
+
     if not films:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail=answers.FILMS_NOT_FOUND,
@@ -57,8 +57,11 @@ async def film_details(
         film_service: FilmService = Depends(get_film_service),
         auth_user: AuthUser = Depends(security)
 ):
-    cache_key = f"{request.url.path}_{film_id=}"
-    film = await film_service.get_film_by_id(film_id=film_id, cache_key=cache_key)
+    film = await film_service.get_film_by_id(
+        film_id=film_id,
+        base_url=request.url.path
+    )
+
     if not film:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail=answers.FILM_NOT_FOUND,
@@ -83,11 +86,11 @@ async def get_films_for_main_page(
 ):
     page_size, page = paginated_params.page_size, paginated_params.page
 
-    cache_key = f"{request.url.path}_{sort=}_{page_size=}_{page=}"
     films = await films_service.get_films(
         sort_param=sort, genre_id=genre_id, page=page,
-        page_size=page_size, cache_key=cache_key
+        page_size=page_size, base_url=request.url.path
     )
+
     if not films:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail=answers.FILMS_NOT_FOUND,

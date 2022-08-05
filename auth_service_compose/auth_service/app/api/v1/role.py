@@ -44,16 +44,15 @@ class Roles(Resource):
     @role.expect(pagination_parser)
     def get(self) -> Response:
         role_service = get_role_service()
-        cache_key = request.base_url
 
         params = pagination_parser.parse_args()
         page = params["page"]
         per_page = params["per_page"]
 
         answer = role_service.get_roles(
-            cache_key=cache_key + f"?{page=}&{per_page=}",
             page=page,
-            per_page=per_page
+            per_page=per_page,
+            base_url=request.base_url,
         )
 
         ans = PaginatedResponse(**answer)
@@ -102,9 +101,11 @@ class RoleId(Resource):
     @role.response(code=int(HTTPStatus.CREATED), description=" ", model=_Role)
     def get(self, role_id: str) -> Response:
         role_service = get_role_service()
-        cache_key = request.base_url
 
-        db_role = role_service.get_role(role_id=role_id, cache_key=cache_key)
+        db_role = role_service.get_role(
+            role_id=role_id,
+            base_url=request.base_url
+        )
 
         if not db_role:
             raise werkzeug.exceptions.NotFound(responses.CANT_FIND_ROLE)

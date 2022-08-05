@@ -28,9 +28,8 @@ async def search_persons(
 ):
     page_size, page = paginated_params.page_size, paginated_params.page
 
-    cache_key = f"{request.url.path}_{query=}_{page_size=}_{page=}"
     persons = await persons_service.search_persons(
-        search=query, page_size=page_size, page=page, cache_key=cache_key,
+        search=query, page_size=page_size, page=page, base_url=request.url.path,
     )
     if not persons:
         raise HTTPException(
@@ -81,9 +80,8 @@ async def get_person(
         person_service: PersonsService = Depends(get_persons_service),
         auth_user: AuthUser = Depends(security)
 ) -> list[Person]:
-    cache_key = f"{request.url.path}_{person_id=}"
     persons = await person_service.get_persons_by_id(
-        person_id=person_id, cache_key=cache_key,
+        person_id=person_id, base_url=request.url.path,
     )
     if not persons:
         raise HTTPException(

@@ -10,8 +10,9 @@ from services.base import BaseFilmService, AsyncCacheStorage, AsyncFullTextSearc
 
 
 class FilmService(BaseFilmService):
-    async def get_film_by_id(self, film_id: str, cache_key: str) -> Optional[Film]:
+    async def get_film_by_id(self, film_id: str, base_url: str) -> Optional[Film]:
 
+        cache_key = f"{base_url}_{film_id=}"
         film = await self.get_one_item_from_cache(cache_key=cache_key, model=Film)
 
         if not film:
@@ -28,11 +29,16 @@ class FilmsService(BaseFilmService):
             self,
             page_size: int,
             page: int,
-            cache_key: str,
+            base_url: str,
             sort_param: Optional[str] = None,
             genre_id: Optional[str] = None,
             search: Optional[str] = None
     ) -> list[Film]:
+
+        if search:
+            cache_key = f"{base_url}_{search=}_{page_size=}_{page=}"
+        else:
+            cache_key = f"{base_url}_{sort_param=}_{page_size=}_{page=}"
 
         films = await self.get_items_from_cache(cache_key=cache_key, model=Film)
 

@@ -24,12 +24,13 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
     @_trace()
     def get_roles(
             self,
-            cache_key: str,
             page: int,
             per_page: int,
+            base_url: str,
     ):
         query = self.get_query()
 
+        cache_key = f"{base_url}?{page=}&{per_page=}"
         roles = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
         if not roles:
             paginated_roles = self.paginate(query=query, page=page, per_page=per_page)
@@ -45,7 +46,12 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
         }
 
     @_trace()
-    def get_role(self, role_id: str, cache_key: str) -> cache_model:
+    def get_role(
+            self,
+            role_id: str,
+            base_url: str,
+    ) -> cache_model:
+        cache_key = base_url
         role = self.get_one_item_from_cache(cache_key=cache_key, model=self.cache_model)
         if not role:
             db_role = self.get(item_id=role_id)
