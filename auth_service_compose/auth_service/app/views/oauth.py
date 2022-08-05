@@ -1,81 +1,80 @@
-import werkzeug.exceptions
 from flask import Blueprint, make_response, redirect
-from flask_jwt_extended import set_access_cookies, set_refresh_cookies
 
-from core.settings import settings
 from extensions.tracer import _trace
 from models.models import ActionsEnum, OAuthEnum
+from services import oauth_client
 from services.jwt import get_jwt_service
 from services.oauth import get_oauth_service
-from services.oauth_client import get_google_oauth_client_service
 from services.user import get_user_service
 from utils.utils import save_activity, generate_password
 
 oauth_view = Blueprint('oauth', __name__, template_folder='templates')
 
 
-@oauth_view.route(settings.GOOGLE_OAUTH_URL_REGISTER, methods=['GET'])
+@oauth_view.route('/oauth2/<provider>/register/callback', methods=['GET'])
 @_trace()
-def google_oauth_register():
-    google_oauth_service = get_google_oauth_client_service()
-    user_data = google_oauth_service.get_user_data_from_token()
-
-    if not user_data:
+def oauth_register(provider):
+    oauth_service = getattr(oauth_client, f"get_{provider}_oauth_client_service", None)
+    if oauth_service is None:
+        return make_response(redirect("/register"))
+    oauth_service = oauth_service()
+    try:
+        sub, email, login = oauth_service.get_user_data_from_token()
+    except Exception:
         return make_response(redirect("/register"))
 
     jwt_service = get_jwt_service()
     user_service = get_user_service()
     oauth_service = get_oauth_service()
 
-    login = user_data['email'].split('@')[0]
-
     if user_service.filter_by(login=login, _first=True) or \
-            user_service.filter_by(email=user_data['email'], _first=True):
+            user_service.filter_by(email=email, _first=True):
         return make_response(redirect('/login'))
 
     user = user_service.create_user(params={"login": login,
-                                            "email": user_data['email'],
+                                            "email": email,
                                             "password": generate_password()})
     oauth_service.create_oauth(params={
         "user_id": user.id,
-        "type": OAuthEnum.google,
-        "sub": user_data['sub']
+        "type": getattr(OAuthEnum, provider),
+        "sub": sub
     })
 
     response = make_response(redirect('/happy'))
 
-    refresh_token = jwt_service.create_refresh_token(user=user)
-
-    token = jwt_service.create_access_token(user=user)
-
-    set_access_cookies(response, token)
-    set_refresh_cookies(response, refresh_token)
+    response = jwt_service.authorize(response=response, user=user)
 
     save_activity(user, action=ActionsEnum.login)
     return response
 
 
-@oauth_view.route(settings.GOOGLE_OAUTH_URL_REGISTER_REDIRECT, methods=['GET'])
+@oauth_view.route('/oauth2/<provider>/register', methods=['GET'])
 @_trace()
-def google_oauth_register_redir():
-    google_oauth_service = get_google_oauth_client_service()
-    return google_oauth_service.register_redirect()
+def oauth_register_redir(provider):
+    oauth_service = getattr(oauth_client, f"get_{provider}_oauth_client_service", None)
+    if oauth_service is None:
+        return make_response(redirect("/register"))
+    oauth_service = oauth_service()
+    return oauth_service.register_redirect()
 
 
-@oauth_view.route(settings.GOOGLE_OAUTH_URL_LOGIN, methods=['GET'])
+@oauth_view.route('/oauth2/<provider>/login/callback', methods=['GET'])
 @_trace()
-def google_oauth_login():
-    google_oauth_service = get_google_oauth_client_service()
-    user_data = google_oauth_service.get_user_data_from_token()
-
-    if not user_data:
+def oauth_login(provider):
+    oauth_service = getattr(oauth_client, f"get_{provider}_oauth_client_service", None)
+    if oauth_service is None:
+        return make_response(redirect("/login"))
+    oauth_service = oauth_service()
+    try:
+        sub, email, login = oauth_service.get_user_data_from_token()
+    except Exception:
         return make_response(redirect("/login"))
 
     jwt_service = get_jwt_service()
     user_service = get_user_service()
     oauth_service = get_oauth_service()
 
-    oauth = oauth_service.get_oauth(sub=user_data['sub'], type=OAuthEnum.google)
+    oauth = oauth_service.get_oauth(sub=sub, type=getattr(OAuthEnum, provider))
 
     if not oauth:
         return make_response(redirect("/register"))
@@ -84,19 +83,17 @@ def google_oauth_login():
 
     response = make_response(redirect('/happy'))
 
-    refresh_token = jwt_service.create_refresh_token(user=user)
-
-    token = jwt_service.create_access_token(user=user)
-
-    set_access_cookies(response, token)
-    set_refresh_cookies(response, refresh_token)
+    response = jwt_service.authorize(response=response, user=user)
 
     save_activity(user, action=ActionsEnum.login)
     return response
 
 
-@oauth_view.route(settings.GOOGLE_OAUTH_URL_LOGIN_REDIRECT, methods=['GET'])
+@oauth_view.route('/oauth2/<provider>/login', methods=['GET'])
 @_trace()
-def google_oauth_login_redir():
-    google_oauth_service = get_google_oauth_client_service()
-    return google_oauth_service.login_redirect()
+def oauth_login_redir(provider):
+    oauth_service = getattr(oauth_client, f"get_{provider}_oauth_client_service", None)
+    if oauth_service is None:
+        return make_response(redirect("/login"))
+    oauth_service = oauth_service()
+    return oauth_service.login_redirect()

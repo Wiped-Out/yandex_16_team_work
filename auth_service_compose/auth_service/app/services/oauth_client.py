@@ -36,13 +36,13 @@ class GoogleOauthServiceClient(OauthServiceClient):
     @_trace()
     def register_redirect(self, **kwargs):
         client = self.get_client()
-        redirect_uri = url_for('oauth.google_oauth_register', _external=True)
+        redirect_uri = url_for('oauth.oauth_register', provider='google', _external=True)
         return client.authorize_redirect(redirect_uri)
 
     @_trace()
     def login_redirect(self, **kwargs):
         client = self.get_client()
-        redirect_uri = url_for('oauth.google_oauth_login', _external=True)
+        redirect_uri = url_for('oauth.oauth_login', provider='google', _external=True)
         return client.authorize_redirect(redirect_uri)
 
     @_trace()
@@ -53,7 +53,8 @@ class GoogleOauthServiceClient(OauthServiceClient):
         resp = client.get('userinfo')
         user_info = resp.json()
         user = oauth.google.userinfo()
-        return user
+        sub, email, username = user['sub'], user['email'], user['email'].split('@')[0]
+        return sub, email, username
 
 
 @lru_cache()
