@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
 
+    ENABLE_LIMITER: bool
+    ENABLE_TRACER: bool
+
     class Config:
         env_file = ".env"
 

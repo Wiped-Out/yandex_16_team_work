@@ -9,6 +9,9 @@ from utils.utils import make_error_response
 
 
 def rate_limit():
+    if not settings.ENABLE_LIMITER:
+        return
+
     cache_db = get_cache_db()
     pipe = cache_db.pipeline()
 

@@ -15,6 +15,9 @@ Instrumentor: Optional[FlaskInstrumentor] = None
 
 
 def configure_tracer() -> None:
+    if not settings.ENABLE_TRACER:
+        return
+
     trace.set_tracer_provider(
         TracerProvider(
             resource=Resource.create(
@@ -38,6 +41,9 @@ def _trace():
     def func_wrapper(func):
         @wraps(func)
         def inner(*args, **kwargs):
+            if not settings.ENABLE_TRACER:
+                return
+
             with contextlib.suppress(OSError):
                 tracer = trace.get_tracer(__name__)
                 with tracer.start_as_current_span(func.__name__):
