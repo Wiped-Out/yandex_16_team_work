@@ -2,17 +2,17 @@ from datetime import timedelta, timezone, datetime
 from functools import lru_cache
 from typing import Optional
 
-from flask import current_app
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask import current_app, Response
+from flask_jwt_extended import create_access_token, create_refresh_token, set_access_cookies, set_refresh_cookies
 from pydantic import BaseModel
 
 from db.cache_db import get_cache_db
 from db.db import get_db
+from extensions.tracer import _trace
 from models import models
 from services.base_cache import BaseCacheStorage, CacheStorage
 from services.base_main import BaseMainStorage, MainStorage
 from services.refresh_token import get_refresh_token_service
-from extensions.tracer import _trace
 
 
 class Token(BaseModel):
@@ -22,6 +22,16 @@ class Token(BaseModel):
 class JWTService(BaseCacheStorage, BaseMainStorage):
     cache_model = Token
     db_model = models.RefreshToken
+
+    @_trace()
+    def authorize(self, response: Response, user) -> Response:
+        refresh_token = self.create_refresh_token(user=user)
+
+        token = self.create_access_token(user=user)
+
+        set_access_cookies(response, token)
+        set_refresh_cookies(response, refresh_token)
+        return response
 
     @_trace()
     def create_access_token(self, user,
@@ -45,7 +55,6 @@ class JWTService(BaseCacheStorage, BaseMainStorage):
 
     @_trace()
     def block_token(self, cache_key: str, expire: timedelta):
-
         self.put_one_item_to_cache(cache_key=cache_key,
                                    item=self.cache_model(jti=cache_key),
                                    expire=expire)

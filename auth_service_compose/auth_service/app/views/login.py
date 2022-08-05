@@ -1,7 +1,6 @@
 from flask import render_template, redirect, Blueprint, make_response
-from flask_jwt_extended import set_access_cookies, jwt_required, set_refresh_cookies
+from flask_jwt_extended import jwt_required
 
-from core.settings import settings
 from extensions.tracer import _trace
 from forms.login_form import LoginForm
 from models.models import ActionsEnum
@@ -24,14 +23,9 @@ def login():
         user_service = get_user_service()
         user = user_service.filter_by(login=form.login.data, _first=True)
         if user and user.check_password(form.password.data):
-            refresh_token = jwt_service.create_refresh_token(user=user)
-
-            token = jwt_service.create_access_token(user=user)
-
             response = make_response(redirect("/happy"))
 
-            set_access_cookies(response, token)
-            set_refresh_cookies(response, refresh_token)
+            response = jwt_service.authorize(response=response, user=user)
 
             save_activity(user, action=ActionsEnum.login)
             return response
@@ -39,9 +33,9 @@ def login():
         return render_template('login.html',
                                message="Неправильный логин или пароль",
                                form=form, title='Авторизация',
-                               oauth_google_login_url=settings.GOOGLE_OAUTH_URL_LOGIN_REDIRECT)
+                               oauth_google_login_url='/oauth2/google/login')
 
     return render_template('login.html',
                            title='Авторизация',
                            form=form,
-                           oauth_google_login_url=settings.GOOGLE_OAUTH_URL_LOGIN_REDIRECT)
+                           oauth_google_login_url='/oauth2/google/login')
