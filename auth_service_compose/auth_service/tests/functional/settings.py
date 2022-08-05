@@ -1,5 +1,3 @@
-import os
-
 from pydantic import BaseSettings
 from dotenv import load_dotenv
 
@@ -7,16 +5,16 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
-    REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
+    REDIS_HOST: str
+    REDIS_PORT: int
 
-    POSTGRES_DB_NAME = os.getenv("POSTGRES_DB_NAME")
-    POSTGRES_USER = os.getenv("POSTGRES_USER")
-    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-    POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
-    POSTGRES_PORT = os.getenv("POSTGRES_PORT", 5432)
+    POSTGRES_DB_NAME: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
 
-    API_URL = os.getenv('API_URL', 'http://flask:5000')
+    API_URL: str
 
     TABLES_NAMES_MAPPINGS = {
         "users": "testdata/sql_tables/users.sql",

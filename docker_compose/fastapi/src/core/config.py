@@ -12,13 +12,13 @@ logging_config.dictConfig(LOGGING)
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME = os.getenv('PROJECT_NAME', 'movies')
-    REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
-    REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
-    ELASTIC_HOST = os.getenv('ELASTIC_HOST', '127.0.0.1')
-    ELASTIC_PORT = int(os.getenv('ELASTIC_PORT', 9200))
-    AUTH_SERVICE_URL = os.getenv('AUTH_SERVICE_URL')
-    JWT_PUBLIC_KEY = os.getenv('JWT_PUBLIC_KEY')
+    PROJECT_NAME: str
+    REDIS_HOST: str
+    REDIS_PORT: int
+    ELASTIC_HOST: str
+    ELASTIC_PORT: int
+    AUTH_SERVICE_URL: str
+    JWT_PUBLIC_KEY: str
     NO_JWT = os.getenv('NO_JWT', False) == 'True'
 
     class Config:
