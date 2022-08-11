@@ -36,13 +36,6 @@ services:
     networks:
       - backend
 
-  redis:
-    image: redis:7.0
-    volumes:
-      - redisdata:/data
-    networks:
-      - backend
-
   fastapi:
     build:
       context: ./fastapi
@@ -120,7 +113,6 @@ services:
 
 volumes:
   fastapi_static:
-  redisdata:
 
 networks:
   backend:

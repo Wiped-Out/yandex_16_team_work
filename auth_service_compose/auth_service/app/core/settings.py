@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     API_URL: str
 
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=2)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     JWT_SECRET_KEY: str
     JWT_PUBLIC_KEY: str

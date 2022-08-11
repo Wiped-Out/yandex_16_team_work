@@ -1,16 +1,16 @@
 import asyncio
 import contextlib
+from datetime import datetime, timezone
 from functools import wraps
 from typing import TypeVar, Sequence
 
 import jwt
 import orjson
 from aiohttp import ClientConnectorError
+from core.config import settings
 from fastapi import HTTPException
 from fastapi_pagination import Params, Page
 from pydantic import conint
-
-from core.config import settings
 
 T = TypeVar("T")
 
@@ -31,9 +31,20 @@ def paginate(
 
 def decode_jwt(token: str):
     try:
-        return jwt.decode(token, settings.JWT_PUBLIC_KEY, algorithms=["HS256"])
+        return jwt.decode(token,
+                          settings.JWT_PUBLIC_KEY,
+                          algorithms=["HS256"])
+    except jwt.exceptions.ExpiredSignatureError as e:
+        decoded = jwt.decode(token,
+                             settings.JWT_PUBLIC_KEY,
+                             algorithms=["HS256"],
+                             options={"verify_signature": False})
+        time_now = int(datetime.now(tz=timezone.utc).timestamp())
+        if time_now - decoded['exp'] < 600:
+            return decoded
+        raise HTTPException(status_code=404, detail=str(e)) from e
     except jwt.exceptions.PyJWTError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
 
 
 def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10):
