@@ -10,7 +10,7 @@ from services.base_request import BaseRequest
 from utils.utils import decode_jwt
 
 
-class AuthService(BaseCacheStorage, BaseRequest):
+class AuthService(BaseRequest):
     model = AuthUser
 
     async def auth_user(self, Authorization: str):
@@ -21,7 +21,5 @@ class AuthService(BaseCacheStorage, BaseRequest):
 
 
 @lru_cache()
-def get_auth_service(
-        cache: AsyncCacheStorage = Depends(get_cache_db),
-) -> AuthService:
-    return AuthService(cache=cache)
+def get_auth_service() -> AuthService:
+    return AuthService()

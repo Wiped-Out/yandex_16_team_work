@@ -19,14 +19,12 @@ app = FastAPI(
 
 @app.on_event('startup')
 async def startup():
-    cache_db.cache = BaseRedisStorage(redis=await aioredis.create_redis_pool((
-        settings.REDIS_HOST, settings.REDIS_PORT
-    ), minsize=10, maxsize=20))
+    pass
 
 
 @app.on_event('shutdown')
 async def shutdown():
-    await cache_db.cache.close()
+    pass
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
