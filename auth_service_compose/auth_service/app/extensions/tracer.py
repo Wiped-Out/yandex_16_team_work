@@ -42,7 +42,7 @@ def _trace():
         @wraps(func)
         def inner(*args, **kwargs):
             if not settings.ENABLE_TRACER:
-                return
+                return func(*args, **kwargs)
 
             with contextlib.suppress(OSError):
                 tracer = trace.get_tracer(__name__)
