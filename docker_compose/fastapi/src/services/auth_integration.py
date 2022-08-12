@@ -6,11 +6,10 @@ from services.base import AsyncCacheStorage
 from db.cache_db import get_cache_db
 from models.auth import AuthUser
 from services.base_cache import BaseCacheStorage
-from services.base_request import BaseRequest
 from utils.utils import decode_jwt
 
 
-class AuthService(BaseCacheStorage, BaseRequest):
+class AuthService(BaseCacheStorage):
     model = AuthUser
 
     async def auth_user(self, Authorization: str):

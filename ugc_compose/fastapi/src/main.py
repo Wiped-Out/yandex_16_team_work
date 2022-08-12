@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
+from api.v1 import comments, bookmarks, likes, film_progress
 
 from core.config import settings
 
@@ -25,6 +26,11 @@ async def shutdown():
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+app.include_router(comments.router, prefix="/api/v1/comments", tags=["comments"])
+app.include_router(bookmarks.router, prefix="/api/v1/bookmarks", tags=["bookmarks"])
+app.include_router(likes.router, prefix="/api/v1/likes", tags=["likes"])
+app.include_router(film_progress.router, prefix="/api/v1/film_progress", tags=["film_progress"])
 
 if __name__ == '__main__':
     uvicorn.run(

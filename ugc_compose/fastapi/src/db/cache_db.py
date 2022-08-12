@@ -1,10 +1,8 @@
 from typing import Optional
 
-from services.base_cache import AsyncCacheStorage
-
-cache: Optional[AsyncCacheStorage] = None
+cache: Optional[None] = None
 
 
 # Функция понадобится при внедрении зависимостей
-async def get_cache_db() -> AsyncCacheStorage:
+async def get_cache_db() -> None:
     return cache
