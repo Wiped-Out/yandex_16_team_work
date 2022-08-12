@@ -12,8 +12,6 @@ logging_config.dictConfig(LOGGING)
 
 
 class Settings(BaseSettings):
-    REDIS_HOST: str
-    REDIS_PORT: int
     PROJECT_NAME: str
     AUTH_SERVICE_URL: str
     JWT_PUBLIC_KEY: str
