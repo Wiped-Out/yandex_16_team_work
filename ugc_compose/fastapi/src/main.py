@@ -1,12 +1,9 @@
-import aioredis
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from core.config import settings
-from db import cache_db
-from services.base_cache import BaseRedisStorage
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
