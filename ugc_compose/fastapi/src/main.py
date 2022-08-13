@@ -3,6 +3,9 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from api.v1 import comments, bookmarks, likes, film_progress
+from kafka import KafkaProducer
+from services.main_db import BaseKafkaStorage
+from db import db
 
 from core.config import settings
 
@@ -17,7 +20,7 @@ app = FastAPI(
 
 @app.on_event('startup')
 async def startup():
-    pass
+    db.db = BaseKafkaStorage(db=KafkaProducer(bootstrap_servers=[f"{settings.KAFKA_HOST}:{settings.KAFKA_PORT}"]))
 
 
 @app.on_event('shutdown')

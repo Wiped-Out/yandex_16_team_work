@@ -1,8 +1,9 @@
 from typing import Optional
+from services.main_db import AbstractMainStorage
 
-db: Optional[None] = None
+db: Optional[AbstractMainStorage] = None
 
 
 # Функция понадобится при внедрении зависимостей
-async def get_db() -> None:
+async def get_db() -> AbstractMainStorage:
     return db
