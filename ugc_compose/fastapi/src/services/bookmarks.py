@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pydantic import UUID4
+from db.kafka import producer
 
 
 class BookmarksService:
@@ -8,8 +9,11 @@ class BookmarksService:
             user_id: UUID4,
             film_id: UUID4,
     ):
-        # todo
-        pass
+        producer.send(
+            topic="bookmarks",
+            value=b"added to watch later",
+            key=f"{user_id}+{film_id}".encode("UTF-8")
+        )
 
 
 @lru_cache()

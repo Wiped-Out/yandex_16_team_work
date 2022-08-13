@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pydantic import UUID4
+from db.kafka import producer
 
 
 class FilmProgressService:
@@ -9,8 +10,11 @@ class FilmProgressService:
             film_id: UUID4,
             seconds: int
     ):
-        # todo
-        pass
+        producer.send(
+            topic="film_progress",
+            value=str(seconds).encode("UTF-8"),
+            key=f"{user_id}+{film_id}".encode("UTF-8"),
+        )
 
 
 @lru_cache()

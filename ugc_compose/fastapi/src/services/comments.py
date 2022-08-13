@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pydantic import UUID4
+from db.kafka import producer
 
 
 class CommentsService:
@@ -9,8 +10,11 @@ class CommentsService:
             film_id: UUID4,
             comment: str
     ):
-        # todo
-        pass
+        producer.send(
+            topic="comments",
+            value=comment.encode("UTF-8"),
+            key=f"{user_id}+{film_id}".encode("UTF-8"),
+        )
 
 
 @lru_cache()

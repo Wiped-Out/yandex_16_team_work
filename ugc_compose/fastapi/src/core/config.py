@@ -16,7 +16,10 @@ class Settings(BaseSettings):
     PROJECT_NAME: str
     AUTH_SERVICE_URL: str
     JWT_PUBLIC_KEY: str
-    NO_JWT = os.getenv('NO_JWT', False) == 'True'
+    NO_JWT: bool
+
+    KAFKA_HOST: str
+    KAFKA_PORT: int
 
     class Config:
         env_file = ".env"
