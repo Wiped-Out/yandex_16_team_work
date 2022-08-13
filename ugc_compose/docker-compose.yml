@@ -5,6 +5,9 @@ services:
       - ./zookeeper/.env
     ports:
       - 22181:2181
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
     networks:
       - backend
 
@@ -24,7 +27,8 @@ services:
     depends_on:
       - zookeeper
     volumes:
-      - kafka_data:/data
+      - kafka_data:/var/lib/kafka/data
+      - kafka_logs:/var/lib/kafka/logs
     ports:
       - 29092:29092
     env_file:
@@ -114,6 +118,9 @@ services:
 volumes:
   fastapi_static:
   kafka_data:
+  kafka_logs:
+  zookeeper_data:
+  zookeeper_logs:
   clickhouse-node1_data:
   clickhouse-node2_data:
   clickhouse-node3_data:
