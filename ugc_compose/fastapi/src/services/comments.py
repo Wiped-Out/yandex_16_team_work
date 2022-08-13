@@ -2,6 +2,8 @@ import time
 from functools import lru_cache
 from pydantic import UUID4
 from json import dumps
+
+from models.models import UserComment
 from services.main_db import AbstractMainStorage, MainStorage
 from fastapi import Depends
 from db.db import get_db
@@ -14,15 +16,14 @@ class CommentsService(MainStorage):
             film_id: UUID4,
             comment: str
     ):
-        value = {"user_id": user_id,
-                 "film_id": film_id,
-                 "comment": comment,
-                 "created_at": int(time.time()),
-                 }
+        user_comment = UserComment(user_id=user_id,
+                 film_id=film_id,
+                 comment=comment,
+                 created_at=int(time.time()))
 
         self.send(
             topic="user_comments",
-            value=dumps(value).encode(),
+            value=user_comment.json().encode(),
             key=f"{user_id}+{film_id}".encode(),
         )
 

@@ -12,7 +12,7 @@ class JWTBearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
         super(JWTBearer, self).__init__(auto_error=auto_error)
 
-    async def __call__(self, request: Request, auth_service=Depends(get_auth_service)):
+    async def __call__(self, request: Request, auth_service=Depends(get_auth_service)) -> AuthUser:
         credentials: HTTPAuthorizationCredentials = await super(JWTBearer, self).__call__(request)
         if settings.NO_JWT:
             return AuthUser(highest_role=0, uuid=uuid.uuid4())

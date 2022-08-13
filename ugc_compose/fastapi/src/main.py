@@ -1,13 +1,15 @@
+from json import dumps
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
-from api.v1 import comments, bookmarks, likes, film_progress
 from kafka import KafkaProducer
-from services.main_db import BaseKafkaStorage
-from db import db
 
+from api.v1 import comments, bookmarks, likes, film_progress
 from core.config import settings
+from db import db
+from services.main_db import BaseKafkaStorage
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -20,7 +22,9 @@ app = FastAPI(
 
 @app.on_event('startup')
 async def startup():
-    db.db = BaseKafkaStorage(db=KafkaProducer(bootstrap_servers=[f"{settings.KAFKA_HOST}:{settings.KAFKA_PORT}"]))
+    db.db = BaseKafkaStorage(db=KafkaProducer(bootstrap_servers=[f"{settings.KAFKA_HOST}:{settings.KAFKA_PORT}"],
+                                              api_version=(0, 11, 5)
+                                              ))
 
 
 @app.on_event('shutdown')

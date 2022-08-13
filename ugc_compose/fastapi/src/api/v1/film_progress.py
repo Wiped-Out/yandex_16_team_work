@@ -16,12 +16,12 @@ router = APIRouter()
 )
 async def add_film_progress(
         film_id: UUID4,
-        seconds: int,
+        stamp: int,
         film_progress_service: FilmProgressService = Depends(get_film_progress_service),
         auth_user: AuthUser = Depends(security),
 ):
     await film_progress_service.save_film_progress(
-        user_id=auth_user.uuid, film_id=film_id, seconds=seconds,
+        user_id=auth_user.uuid, film_id=film_id, stamp=stamp,
     )
 
     return Response(status_code=HTTPStatus.CREATED)

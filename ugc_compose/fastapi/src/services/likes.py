@@ -1,9 +1,12 @@
 from functools import lru_cache
-from pydantic import UUID4
 from json import dumps
-from services.main_db import AbstractMainStorage, MainStorage
+
 from fastapi import Depends
+from pydantic import UUID4
+
 from db.db import get_db
+from models.models import FilmLike
+from services.main_db import AbstractMainStorage, MainStorage
 
 
 class LikesService(MainStorage):
@@ -12,9 +15,10 @@ class LikesService(MainStorage):
             user_id: UUID4,
             film_id: UUID4,
     ):
+        film_like = FilmLike(user_id=user_id, film_id=film_id)
         self.send(
             topic="film_likes",
-            value=dumps({"user_id": user_id, "film_id": film_id}).encode(),
+            value=film_like.json().encode(),
             key=f"{user_id}+{film_id}".encode(),
         )
 

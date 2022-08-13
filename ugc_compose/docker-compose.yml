@@ -1,6 +1,6 @@
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.4.9.amd64
+    image: confluentinc/cp-zookeeper:5.4.9
     env_file:
       - ./zookeeper/.env
     ports:
@@ -20,9 +20,11 @@ services:
 
 
   kafka:
-    image: confluentinc/cp-kafka:5.4.9.amd64
+    image: confluentinc/cp-kafka:5.4.9
     depends_on:
       - zookeeper
+    volumes:
+      - kafka_data:/data
     ports:
       - 29092:29092
     env_file:
@@ -66,6 +68,7 @@ services:
       - "9000:9000"
     volumes:
       - ./clickhouse/data/node1:/etc/clickhouse-server
+      - clickhouse-node1_data:/var/lib/clickhouse
     depends_on:
       - zookeeper
     networks:
@@ -77,6 +80,7 @@ services:
     hostname: clickhouse-node2
     volumes:
       - ./clickhouse/data/node2:/etc/clickhouse-server
+      - clickhouse-node2_data:/var/lib/clickhouse
     depends_on:
       - zookeeper
     networks:
@@ -88,6 +92,7 @@ services:
     hostname: clickhouse-node3
     volumes:
       - ./clickhouse/data/node3:/etc/clickhouse-server
+      - clickhouse-node3_data:/var/lib/clickhouse
     depends_on:
       - zookeeper
     networks:
@@ -99,6 +104,7 @@ services:
     hostname: clickhouse-node4
     volumes:
       - ./clickhouse/data/node4:/etc/clickhouse-server
+      - clickhouse-node4_data:/var/lib/clickhouse
     depends_on:
       - zookeeper
     networks:
@@ -107,6 +113,11 @@ services:
 
 volumes:
   fastapi_static:
+  kafka_data:
+  clickhouse-node1_data:
+  clickhouse-node2_data:
+  clickhouse-node3_data:
+  clickhouse-node4_data:
 
 networks:
   backend:

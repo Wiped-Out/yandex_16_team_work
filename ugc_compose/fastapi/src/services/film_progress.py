@@ -1,10 +1,11 @@
-import time
 from functools import lru_cache
-from pydantic import UUID4
-from json import dumps
-from services.main_db import AbstractMainStorage, MainStorage
+
 from fastapi import Depends
+from pydantic import UUID4
+
 from db.db import get_db
+from models.models import FilmProgress
+from services.main_db import AbstractMainStorage, MainStorage
 
 
 class FilmProgressService(MainStorage):
@@ -12,17 +13,16 @@ class FilmProgressService(MainStorage):
             self,
             user_id: UUID4,
             film_id: UUID4,
-            seconds: int
+            stamp: int
     ):
-        value = {"user_id": user_id,
-                 "film_id": film_id,
-                 "seconds": seconds,
-                 "stamp": int(time.time()),
-                 }
+        film_progress = FilmProgress(user_id=user_id,
+                                     film_id=film_id,
+                                     stamp=stamp,
+                                     )
 
         self.send(
             topic="film_progress",
-            value=dumps(value).encode(),
+            value=film_progress.json().encode(),
             key=f"{user_id}+{film_id}".encode(),
         )
 

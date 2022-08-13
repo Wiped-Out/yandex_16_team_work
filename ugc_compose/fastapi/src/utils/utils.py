@@ -1,6 +1,6 @@
 import asyncio
 import contextlib
-from datetime import datetime, timezone
+import time
 from functools import wraps
 from typing import TypeVar, Sequence
 
@@ -40,7 +40,7 @@ def decode_jwt(token: str):
                              settings.JWT_PUBLIC_KEY,
                              algorithms=["HS256"],
                              options={"verify_signature": False})
-        time_now = int(datetime.now(tz=timezone.utc).timestamp())
+        time_now = int(time.time())
         if time_now - decoded['exp'] < 600:
             return decoded
         raise HTTPException(status_code=404, detail=str(e)) from e
