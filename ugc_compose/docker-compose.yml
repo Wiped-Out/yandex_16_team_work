@@ -3,24 +3,13 @@ services:
     image: confluentinc/cp-zookeeper:5.4.9
     env_file:
       - ./zookeeper/.env
-    ports:
-      - 22181:2181
+#    ports:
+#      - 22181:2181
     volumes:
       - zookeeper_data:/var/lib/zookeeper/data
       - zookeeper_logs:/var/lib/zookeeper/log
     networks:
       - backend
-
-
-  etl:
-    build:
-      context: ./etl
-    depends_on:
-      - clickhouse-node1
-      - kafka
-    networks:
-      - backend
-
 
   kafka:
     image: confluentinc/cp-kafka:5.4.9
@@ -29,8 +18,8 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
       - kafka_logs:/var/lib/kafka/logs
-    ports:
-      - 29092:29092
+#    ports:
+#      - 29092:29092
     env_file:
       - ./kafka/.env
     networks:
@@ -67,9 +56,9 @@ services:
     image: yandex/clickhouse-server:20.4
     container_name: clickhouse-node1
     hostname: clickhouse-node1
-    ports:
-      - "8123:8123"
-      - "9000:9000"
+#    ports:
+#      - "8123:8123"
+#      - "9000:9000"
     volumes:
       - ./clickhouse/data/node1:/etc/clickhouse-server
       - clickhouse-node1_data:/var/lib/clickhouse

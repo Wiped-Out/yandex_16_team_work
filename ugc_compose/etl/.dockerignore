@@ -1,6 +1,0 @@
-setup.cfg
-*.md
-Dockerfile
-.env.sample
-*.state
-*.log
