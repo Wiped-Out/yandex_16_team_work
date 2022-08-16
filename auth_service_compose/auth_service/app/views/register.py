@@ -9,7 +9,7 @@ register_view = Blueprint('register', __name__, template_folder='templates')
 
 @register_view.route('/register', methods=['GET', 'POST'])
 @_trace()
-def reqister():
+def register():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:

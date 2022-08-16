@@ -7,10 +7,11 @@ from typing import TypeVar, Sequence
 import jwt
 import orjson
 from aiohttp import ClientConnectorError
-from core.config import settings
 from fastapi import HTTPException
 from fastapi_pagination import Params, Page
 from pydantic import conint
+
+from core.config import settings
 
 T = TypeVar("T")
 
@@ -45,7 +46,6 @@ def decode_jwt(token: str):
         raise HTTPException(status_code=404, detail=str(e)) from e
     except jwt.exceptions.PyJWTError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
-
 
 def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10):
     """

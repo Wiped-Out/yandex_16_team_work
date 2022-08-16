@@ -13,6 +13,8 @@
 - fake_data_to_postgres
 - auth_service_compose/auth_service/app
 - auth_service_compose/auth_service/tests/functional
+- ugc_compose/etl
+- ugc_compose/fastapi
 ````
 docker network create services_network
 cd auth_service_compose

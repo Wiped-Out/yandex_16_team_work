@@ -1,0 +1,133 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.4.9
+    env_file:
+      - ./zookeeper/.env
+    ports:
+      - 22181:2181
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    networks:
+      - backend
+
+
+  etl:
+    build:
+      context: ./etl
+    depends_on:
+      - clickhouse-node1
+      - kafka
+    networks:
+      - backend
+
+
+  kafka:
+    image: confluentinc/cp-kafka:5.4.9
+    depends_on:
+      - zookeeper
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+      - kafka_logs:/var/lib/kafka/logs
+    ports:
+      - 29092:29092
+    env_file:
+      - ./kafka/.env
+    networks:
+      - backend
+
+  fastapi:
+    build:
+      context: ./fastapi
+    volumes:
+      - fastapi_static:/app/src/static
+    depends_on:
+      - kafka
+    networks:
+      - internal_bridge
+      - backend
+      - services_network
+
+  nginx_ugc:
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - fastapi_static:/data/fastapi_static
+    depends_on:
+      - fastapi
+    ports:
+      - 82:82
+    restart: always
+    networks:
+      - internal_bridge
+      - services_network
+
+  clickhouse-node1:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node1
+    hostname: clickhouse-node1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - ./clickhouse/data/node1:/etc/clickhouse-server
+      - clickhouse-node1_data:/var/lib/clickhouse
+    depends_on:
+      - zookeeper
+    networks:
+      - backend
+
+  clickhouse-node2:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node2
+    hostname: clickhouse-node2
+    volumes:
+      - ./clickhouse/data/node2:/etc/clickhouse-server
+      - clickhouse-node2_data:/var/lib/clickhouse
+    depends_on:
+      - zookeeper
+    networks:
+      - backend
+
+  clickhouse-node3:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node3
+    hostname: clickhouse-node3
+    volumes:
+      - ./clickhouse/data/node3:/etc/clickhouse-server
+      - clickhouse-node3_data:/var/lib/clickhouse
+    depends_on:
+      - zookeeper
+    networks:
+      - backend
+
+  clickhouse-node4:
+    image: yandex/clickhouse-server:20.4
+    container_name: clickhouse-node4
+    hostname: clickhouse-node4
+    volumes:
+      - ./clickhouse/data/node4:/etc/clickhouse-server
+      - clickhouse-node4_data:/var/lib/clickhouse
+    depends_on:
+      - zookeeper
+    networks:
+      - backend
+# Указываем Docker, какие именованные тома потребуются сервисам
+
+volumes:
+  fastapi_static:
+  kafka_data:
+  kafka_logs:
+  zookeeper_data:
+  zookeeper_logs:
+  clickhouse-node1_data:
+  clickhouse-node2_data:
+  clickhouse-node3_data:
+  clickhouse-node4_data:
+
+networks:
+  backend:
+  internal_bridge:
+  services_network:
+    external: true
