@@ -1,11 +1,10 @@
-from abc import abstractclassmethod, ABC
+from abc import abstractmethod, ABC
 from kafka import KafkaProducer
 
 
 class AbstractMainStorage(ABC):
-    @classmethod
-    @abstractclassmethod
-    def send(cls, **kwargs):
+    @abstractmethod
+    def send(self, **kwargs):
         pass
 
 
