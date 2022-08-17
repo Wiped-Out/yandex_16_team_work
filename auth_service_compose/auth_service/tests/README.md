@@ -1,1 +1,0 @@
-Отчет о тестах будет в папке auth_service_compose/auth_service/tests/functional/report в виде HTML файла
