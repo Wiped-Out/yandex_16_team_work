@@ -1,15 +1,9 @@
 import os
-from logging import config as logging_config
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
 
-from core.logger import LOGGING
-
 load_dotenv()
-
-# Применяем настройки логирования
-logging_config.dictConfig(LOGGING)
 
 
 class Settings(BaseSettings):
@@ -20,6 +14,13 @@ class Settings(BaseSettings):
 
     KAFKA_HOST: str
     KAFKA_PORT: int
+
+    LOGSTASH_HOST: str
+    LOGSTASH_PORT: int
+    ENABLE_LOGSTASH: bool
+
+    SENTRY_DSN: str
+    ENABLE_SENTRY: bool
 
     class Config:
         env_file = ".env"

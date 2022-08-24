@@ -35,6 +35,13 @@ class Settings(BaseSettings):
     ENABLE_LIMITER: bool
     ENABLE_TRACER: bool
 
+    LOGSTASH_HOST: str
+    LOGSTASH_PORT: int
+    ENABLE_LOGSTASH: bool
+
+    SENTRY_DSN: str
+    ENABLE_SENTRY: bool
+
     class Config:
         env_file = ".env"
 
