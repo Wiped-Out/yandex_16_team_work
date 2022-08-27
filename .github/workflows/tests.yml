@@ -15,14 +15,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flake8
+          pip install mypy
           pip install -r ./auth_service_compose/auth_service/app/requirements.txt
           pip install -r ./docker_compose/app/requirements.txt
           pip install -r ./docker_compose/etl/requirements.txt
@@ -31,10 +34,9 @@ jobs:
           pip install -r ./ugc_compose/fake_data_kafka_producer/requirements.txt
           pip install -r ./ugc_compose/fastapi/requirements.txt
 
-      - name: flake8
-        run: |
-          flake8 ./notification-service/src/ --format=html --htmldir=flake-report
-          flake8 ./notification-consumers/src/ --format=html --htmldir=flake-report
+      - name: wemake-python-styleguide
+        uses: wemake-services/wemake-python-styleguide@0.16.1
+
       - name: Archive html linter results
         uses: actions/upload-artifact@v3
         if: ${{ always() }}
@@ -44,8 +46,13 @@ jobs:
 
       - name: mypy
         run: |
-          mypy ./notification-service/src/
-          mypy ./notification-consumers/src/
+          mypy ./auth_service_compose/auth_service/app/
+          mypy ./docker_compose/app/
+          mypy ./docker_compose/etl/
+          mypy ./docker_compose/fastapi/src/
+          mypy ./fake_data_to_postgres/
+          mypy ./ugc_compose/fake_data_kafka_producer/
+          mypy ./ugc_compose/fastapi/src/
 
   notify:
     needs: linter
