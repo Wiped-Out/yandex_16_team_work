@@ -1,5 +1,5 @@
 import uuid
-from dataclasses import dataclass, astuple
+from dataclasses import astuple, dataclass
 from datetime import datetime
 
 from pydantic import validate_arguments

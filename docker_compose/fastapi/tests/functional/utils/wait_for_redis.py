@@ -1,8 +1,8 @@
 import aioredis
 from aioredis import Redis
-
 from settings import settings
-from .utils import backoff_on_true, backoff
+
+from .utils import backoff, backoff_on_true
 
 
 class RedisManager:
@@ -11,7 +11,7 @@ class RedisManager:
     @backoff()
     async def connect(self):
         self.connection = await aioredis.create_redis_pool((
-            settings.REDIS_HOST, settings.REDIS_PORT
+            settings.REDIS_HOST, settings.REDIS_PORT,
         ), minsize=10, maxsize=20)
 
     async def __aenter__(self) -> Redis:

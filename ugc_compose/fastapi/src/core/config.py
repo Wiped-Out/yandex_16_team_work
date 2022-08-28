@@ -1,10 +1,9 @@
 import os
 from logging import config as logging_config
 
+from core.logger import LOGGING
 from dotenv import load_dotenv
 from pydantic import BaseSettings
-
-from core.logger import LOGGING
 
 load_dotenv()
 
@@ -22,7 +21,7 @@ class Settings(BaseSettings):
     KAFKA_PORT: int
 
     class Config:
-        env_file = ".env"
+        env_file = '.env'
 
 
 # Корень проекта

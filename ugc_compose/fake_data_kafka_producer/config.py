@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     MAX_NUMBER_USERS: int = 10000
 
     class Config:
-        env_file = ".env"
+        env_file = '.env'
 
 
 settings = Settings()

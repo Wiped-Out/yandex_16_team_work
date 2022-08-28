@@ -1,6 +1,5 @@
 import orjson
 from pydantic import BaseModel
-
 from utils import utils
 
 

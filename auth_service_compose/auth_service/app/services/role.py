@@ -1,15 +1,14 @@
 import uuid
-
-from services.base_cache import BaseCacheStorage, CacheStorage
-from services.base_main import BaseMainStorage, MainStorage
-from models import models
-from db.cache_db import get_cache_db
-from db.db import get_db
-from pydantic import BaseModel, Field
-from pydantic.types import UUID4
 from functools import lru_cache
 
+from db.cache_db import get_cache_db
+from db.db import get_db
 from extensions.tracer import _trace
+from models import models
+from pydantic import BaseModel, Field
+from pydantic.types import UUID4
+from services.base_cache import BaseCacheStorage, CacheStorage
+from services.base_main import BaseMainStorage, MainStorage
 
 
 class CacheRole(BaseModel):
@@ -30,7 +29,7 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
     ):
         query = self.get_query()
 
-        cache_key = f"{base_url}?{page=}&{per_page=}"
+        cache_key = f'{base_url}?{page=}&{per_page=}'
         roles = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
         if not roles:
             paginated_roles = self.paginate(query=query, page=page, per_page=per_page)
@@ -39,10 +38,10 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
                 self.put_items_to_cache(cache_key=cache_key, items=roles)
 
         return {
-            "items": roles,
-            "total": self.count(query),
-            "page": page,
-            "per_page": per_page
+            'items': roles,
+            'total': self.count(query),
+            'page': page,
+            'per_page': per_page,
         }
 
     @_trace()
@@ -73,7 +72,7 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
 @lru_cache()
 def get_role_service(
         cache: CacheStorage = None,
-        main_db: MainStorage = None
+        main_db: MainStorage = None,
 ) -> RoleService:
     cache: CacheStorage = get_cache_db() or cache
     main_db: MainStorage = get_db() or main_db

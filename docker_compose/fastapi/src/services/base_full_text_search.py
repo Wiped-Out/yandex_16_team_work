@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from elasticsearch import AsyncElasticsearch
-from elasticsearch import NotFoundError
+from elasticsearch import AsyncElasticsearch, NotFoundError
 
 
 class AsyncFullTextSearchStorage(ABC):
@@ -17,7 +16,7 @@ class AsyncFullTextSearchStorage(ABC):
             body: dict,
             from_: Optional[int] = None,
             size: Optional[int] = None,
-            **kwargs
+            **kwargs,
     ):
         pass
 
@@ -43,7 +42,7 @@ class BaseElasticStorage(AsyncFullTextSearchStorage):
             body: dict,
             from_: Optional[int] = None,
             size: Optional[int] = None,
-            **kwargs
+            **kwargs,
     ):
         return await self.elastic.search(index=index, body=body, from_=from_, size=size)
 
@@ -64,14 +63,14 @@ class BaseFullTextSearchStorage:
             self,
             _id: str,
             model,
-            index: str
+            index: str,
     ):
         try:
             doc = await self.full_text_search.get(index, _id)
         except NotFoundError:
             return None
 
-        return model(**doc["_source"])
+        return model(**doc['_source'])
 
     async def get_data(
             self,
@@ -81,9 +80,9 @@ class BaseFullTextSearchStorage:
             index: str,
     ):
         query = {
-            "query": {
-                "match_all": {}
-            }
+            'query': {
+                'match_all': {},
+            },
         }
 
         try:
@@ -93,13 +92,13 @@ class BaseFullTextSearchStorage:
                 from_=page_size * (page - 1),
                 size=page_size,
             )
-            return [model(**item["_source"]) for item in doc["hits"]["hits"]]
+            return [model(**item['_source']) for item in doc['hits']['hits']]
         except NotFoundError:
             return []
 
     async def count_all_data_in_index(self, index: str) -> int:
         count = await self.full_text_search.count(index=index)
-        return count["count"]
+        return count['count']
 
     async def search(
             self,
@@ -110,13 +109,13 @@ class BaseFullTextSearchStorage:
             page_size: int,
     ) -> dict:
         query = {
-            "query": {
-                "multi_match": {
-                    "query": search,
-                    "fields": fields,
-                    "fuzziness": "auto"
-                }
-            }
+            'query': {
+                'multi_match': {
+                    'query': search,
+                    'fields': fields,
+                    'fuzziness': 'auto',
+                },
+            },
         }
 
         try:
@@ -124,7 +123,7 @@ class BaseFullTextSearchStorage:
                 index=index,
                 body=query,
                 from_=page_size * (page - 1),
-                size=page_size
+                size=page_size,
             )
         except NotFoundError:
             return {}
@@ -138,17 +137,17 @@ class BaseFullTextSearchStorage:
             index: str,
             model,
             page: int,
-            page_size: int
+            page_size: int,
     ) -> list:
         doc = await self.search(
             search=search,
             fields=fields,
             index=index,
             page=page,
-            page_size=page_size
+            page_size=page_size,
         )
 
         if not doc:
             return []
 
-        return [model(**item["_source"]) for item in doc["hits"]["hits"]]
+        return [model(**item['_source']) for item in doc['hits']['hits']]

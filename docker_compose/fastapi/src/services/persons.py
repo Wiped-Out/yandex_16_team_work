@@ -1,11 +1,11 @@
 from functools import lru_cache
 
-from fastapi import Depends
-
-from db.db import get_db
 from db.cache_db import get_cache_db
+from db.db import get_db
+from fastapi import Depends
 from models.person import Person
-from services.base import BaseSearchPersonService, AsyncCacheStorage, AsyncFullTextSearchStorage
+from services.base import (AsyncCacheStorage, AsyncFullTextSearchStorage,
+                           BaseSearchPersonService)
 
 
 class PersonsService(BaseSearchPersonService):
@@ -16,7 +16,7 @@ class PersonsService(BaseSearchPersonService):
             page_size: int,
             base_url: str,
     ) -> list[Person]:
-        cache_key = f"{base_url}_{search=}_{page_size=}_{page=}"
+        cache_key = f'{base_url}_{search=}_{page_size=}_{page=}'
         persons = await self.get_items_from_cache(cache_key=cache_key, model=Person)
 
         if not persons:
@@ -37,10 +37,10 @@ class PersonsService(BaseSearchPersonService):
             base_url: str,
     ) -> list[Person]:
 
-        cache_key = f"{base_url}_{person_id=}"
+        cache_key = f'{base_url}_{person_id=}'
         persons = await self.get_items_from_cache(
             cache_key=cache_key,
-            model=self.model
+            model=self.model,
         )
 
         if not persons:
@@ -55,6 +55,6 @@ class PersonsService(BaseSearchPersonService):
 @lru_cache()
 def get_persons_service(
         cache: AsyncCacheStorage = Depends(get_cache_db),
-        full_text_search: AsyncFullTextSearchStorage = Depends(get_db)
+        full_text_search: AsyncFullTextSearchStorage = Depends(get_db),
 ) -> PersonsService:
     return PersonsService(cache=cache, full_text_search=full_text_search)

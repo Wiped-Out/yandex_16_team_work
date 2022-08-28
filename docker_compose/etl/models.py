@@ -1,6 +1,6 @@
 import uuid
-from dataclasses import dataclass, astuple
-from typing import Union, List, Dict
+from dataclasses import astuple, dataclass
+from typing import Dict, List, Union
 
 from pydantic import validate_arguments
 

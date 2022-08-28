@@ -1,5 +1,5 @@
-from pydantic import BaseSettings
 from dotenv import load_dotenv
+from pydantic import BaseSettings
 
 load_dotenv()
 
@@ -17,13 +17,13 @@ class Settings(BaseSettings):
     API_URL: str
 
     TABLES_NAMES_MAPPINGS = {
-        "users": "testdata/sql_tables/users.sql",
-        "roles": "testdata/sql_tables/roles.sql",
-        "user_roles": "testdata/sql_tables/user_roles.sql",
+        'users': 'testdata/sql_tables/users.sql',
+        'roles': 'testdata/sql_tables/roles.sql',
+        'user_roles': 'testdata/sql_tables/user_roles.sql',
     }
 
     class Config:
-        env_file = ".env"
+        env_file = '.env'
 
 
 settings = Settings()

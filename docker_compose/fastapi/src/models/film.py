@@ -1,7 +1,8 @@
+from typing import Optional
+
+from models.base import BaseOrjsonModel
 from pydantic import BaseModel
 from pydantic.types import UUID4
-from typing import Optional
-from models.base import BaseOrjsonModel
 
 
 class PersonInFilm(BaseModel):

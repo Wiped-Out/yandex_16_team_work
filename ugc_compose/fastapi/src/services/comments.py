@@ -1,12 +1,11 @@
 import time
 from functools import lru_cache
-from pydantic import UUID4
-from json import dumps
 
-from models.models import UserComment
-from services.main_db import AbstractMainStorage, MainStorage
-from fastapi import Depends
 from db.db import get_db
+from fastapi import Depends
+from models.models import UserComment
+from pydantic import UUID4
+from services.main_db import AbstractMainStorage, MainStorage
 
 
 class CommentsService(MainStorage):
@@ -14,17 +13,20 @@ class CommentsService(MainStorage):
             self,
             user_id: UUID4,
             film_id: UUID4,
-            comment: str
+            comment: str,
     ):
-        user_comment = UserComment(user_id=user_id,
-                 film_id=film_id,
-                 comment=comment,
-                 created_at=int(time.time()))
+        user_comment = UserComment(
+            user_id=user_id,
+            film_id=film_id,
+            comment=comment,
+            created_at=int(time.time()),
+        )
 
+        key = '{user_id}+{film_id}'.format(user_id=user_id, film_id=film_id)
         self.send(
-            topic="user_comments",
+            topic='user_comments',
             value=user_comment.json().encode(),
-            key=f"{user_id}+{film_id}".encode(),
+            key=key.encode(),
         )
 
 

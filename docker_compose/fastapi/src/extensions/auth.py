@@ -1,10 +1,8 @@
 import uuid
 
-import jwt
-from fastapi import Request, HTTPException, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-
 from core.config import settings
+from fastapi import Depends, HTTPException, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from models.auth import AuthUser
 from services.auth_integration import get_auth_service
 
@@ -18,8 +16,8 @@ class JWTBearer(HTTPBearer):
         if settings.NO_JWT:
             return AuthUser(highest_role=0, uuid=uuid.uuid4())
         if credentials:
-            if credentials.scheme != "Bearer":
-                raise HTTPException(status_code=403, detail="Invalid authentication scheme.")
+            if credentials.scheme != 'Bearer':
+                raise HTTPException(status_code=403, detail='Invalid authentication scheme.')
             return await auth_service.auth_user(credentials.credentials)
 
 

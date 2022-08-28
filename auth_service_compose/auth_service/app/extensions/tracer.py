@@ -2,14 +2,13 @@ import contextlib
 from functools import wraps
 from typing import Optional
 
+from core.settings import settings
 from opentelemetry import trace
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-
-from core.settings import settings
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 Instrumentor: Optional[FlaskInstrumentor] = None
 
@@ -21,20 +20,19 @@ def configure_tracer() -> None:
     trace.set_tracer_provider(
         TracerProvider(
             resource=Resource.create(
-                {SERVICE_NAME: "auth_service"}
-            )
-        )
+                {SERVICE_NAME: 'auth_service'},
+            ),
+        ),
     )
+
     trace.get_tracer_provider().add_span_processor(
         BatchSpanProcessor(
             JaegerExporter(
                 agent_host_name=settings.JAEGER_HOST,
                 agent_port=settings.JAEGER_PORT,
-            )
-        )
+            ),
+        ),
     )
-    # Чтобы видеть трейсы в консоли
-    # trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
 
 
 def _trace():

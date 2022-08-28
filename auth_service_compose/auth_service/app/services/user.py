@@ -1,13 +1,13 @@
-from services.base_cache import BaseCacheStorage, CacheStorage
-from services.base_main import BaseMainStorage, MainStorage
+from functools import lru_cache
+
+from db.cache_db import get_cache_db
+from db.db import get_db
+from extensions.tracer import _trace
 from models import models
 from pydantic import BaseModel
 from pydantic.types import UUID4
-from db.cache_db import get_cache_db
-from db.db import get_db
-from functools import lru_cache
-
-from extensions.tracer import _trace
+from services.base_cache import BaseCacheStorage, CacheStorage
+from services.base_main import BaseMainStorage, MainStorage
 
 
 class CacheUser(BaseModel):
@@ -23,10 +23,10 @@ class UserService(BaseCacheStorage, BaseMainStorage):
     def create_user(self, params: dict) -> cache_model:
         user = self.create(
             need_commit=False,
-            login=params["login"],
-            email=params["email"],
+            login=params['login'],
+            email=params['email'],
         )
-        user.set_password(params["password"])
+        user.set_password(params['password'])
         self.db.commit()
         return self.cache_model(**user.to_dict())
 
@@ -39,7 +39,7 @@ class UserService(BaseCacheStorage, BaseMainStorage):
     ):
         query = self.get_query()
 
-        cache_key = f"{base_url}?{page=}&{per_page=}"
+        cache_key = f'{base_url}?{page=}&{per_page=}'
         users = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
         if not users:
             paginated_users = self.paginate(query=query, page=page, per_page=per_page)
@@ -47,10 +47,10 @@ class UserService(BaseCacheStorage, BaseMainStorage):
             if users:
                 self.put_items_to_cache(cache_key=cache_key, items=users)
         return {
-            "items": users,
-            "total": self.count(query),
-            "page": page,
-            "per_page": per_page,
+            'items': users,
+            'total': self.count(query),
+            'page': page,
+            'per_page': per_page,
         }
 
     @_trace()
@@ -82,7 +82,7 @@ class UserService(BaseCacheStorage, BaseMainStorage):
 @lru_cache()
 def get_user_service(
         cache: CacheStorage = None,
-        main_db: MainStorage = None
+        main_db: MainStorage = None,
 ) -> UserService:
     cache: CacheStorage = get_cache_db() or cache
     main_db: MainStorage = get_db() or main_db

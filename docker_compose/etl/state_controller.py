@@ -6,10 +6,10 @@ from typing import Optional
 @dataclass
 class StateController:
     """Класс для сохранения состояния загрузки/выгрузки"""
+
     file_path: str
     state: Optional[int] = 0
-    timestamp: Optional[datetime.datetime] = \
-        datetime.datetime(year=2022, month=1, day=1)
+    timestamp: Optional[datetime.datetime] = datetime.datetime(year=2022, month=1, day=1)
 
     def get_state(self):
         try:

@@ -1,6 +1,6 @@
 import uuid
 
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -44,9 +44,9 @@ class Genre(UUIDMixin, TimeStampedMixin):
     description = models.TextField(_('description'), blank=True, null=True)
 
     class Meta:
-        db_table = "content\".\"genre"
-        verbose_name = "Жанр"
-        verbose_name_plural = "Жанры"
+        db_table = 'content\".\"genre'
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
         indexes = [] + TimeStampedMixin.Meta.indexes
 
     def __str__(self):
@@ -59,7 +59,7 @@ class GenreFilmwork(UUIDMixin):
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "content\".\"genre_film_work"
+        db_table = 'content\".\"genre_film_work'
         constraints = [models.UniqueConstraint(
             fields=['film_work', 'genre'],
             name='film_work_genre_idx')]
@@ -69,9 +69,9 @@ class Person(UUIDMixin, TimeStampedMixin):
     full_name = models.CharField(_('name'), max_length=255)
 
     class Meta:
-        db_table = "content\".\"person"
-        verbose_name = "Человек"
-        verbose_name_plural = "Люди"
+        db_table = 'content\".\"person'
+        verbose_name = 'Человек'
+        verbose_name_plural = 'Люди'
         indexes = [] + TimeStampedMixin.Meta.indexes
 
     def __str__(self):
@@ -85,7 +85,7 @@ class PersonFilmwork(UUIDMixin):
     created = models.DateTimeField(_('created'), auto_now_add=True)
 
     class Meta:
-        db_table = "content\".\"person_film_work"
+        db_table = 'content\".\"person_film_work'
         constraints = [models.UniqueConstraint(
             fields=['film_work', 'person', 'role'],
             name='film_work_person_role_idx')]
@@ -105,13 +105,13 @@ class Filmwork(UUIDMixin, TimeStampedMixin):
     persons = models.ManyToManyField(Person, through='PersonFilmwork')
 
     class Meta:
-        db_table = "content\".\"film_work"
+        db_table = 'content\".\"film_work'
         indexes = [models.Index(
             fields=['creation_date', 'rating'],
-            name='film_work_creation_date_idx')
+            name='film_work_creation_date_idx'),
                   ] + TimeStampedMixin.Meta.indexes
         verbose_name = 'Фильм'
-        verbose_name_plural = "Фильмы"
+        verbose_name_plural = 'Фильмы'
 
     def __str__(self):
         return self.title

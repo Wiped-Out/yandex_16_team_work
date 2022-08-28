@@ -1,14 +1,13 @@
 from datetime import datetime
 from functools import lru_cache
 
-from pydantic import UUID4, BaseModel
-
 from db.cache_db import get_cache_db
 from db.db import get_db
+from extensions.tracer import _trace
 from models import models
+from pydantic import UUID4, BaseModel
 from services.base_cache import BaseCacheStorage, CacheStorage
 from services.base_main import BaseMainStorage, MainStorage
-from extensions.tracer import _trace
 
 
 class CacheRefreshToken(BaseModel):
@@ -37,7 +36,7 @@ class RefreshTokenService(BaseCacheStorage, BaseMainStorage):
 @lru_cache()
 def get_refresh_token_service(
         cache: CacheStorage = None,
-        main_db: MainStorage = None
+        main_db: MainStorage = None,
 ) -> RefreshTokenService:
     cache: CacheStorage = get_cache_db() or cache
     main_db: MainStorage = get_db() or main_db

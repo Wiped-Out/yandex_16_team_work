@@ -2,13 +2,12 @@ import os
 from contextlib import contextmanager
 
 import psycopg2
+from data_faker import DataFaker
 from dotenv import load_dotenv
+from postgres_saver import PostgresSaver
 from psycopg2.extensions import connection as _connection
 from psycopg2.extras import DictCursor
 from pydantic import BaseSettings
-
-from data_faker import DataFaker
-from postgres_saver import PostgresSaver
 
 load_dotenv()
 
@@ -23,7 +22,7 @@ PERSONS_AMOUNT = 10_000
 
 class PostgresDSL(BaseSettings):
     dbname: str = os.environ.get('DB_NAME')
-    user: str = "app"
+    user: str = 'app'
     password: str = os.environ.get('DB_PASSWORD')
     host: str = os.environ.get('DB_HOST', '127.0.0.1')
     port: int = os.environ.get('DB_PORT', 5434)
@@ -67,7 +66,7 @@ def load_fake_data(pg_conn: _connection):
 if __name__ == '__main__':
     psycopg2.extras.register_uuid()
     dsl = PostgresDSL().dict()
-    dsl["user"] = "app"
+    dsl['user'] = 'app'
     with pg_manager(psycopg2.connect(**dsl,
                                      cursor_factory=DictCursor)) as pg_conn:
         load_fake_data(pg_conn)

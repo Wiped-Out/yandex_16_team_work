@@ -1,21 +1,22 @@
-import pytest
 import json
-from elasticsearch import AsyncElasticsearch
-import aioredis
 from http import HTTPStatus
+
+import aioredis
+import pytest
+from elasticsearch import AsyncElasticsearch
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "genre_id, response_json_path, index, filename",
+    'genre_id, response_json_path, index, filename',
     (
             (
-                    "c34a40c0-24ee-40db-9c47-58045917841a",
-                    "testdata/responses/get_genre_by_id.json",
-                    "genres",
-                    "genres.json",
+                    'c34a40c0-24ee-40db-9c47-58045917841a',
+                    'testdata/responses/get_genre_by_id.json',
+                    'genres',
+                    'genres.json',
             ),
-    )
+    ),
 )
 async def test_get_genre_by_id(
         es_client: AsyncElasticsearch,
@@ -32,7 +33,7 @@ async def test_get_genre_by_id(
     await prepare_for_test(index=index, filename=filename)
 
     # Выполнение запроса
-    response = await make_get_request(f'/genres/{genre_id}', dict())
+    response = await make_get_request(f'/genres/{genre_id}', {})
 
     # Проверка результата
     assert response.status == HTTPStatus.OK
@@ -46,14 +47,14 @@ async def test_get_genre_by_id(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "response_json_path, index, filename",
+    'response_json_path, index, filename',
     (
             (
-                    "testdata/responses/get_genres.json",
-                    "genres",
-                    "genres.json",
+                    'testdata/responses/get_genres.json',
+                    'genres',
+                    'genres.json',
             ),
-    )
+    ),
 )
 async def test_get_all_films(
         es_client: AsyncElasticsearch,
@@ -69,7 +70,7 @@ async def test_get_all_films(
     await prepare_for_test(index=index, filename=filename)
 
     # Выполнение запроса
-    response = await make_get_request('/genres', dict())
+    response = await make_get_request('/genres', {})
 
     # Проверка результата
     assert response.status == HTTPStatus.OK

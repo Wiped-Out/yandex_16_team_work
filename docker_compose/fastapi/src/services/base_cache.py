@@ -1,6 +1,5 @@
 import json
 from abc import ABC, abstractmethod
-from datetime import timedelta
 from typing import Optional
 
 from aioredis import Redis

@@ -3,7 +3,6 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.views.generic.detail import BaseDetailView
 from django.views.generic.list import BaseListView
-
 from movies.models import Filmwork, PersonRoleType
 
 
@@ -18,18 +17,20 @@ class MoviesApiMixin:
             distinct=True)
 
     def get_queryset(self):
-        return Filmwork.objects \
-            .prefetch_related('genres', 'persons') \
-            .select_related('personfilmwork') \
-            .values('id', 'title', 'description',
-                    'creation_date', 'rating', 'type') \
-            .annotate(
-                genres=ArrayAgg(
-                    'genres__name',
-                    distinct=True),
-                actors=self._aggregate_person(PersonRoleType.ACTOR),
-                directors=self._aggregate_person(PersonRoleType.DIRECTOR),
-                writers=self._aggregate_person(PersonRoleType.WRITER), )
+        return Filmwork.objects.prefetch_related(
+            'genres', 'persons',
+        ).select_related(
+            'personfilmwork',
+        ).values(
+            'id', 'title', 'description', 'creation_date', 'rating', 'type',
+        ).annotate(
+            genres=ArrayAgg(
+                'genres__name',
+                distinct=True),
+            actors=self._aggregate_person(PersonRoleType.ACTOR),
+            directors=self._aggregate_person(PersonRoleType.DIRECTOR),
+            writers=self._aggregate_person(PersonRoleType.WRITER),
+        )
 
     def render_to_response(self, context, **response_kwargs):
         return JsonResponse(context)
@@ -42,7 +43,7 @@ class MoviesListApi(MoviesApiMixin, BaseListView):
         queryset = self.get_queryset()
         paginator, page, queryset, is_paginated = self.paginate_queryset(
             queryset,
-            self.paginate_by
+            self.paginate_by,
         )
         return {
             'count': paginator.count,

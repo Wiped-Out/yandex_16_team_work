@@ -1,20 +1,21 @@
-import pytest
 import json
-import aioredis
 from http import HTTPStatus
+
+import aioredis
+import pytest
 from psycopg2.extensions import connection as _connection
 
 pytestmark = pytest.mark.asyncio
 
 
 @pytest.mark.parametrize(
-    "response_json_path, http_method",
+    'response_json_path, http_method',
     (
             (
-                    "testdata/responses/get_roles.json",
-                    "GET",
+                    'testdata/responses/get_roles.json',
+                    'GET',
             ),
-    )
+    ),
 )
 async def test_get_roles(
         postgres_connection: _connection,
@@ -24,7 +25,7 @@ async def test_get_roles(
         delete_tables,
 
         response_json_path: str,
-        http_method: str
+        http_method: str,
 ):
     headers = await get_access_token_headers()
 
@@ -32,7 +33,7 @@ async def test_get_roles(
     response = await make_request(
         method='/roles',
         http_method=http_method,
-        headers=headers
+        headers=headers,
     )
 
     # Проверка результата
@@ -40,19 +41,19 @@ async def test_get_roles(
 
     with open(response_json_path) as expected_response:
         expected = json.load(expected_response)
-        assert response.body["items"] == expected["items"]
+        assert response.body['items'] == expected['items']
 
     await delete_tables()
 
 
 @pytest.mark.parametrize(
-    "json_data, http_method",
+    'json_data, http_method',
     (
             (
-                    {"name": "Bog", "level": 1000},
-                    "POST",
+                    {'name': 'Bog', 'level': 1000},
+                    'POST',
             ),
-    )
+    ),
 )
 async def test_create_roles(
         postgres_connection: _connection,
@@ -62,7 +63,7 @@ async def test_create_roles(
         delete_tables,
 
         json_data: dict,
-        http_method: str
+        http_method: str,
 
 ):
     headers = await get_access_token_headers()
@@ -78,20 +79,22 @@ async def test_create_roles(
     # Проверка результата
     assert response.status == HTTPStatus.CREATED
 
-    assert int(response.body["level"]) == int(json_data["level"]) and response.body["name"] == json_data["name"]
+    is_level_equal = int(response.body['level']) == int(json_data['level'])
+    is_name_equal = response.body['name'] == json_data['name']
+    assert is_level_equal and is_name_equal
 
     await delete_tables()
 
 
 @pytest.mark.parametrize(
-    "role_id, response_json_path, http_method",
+    'role_id, response_json_path, http_method',
     (
             (
-                    "2a7c7470-f837-4499-8e99-34c9de3dc0b7",
-                    "testdata/responses/get_role.json",
-                    "GET",
+                    '2a7c7470-f837-4499-8e99-34c9de3dc0b7',
+                    'testdata/responses/get_role.json',
+                    'GET',
             ),
-    )
+    ),
 )
 async def test_get_role(
         postgres_connection: _connection,
@@ -102,7 +105,7 @@ async def test_get_role(
 
         role_id: str,
         response_json_path: str,
-        http_method: str
+        http_method: str,
 ):
     headers = await get_access_token_headers()
 

@@ -10,6 +10,7 @@ from psycopg2.extras import DictCursor
 @dataclass
 class PostgreSQLManager:
     """Контекстный менеджер для работы с PostgreSQL"""
+
     dsl: dict
     connection: Optional[_connection] = None
 

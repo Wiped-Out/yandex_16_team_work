@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from typing import Tuple
 
+from models import Filmwork, Genre, GenreFilmwork, Person, PersonFilmwork
 from psycopg2.extensions import connection as _connection
 from psycopg2.extras import execute_batch
-
-from models import Filmwork, Person, Genre, GenreFilmwork, PersonFilmwork
 
 
 @dataclass
 class PostgresSaver:
-    """Класс для загрузки данных в PostgreSQL"""
+    """Класс для загрузки данных в PostgreSQL."""
+
     pgconn: _connection
     page_size: int = 500
 
@@ -58,10 +58,14 @@ class PostgresSaver:
             VALUES (%s, %s, %s, %s)
             ON CONFLICT DO NOTHING
             """
-            unpacked_genres_filmworks = \
-                tuple(tuple(i) for i in genres_filmworks)
-            execute_batch(cur, sql_query, unpacked_genres_filmworks,
-                          page_size=self.page_size)
+
+            unpacked_genres_filmworks = tuple(tuple(i) for i in genres_filmworks)
+            execute_batch(
+                cur,
+                sql_query,
+                unpacked_genres_filmworks,
+                page_size=self.page_size,
+            )
 
     def save_persons_filmworks(self, persons_filmworks: Tuple[PersonFilmwork]):
         with self.pgconn.cursor() as cur:
@@ -71,7 +75,12 @@ class PostgresSaver:
             VALUES (%s, %s, %s, %s, %s)
             ON CONFLICT DO NOTHING
             """
-            unpacked_persons_filmworks = \
-                tuple(tuple(i) for i in persons_filmworks)
-            execute_batch(cur, sql_query, unpacked_persons_filmworks,
-                          page_size=self.page_size)
+
+            unpacked_persons_filmworks = tuple(tuple(i) for i in persons_filmworks)
+
+            execute_batch(
+                cur,
+                sql_query,
+                unpacked_persons_filmworks,
+                page_size=self.page_size,
+            )

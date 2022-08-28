@@ -5,9 +5,11 @@ Revises: ace74b8b0f27
 Create Date: 2022-08-02 13:15:16.639834
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
+
+# flake8: noqa
 
 # revision identifiers, used by Alembic.
 revision = '7cf43e2f8345'

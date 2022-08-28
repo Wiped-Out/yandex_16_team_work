@@ -1,12 +1,11 @@
-from flask import render_template, redirect, Blueprint, make_response
-from flask_jwt_extended import jwt_required
-
 from extensions.tracer import _trace
+from flask import Blueprint, make_response, redirect, render_template
+from flask_jwt_extended import jwt_required
 from forms.login_form import LoginForm
 from models.models import ActionsEnum
 from services.jwt import get_jwt_service
 from services.user import get_user_service
-from utils.utils import log_activity, handle_csrf, save_activity
+from utils.utils import handle_csrf, log_activity, save_activity
 
 login_view = Blueprint('login', __name__, template_folder='templates')
 
@@ -23,7 +22,7 @@ def login():
         user_service = get_user_service()
         user = user_service.filter_by(login=form.login.data, _first=True)
         if user and user.check_password(form.password.data):
-            response = make_response(redirect("/happy"))
+            response = make_response(redirect('/happy'))
 
             response = jwt_service.authorize(response=response, user=user)
 
@@ -31,7 +30,7 @@ def login():
             return response
 
         return render_template('login.html',
-                               message="Неправильный логин или пароль",
+                               message='Неправильный логин или пароль',
                                form=form, title='Авторизация',
                                oauth_google_login_url='/oauth2/google/login')
 

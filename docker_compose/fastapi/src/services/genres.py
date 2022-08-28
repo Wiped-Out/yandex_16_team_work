@@ -1,12 +1,12 @@
 from functools import lru_cache
 from typing import Optional
 
-from fastapi import Depends
-
-from db.db import get_db
 from db.cache_db import get_cache_db
+from db.db import get_db
+from fastapi import Depends
 from models.genre import Genre
-from services.base import BaseGenreService, AsyncCacheStorage, AsyncFullTextSearchStorage
+from services.base import (AsyncCacheStorage, AsyncFullTextSearchStorage,
+                           BaseGenreService)
 
 
 class GenreService(BaseGenreService):
@@ -16,7 +16,7 @@ class GenreService(BaseGenreService):
             base_url: str,
     ) -> Optional[Genre]:
 
-        cache_key = f"{base_url}_{genre_id=}"
+        cache_key = f'{base_url}_{genre_id=}'
         genre = await self.get_one_item_from_cache(cache_key=cache_key, model=Genre)
 
         if not genre:
@@ -36,12 +36,12 @@ class GenresService(BaseGenreService):
             base_url: str,
     ) -> list[Genre]:
 
-        cache_key = f"{base_url}_{page_size=}_{page=}"
+        cache_key = f'{base_url}_{page_size=}_{page=}'
         genres = await self.get_items_from_cache(cache_key=cache_key, model=Genre)
 
         if not genres:
             genres = await self.get_data(
-                page_size=page_size, page=page, model=Genre, index=self.index
+                page_size=page_size, page=page, model=Genre, index=self.index,
             )
 
             if genres:
@@ -53,7 +53,7 @@ class GenresService(BaseGenreService):
 @lru_cache()
 def get_genre_service(
         cache: AsyncCacheStorage = Depends(get_cache_db),
-        full_text_search: AsyncFullTextSearchStorage = Depends(get_db)
+        full_text_search: AsyncFullTextSearchStorage = Depends(get_db),
 ) -> GenreService:
     return GenreService(cache=cache, full_text_search=full_text_search)
 
@@ -61,6 +61,6 @@ def get_genre_service(
 @lru_cache()
 def get_genres_service(
         cache: AsyncCacheStorage = Depends(get_cache_db),
-        full_text_search: AsyncFullTextSearchStorage = Depends(get_db)
+        full_text_search: AsyncFullTextSearchStorage = Depends(get_db),
 ) -> GenresService:
     return GenresService(cache=cache, full_text_search=full_text_search)

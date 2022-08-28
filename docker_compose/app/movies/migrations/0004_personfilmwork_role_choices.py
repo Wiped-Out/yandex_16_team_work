@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('movies', '0003_auto_20220428_1952'),
     ]
@@ -13,6 +12,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='personfilmwork',
             name='role',
-            field=models.TextField(choices=[('director', 'director'), ('actor', 'actor'), ('writer', 'writer')], verbose_name='role'),
+            field=models.TextField(
+                choices=[('director', 'director'), ('actor', 'actor'), ('writer', 'writer')],
+                verbose_name='role',
+            ),
         ),
     ]

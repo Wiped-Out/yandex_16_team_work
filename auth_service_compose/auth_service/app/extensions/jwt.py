@@ -2,11 +2,11 @@ from datetime import datetime, timezone
 from http import HTTPStatus
 from typing import Optional
 
-from flask import request, redirect, current_app, make_response
-from flask_jwt_extended import JWTManager, set_access_cookies, unset_jwt_cookies, get_jti
+from flask import current_app, make_response, redirect, request
+from flask_jwt_extended import (JWTManager, get_jti, set_access_cookies,
+                                unset_jwt_cookies)
 from flask_restx import reqparse
 from jwt.exceptions import InvalidTokenError
-
 from services.jwt import get_jwt_service
 from services.user import get_user_service
 from services.user_roles import get_user_roles_service
@@ -15,13 +15,13 @@ from utils.utils import make_error_response, work_in_context
 jwt_manager: Optional[JWTManager] = None
 
 jwt_parser = reqparse.RequestParser()
-jwt_parser.add_argument('Authorization', location="headers")
+jwt_parser.add_argument('Authorization', location='headers')
 
 
 def set_jwt_callbacks():
     @jwt_manager.token_in_blocklist_loader
     def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
-        jti = jwt_payload["jti"]
+        jti = jwt_payload['jti']
         jwt_service = get_jwt_service()
         token_in_redis = jwt_service.get_blocked_token(cache_key=jti)
         return token_in_redis is not None
@@ -31,20 +31,23 @@ def set_jwt_callbacks():
         if 'api' not in request.url:
             try:
                 response = make_response(
-                    redirect(request.url_root)
+                    redirect(request.url_root),
                 )
 
                 jwt_service = get_jwt_service()
                 user_service = get_user_service()
 
-                refresh_token = request.cookies.get(key=current_app.config["JWT_REFRESH_COOKIE_NAME"])
+                refresh_token = request.cookies.get(
+                    key=current_app.config['JWT_REFRESH_COOKIE_NAME'],
+                )
 
                 get_jti(refresh_token)
 
-                exp_timestamp = jwt_payload["exp"]
+                exp_timestamp = jwt_payload['exp']
                 now = datetime.now(timezone.utc)
-                target_timestamp = datetime.timestamp(now +
-                                                      current_app.config["JWT_ACCESS_TOKEN_EXPIRES"])
+                target_timestamp = datetime.timestamp(
+                    now + current_app.config['JWT_ACCESS_TOKEN_EXPIRES'],
+                )
 
                 if target_timestamp > exp_timestamp:
                     access_token = jwt_service.create_access_token(user=user_service.get(
@@ -61,14 +64,14 @@ def set_jwt_callbacks():
 
                 return response
 
-        return make_error_response(msg="Token has expired",
+        return make_error_response(msg='Token has expired',
                                    status=HTTPStatus.UNAUTHORIZED)
 
     @jwt_manager.token_verification_failed_loader
     def token_verification_failed_loader_callback(_jwt_header, jwt_data):
         if 'api' not in request.url:
             return make_response(redirect('/index'))
-        return make_error_response(msg="Invalid JWT token",
+        return make_error_response(msg='Invalid JWT token',
                                    status=HTTPStatus.FORBIDDEN)
 
     @jwt_manager.unauthorized_loader
@@ -93,7 +96,7 @@ def set_jwt_callbacks():
     @jwt_manager.user_lookup_loader
     @work_in_context(current_app)
     def user_lookup_callback(_jwt_header, jwt_data):
-        identity = jwt_data["sub"]
+        identity = jwt_data['sub']
         user_service = get_user_service()
         return user_service.get(item_id=identity)
 
@@ -104,7 +107,7 @@ def set_jwt_callbacks():
         role = user_roles_service.get_highest_role(identity.id)
 
         return {
-            "role": role.level
+            'role': role.level,
         }
 
 

@@ -1,10 +1,9 @@
 import json
 from abc import ABC, abstractmethod
 
+from extensions.tracer import _trace
 from redis import Redis
 from redis.client import Pipeline
-
-from extensions.tracer import _trace
 
 
 class CachePipeline(ABC):

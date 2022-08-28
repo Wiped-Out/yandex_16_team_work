@@ -4,15 +4,15 @@ import sys
 import pytest
 from elasticsearch import AsyncElasticsearch
 
-sys.path.append("..")
+sys.path.append('..')
 
-from settings import settings
+from settings import settings  # noqa: E402
 
 
 @pytest.fixture(scope='session')
 async def es_client():
     es = AsyncElasticsearch(
-        hosts=[f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}']
+        hosts=[f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}'],
     )
 
     yield es
@@ -32,21 +32,21 @@ def create_index(es_client: AsyncElasticsearch):
 @pytest.fixture
 def load_data(es_client: AsyncElasticsearch):
     async def inner(index: str, filename: str):
-        with open(f"testdata/prepared_data/{filename}") as data:
+        with open(f'testdata/prepared_data/{filename}') as data:
             loaded_json = json.load(data)
             items = loaded_json['items']
             items_for_bulk = []
             for item in items:
-                items_for_bulk += \
-                    [
-                        {'index': {
-                            '_index': index,
-                            '_id': item['id']
-                        }
-                        },
+                item_for_bulk = [
+                    {'index': {
+                        '_index': index,
+                        '_id': item['id'],
+                    },
+                    },
+                    item,
+                ]
 
-                        item
-                    ]
+                items_for_bulk += item_for_bulk
 
             await es_client.bulk(index=index, body=items_for_bulk)
 

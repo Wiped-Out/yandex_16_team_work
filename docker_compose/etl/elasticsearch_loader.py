@@ -1,14 +1,14 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from typing import Tuple
 
 from elasticsearch import Elasticsearch
-
 from state_controller import StateController
 
 
 @dataclass
 class ElasticsearchLoader:
     """Класс для загрузки данных в ElasticSearch"""
+
     es: Elasticsearch
     es_sc: StateController
     page_size: int = 500
@@ -29,8 +29,8 @@ class ElasticsearchLoader:
             if self.page_size * 2 > len(ready_data):
                 ready_data, list_to_load = (), ready_data
             else:
-                ready_data, list_to_load = ready_data[self.page_size * 2:], \
-                                           (ready_data[:self.page_size * 2])
+                ready_data = ready_data[self.page_size * 2:]
+                list_to_load = (ready_data[:self.page_size * 2])
 
             self.es.bulk(body=list_to_load)
 

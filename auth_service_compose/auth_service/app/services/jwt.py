@@ -1,15 +1,15 @@
-from datetime import timedelta, timezone, datetime
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Optional
-
-from flask import current_app, Response
-from flask_jwt_extended import create_access_token, create_refresh_token, set_access_cookies, set_refresh_cookies
-from pydantic import BaseModel
 
 from db.cache_db import get_cache_db
 from db.db import get_db
 from extensions.tracer import _trace
+from flask import Response, current_app
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                set_access_cookies, set_refresh_cookies)
 from models import models
+from pydantic import BaseModel
 from services.base_cache import BaseCacheStorage, CacheStorage
 from services.base_main import BaseMainStorage, MainStorage
 from services.refresh_token import get_refresh_token_service
@@ -44,12 +44,15 @@ class JWTService(BaseCacheStorage, BaseMainStorage):
     def create_refresh_token(self, user) -> str:
         token = create_refresh_token(identity=user)
         refresh_token_service = get_refresh_token_service()
+
+        now = datetime.now(timezone.utc)
+
         refresh_token_service.create_refresh_token(
-            params={"user_id": user.id,
-                    "token": token,
-                    "from_": datetime.now(timezone.utc),
-                    "to": datetime.now(timezone.utc) + current_app.config["JWT_REFRESH_TOKEN_EXPIRES"]
-                    }
+            params={'user_id': user.id,
+                    'token': token,
+                    'from_': now,
+                    'to': now + current_app.config['JWT_REFRESH_TOKEN_EXPIRES'],
+                    },
         )
         return token
 
@@ -68,7 +71,7 @@ class JWTService(BaseCacheStorage, BaseMainStorage):
 @lru_cache()
 def get_jwt_service(
         cache: CacheStorage = None,
-        main_db: MainStorage = None
+        main_db: MainStorage = None,
 ) -> JWTService:
     cache: CacheStorage = get_cache_db() or cache
     main_db: MainStorage = get_db() or main_db

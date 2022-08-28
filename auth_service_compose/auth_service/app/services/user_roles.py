@@ -2,11 +2,11 @@ from functools import lru_cache
 
 from db.cache_db import get_cache_db
 from db.db import get_db
+from extensions.tracer import _trace
 from models import models
 from services.base_cache import BaseCacheStorage, CacheStorage
 from services.base_main import BaseMainStorage, MainStorage
 from services.role import CacheRole
-from extensions.tracer import _trace
 
 
 class UserRolesService(BaseCacheStorage, BaseMainStorage):
@@ -40,13 +40,17 @@ class UserRolesService(BaseCacheStorage, BaseMainStorage):
     @_trace()
     def get_highest_role(self, user_id: str):
         user = self.db.get(item_id=user_id, model=self.user_model)
-        return CacheRole(**max(user.roles, key=lambda x: x.level).to_dict()) if user.roles else CacheRole(level=0, name='default')
+
+        if user.roles:
+            return CacheRole(**max(user.roles, key=lambda x: x.level).to_dict())
+        else:
+            return CacheRole(level=0, name='default')
 
 
 @lru_cache()
 def get_user_roles_service(
         cache: CacheStorage = None,
-        main_db: MainStorage = None
+        main_db: MainStorage = None,
 ) -> UserRolesService:
     cache: CacheStorage = get_cache_db() or cache
     main_db: MainStorage = get_db() or main_db

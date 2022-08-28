@@ -10,7 +10,7 @@ class AuthService:
     async def auth_user(self, authorization: str):
         decoded_jwt = decode_jwt(token=authorization)
 
-        user = self.model(highest_role=decoded_jwt["role"], uuid=decoded_jwt['sub'])
+        user = self.model(highest_role=decoded_jwt['role'], uuid=decoded_jwt['sub'])
         return user
 
 

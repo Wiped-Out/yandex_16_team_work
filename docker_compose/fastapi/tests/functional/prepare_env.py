@@ -1,7 +1,7 @@
 import asyncio
 
-from utils.wait_for_redis import wait_for_redis
 from utils.wait_for_es import wait_for_es
+from utils.wait_for_redis import wait_for_redis
 
 if __name__ == '__main__':
     scripts = (

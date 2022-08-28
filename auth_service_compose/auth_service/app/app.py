@@ -1,27 +1,27 @@
 from http import HTTPStatus
 
 import redis
-from flask import Flask, render_template, request
-from flask_jwt_extended import JWTManager, jwt_required, current_user
-from flask_restx import Api
-from opentelemetry.instrumentation.flask import FlaskInstrumentor
-from sqlalchemy import exc
-
 from core.settings import settings
 from db import cache_db, db
-from extensions import jwt, flask_restx, flask_migrate, tracer, oauth
+from extensions import flask_migrate, flask_restx, jwt, oauth, tracer
 from extensions.rate_limiter import rate_limit
-from schemas.v1 import responses
+from flask import Flask, render_template, request
+from flask_jwt_extended import JWTManager, current_user, jwt_required
+from flask_restx import Api
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from schemas.base.responses import REQUEST_ID_REQUIRED
+from schemas.v1 import responses
 from services.base_cache import BaseRedisStorage
 from services.base_main import BaseSQLAlchemyStorage
-from utils.utils import register_blueprints, register_namespaces, log_activity, make_error_response
+from sqlalchemy import exc
+from utils.utils import (log_activity, make_error_response,
+                         register_blueprints, register_namespaces)
 from werkzeug import exceptions
 
 
 def init_cache_db():
     cache_db.cache = BaseRedisStorage(
-        redis=redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
+        redis=redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT),
     )
 
 
@@ -40,8 +40,8 @@ def init_jwt(app: Flask):
 
 def init_api(app: Flask):
     flask_restx.api = Api(app,
-                          doc=f"/{settings.API_URL}/docs",
-                          base_url=f"/{settings.API_URL}",
+                          doc=f'/{settings.API_URL}/docs',
+                          base_url=f'/{settings.API_URL}',
                           authorizations=flask_restx.authorizations)
     register_namespaces(flask_restx.api)
 
@@ -63,9 +63,9 @@ def init_app(name: str) -> Flask:
     app.config['SECRET_KEY'] = settings.JWT_PUBLIC_KEY
     app.config['PUBLIC_KEY'] = settings.JWT_PUBLIC_KEY
     app.config['PROPAGATE_EXCEPTIONS'] = True
-    app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies", "json", "query_string"]
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = settings.JWT_ACCESS_TOKEN_EXPIRES
-    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = settings.JWT_REFRESH_TOKEN_EXPIRES
+    app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies', 'json', 'query_string']
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = settings.JWT_ACCESS_TOKEN_EXPIRES
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = settings.JWT_REFRESH_TOKEN_EXPIRES
 
     init_api(app=app)
     init_oauth(app=app)
@@ -115,14 +115,14 @@ def handle_bad_request(error: exceptions.HTTPException):
     )
 
 
-@app.route('/index', methods=["GET"])
+@app.route('/index', methods=['GET'])
 @jwt_required(optional=True)
 @log_activity()
 def index():
     return render_template('base.html', title='Главная', current_user=current_user)
 
 
-@app.route('/happy', methods=["GET"])
+@app.route('/happy', methods=['GET'])
 @jwt_required()
 @log_activity()
 def happy():

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from flask_restx import Namespace, Api
+from flask_restx import Api, Namespace
 
 api: Optional[Api] = None
 
@@ -8,7 +8,7 @@ authorizations = {
     'apikey': {
         'type': 'apiKey',
         'in': 'header',
-        'name': 'Authorization'
+        'name': 'Authorization',
     },
     'oauth2': {
         'type': 'oauth2',
@@ -18,8 +18,8 @@ authorizations = {
         'scopes': {
             'read': 'Grant read-only access',
             'write': 'Grant read-write access',
-        }
-    }
+        },
+    },
 }
 
 
@@ -27,4 +27,4 @@ class ModifiedNamespace(Namespace):
 
     @property
     def path(self):
-        return ("")
+        return ''

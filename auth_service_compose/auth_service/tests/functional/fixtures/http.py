@@ -1,9 +1,9 @@
 import builtins
+from dataclasses import dataclass
+from typing import Optional
+
 import aiohttp
 import pytest
-
-from typing import Optional
-from dataclasses import dataclass
 from multidict import CIMultiDictProxy
 from settings import settings
 
@@ -26,14 +26,14 @@ async def session():
 def login_user(make_request):
     async def inner() -> str:
         response = await make_request(
-            method="/login",
-            http_method="POST",
-            json={"login": "user",
-                  "password": "hirnim-fogkuj-pUrhi4"
-                  }
+            method='/login',
+            http_method='POST',
+            json={'login': 'user',
+                  'password': 'hirnim-fogkuj-pUrhi4',
+                  },
         )
 
-        return response.body.get("access_token")
+        return response.body.get('access_token')
 
     return inner
 
@@ -41,12 +41,15 @@ def login_user(make_request):
 @pytest.fixture
 def get_access_token_headers(prepare_for_test, login_user):
     async def inner() -> dict:
-        table_to_file = {"roles": "roles.json", "users": "users.json", "user_roles": "user_roles.json"}
+        table_to_file = {'roles': 'roles.json',
+                         'users': 'users.json',
+                         'user_roles': 'user_roles.json',
+                         }
         for key, value in table_to_file.items():
             await prepare_for_test(table_name=key, filename=value)
 
         access_token = await login_user()
-        return {"Authorization": f"Bearer {access_token}"}
+        return {'Authorization': f'Bearer {access_token}'}
 
     return inner
 

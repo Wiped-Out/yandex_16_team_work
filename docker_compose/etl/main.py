@@ -6,13 +6,12 @@ import time
 import psycopg2 as psycopg2
 from dotenv import load_dotenv
 from elasticsearch import Elasticsearch
-from psycopg2.extensions import connection as _connection
-from pydantic import BaseSettings
-
 from elasticsearch_db import ElasticSearchManager
 from elasticsearch_loader import ElasticsearchLoader
 from postgres_extractor import PostgresExtractor
 from postgresql_db import PostgreSQLManager
+from psycopg2.extensions import connection as _connection
+from pydantic import BaseSettings
 from state_controller import StateController
 
 load_dotenv()
@@ -63,7 +62,7 @@ def load_data(pgconn: _connection, esconn: Elasticsearch) -> bool:
     state_files = (
         ('pg_movies.state', 'es_movies.state'),
         ('pg_persons.state', 'es_persons.state'),
-        ('pg_genres.state', 'es_genres.state')
+        ('pg_genres.state', 'es_genres.state'),
     )
 
     for index, files, method_args in zip(indexes, state_files, methods_args):
@@ -94,9 +93,11 @@ if __name__ == '__main__':
         is_successful = False
         while not is_successful:
             try:
-                with PostgreSQLManager(dsl) as pg_conn, \
-                        ElasticSearchManager(os.environ.get(
-                            'ELASTIC_URI')) as es_conn:
+                with PostgreSQLManager(
+                        dsl,
+                ) as pg_conn, ElasticSearchManager(
+                    os.environ.get('ELASTIC_URI'),
+                ) as es_conn:
                     is_successful = load_data(pg_conn, es_conn)
             except ConnectionError:
                 pass

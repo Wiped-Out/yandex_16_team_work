@@ -4,7 +4,7 @@ LOGGING = {
     'filters': {
         'require_debug_true': {
             '()': 'django.utils.log.RequireDebugTrue',
-        }
+        },
     },
     'formatters': {
         'default': {
@@ -23,6 +23,6 @@ LOGGING = {
             'level': 'DEBUG',
             'handlers': ['debug-console'],
             'propagate': False,
-        }
+        },
     },
 }

@@ -1,17 +1,18 @@
+from enum import Enum
+
+from models.base import BaseOrjsonModel
 from pydantic import Field
 from pydantic.types import UUID4
-from enum import Enum
-from models.base import BaseOrjsonModel
 
 
 class PersonType(str, Enum):
-    actor = "actor"
-    director = "director"
-    writer = "writer"
+    actor = 'actor'
+    director = 'director'
+    writer = 'writer'
 
 
 class Person(BaseOrjsonModel):
-    uuid: UUID4 = Field(alias="id")
+    uuid: UUID4 = Field(alias='id')
     full_name: str
     role: PersonType
     film_ids: list[UUID4]

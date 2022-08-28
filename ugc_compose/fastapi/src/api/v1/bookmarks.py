@@ -1,18 +1,17 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, Response
-
-from models.auth import AuthUser
 from extensions.auth import security
-from services.bookmarks import BookmarksService, get_bookmarks_service
+from fastapi import APIRouter, Depends, Response
+from models.auth import AuthUser
 from pydantic import UUID4
+from services.bookmarks import BookmarksService, get_bookmarks_service
 
 router = APIRouter()
 
 
 @router.post(
-    path="/{film_id}",
-    description="Save film to watch later (add bookmark)"
+    path='/{film_id}',
+    description='Save film to watch later (add bookmark)',
 )
 async def add_bookmark(
         film_id: UUID4,

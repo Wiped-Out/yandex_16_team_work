@@ -1,7 +1,7 @@
 from elasticsearch import AsyncElasticsearch
-
 from settings import settings
-from .utils import backoff_on_true, backoff
+
+from .utils import backoff, backoff_on_true
 
 
 class ElasticManager:
@@ -10,7 +10,7 @@ class ElasticManager:
     @backoff()
     async def connect(self):
         self.connection = AsyncElasticsearch(
-            hosts=[f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}']
+            hosts=[f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}'],
         )
 
     async def __aenter__(self) -> AsyncElasticsearch:

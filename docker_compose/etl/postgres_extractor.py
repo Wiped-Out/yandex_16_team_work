@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from typing import Tuple
 
+from models import Genres, Movies, Persons
 from psycopg2.extensions import connection as _connection
-
-from models import Movies, Persons, Genres
 from state_controller import StateController
 
 
 @dataclass
 class PostgresExtractor:
     """Класс для выгрузки данных из PostgreSQL"""
+
     pgconn: _connection
     pg_sc: StateController
     page_size: int = 500

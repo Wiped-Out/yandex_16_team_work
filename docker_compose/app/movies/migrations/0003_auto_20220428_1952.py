@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('movies', '0002_filmwork_file_path'),
     ]
@@ -24,7 +23,14 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='filmwork',
             name='rating',
-            field=models.FloatField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)], verbose_name='rating'),
+            field=models.FloatField(
+                blank=True,
+                null=True,
+                validators=[
+                    django.core.validators.MinValueValidator(0),
+                    django.core.validators.MaxValueValidator(100),
+                ],
+                verbose_name='rating'),
         ),
         migrations.AlterField(
             model_name='genre',

@@ -1,4 +1,5 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
+
 from kafka import KafkaProducer
 
 

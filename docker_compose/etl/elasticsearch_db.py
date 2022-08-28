@@ -8,6 +8,7 @@ from elasticsearch import Elasticsearch
 @dataclass
 class ElasticSearchManager:
     """Контекстный менеджер для работы с Elasticsearch"""
+
     url: str
     connection: Optional[Elasticsearch] = None
 

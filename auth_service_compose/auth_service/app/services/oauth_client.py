@@ -3,10 +3,9 @@ from functools import lru_cache
 from typing import Optional
 
 from authlib.integrations.flask_client import OAuth
-from flask import url_for
-
-from extensions.oauth import get_oauth, get_google_client
+from extensions.oauth import get_google_client, get_oauth
 from extensions.tracer import _trace
+from flask import url_for
 
 
 class OauthServiceClient(ABC):
@@ -49,9 +48,11 @@ class GoogleOauthServiceClient(OauthServiceClient):
     def get_user_data_from_token(self, **kwargs):
         oauth = get_oauth()
         client = self.get_client(oauth=oauth)
-        token = client.authorize_access_token()
+        client.authorize_access_token()
+
         resp = client.get('userinfo')
-        user_info = resp.json()
+        resp.json()
+
         user = oauth.google.userinfo()
         sub, email, username = user['sub'], user['email'], user['email'].split('@')[0]
         return sub, email, username

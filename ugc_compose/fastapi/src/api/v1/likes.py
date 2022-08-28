@@ -1,18 +1,17 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, Response
-
-from models.auth import AuthUser
 from extensions.auth import security
-from services.likes import LikesService, get_likes_service
+from fastapi import APIRouter, Depends, Response
+from models.auth import AuthUser
 from pydantic import UUID4
+from services.likes import LikesService, get_likes_service
 
 router = APIRouter()
 
 
 @router.post(
-    path="/{film_id}",
-    description="Give a like to the film"
+    path='/{film_id}',
+    description='Give a like to the film',
 )
 async def give_like(
         film_id: UUID4,

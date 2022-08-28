@@ -5,6 +5,9 @@ Revises: 8e5534c2d440
 Create Date: 2022-07-22 16:14:46.047296
 
 """
+
+# flake8: noqa
+
 from alembic import op
 
 # revision identifiers, used by Alembic.

@@ -1,13 +1,12 @@
 import aioredis
 import uvicorn
+from api.v1 import films, genres, persons
+from core.config import settings
+from db import cache_db, db
 from elasticsearch import AsyncElasticsearch
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
-
-from api.v1 import films, persons, genres
-from core.config import settings
-from db import db, cache_db
 from services.base_cache import BaseRedisStorage
 from services.base_full_text_search import BaseElasticStorage
 
@@ -23,10 +22,10 @@ app = FastAPI(
 @app.on_event('startup')
 async def startup():
     cache_db.cache = BaseRedisStorage(redis=await aioredis.create_redis_pool((
-        settings.REDIS_HOST, settings.REDIS_PORT
+        settings.REDIS_HOST, settings.REDIS_PORT,
     ), minsize=10, maxsize=20))
     db.full_text_search = BaseElasticStorage(
-        elastic=AsyncElasticsearch(hosts=[f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}'])
+        elastic=AsyncElasticsearch(hosts=[f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}']),
     )
 
 
@@ -37,10 +36,10 @@ async def shutdown():
 
 
 app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
-app.include_router(persons.router, prefix="/api/v1/persons", tags=["persons"])
-app.include_router(genres.router, prefix="/api/v1/genres", tags=["genres"])
+app.include_router(persons.router, prefix='/api/v1/persons', tags=['persons'])
+app.include_router(genres.router, prefix='/api/v1/genres', tags=['genres'])
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount('/static', StaticFiles(directory='static'), name='static')
 
 if __name__ == '__main__':
     uvicorn.run(

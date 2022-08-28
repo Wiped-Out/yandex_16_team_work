@@ -1,9 +1,9 @@
 import os
 from logging import config as logging_config
-from dotenv import load_dotenv
-from pydantic import BaseSettings
 
 from core.logger import LOGGING
+from dotenv import load_dotenv
+from pydantic import BaseSettings
 
 load_dotenv()
 
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     NO_JWT = os.getenv('NO_JWT', False) == 'True'
 
     class Config:
-        env_file = ".env"
+        env_file = '.env'
 
 
 # Корень проекта

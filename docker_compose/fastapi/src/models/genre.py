@@ -1,10 +1,10 @@
+from models.base import BaseOrjsonModel
 from pydantic import Field
 from pydantic.types import UUID4
-from models.base import BaseOrjsonModel
 
 
 class Genre(BaseOrjsonModel):
-    uuid: UUID4 = Field(alias="id")
+    uuid: UUID4 = Field(alias='id')
     name: str
 
     class Config:

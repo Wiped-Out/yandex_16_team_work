@@ -1,26 +1,23 @@
-import random
 import uuid
 from dataclasses import dataclass, field
-from typing import Tuple, Union, Set
+from random import SystemRandom
+from typing import Set, Tuple, Union
 
 from faker import Faker
-
-from models import Filmwork, Person, Genre, GenreFilmwork, PersonFilmwork
+from models import Filmwork, Genre, GenreFilmwork, Person, PersonFilmwork
 
 
 @dataclass
 class DataFaker:
-    """Класс для создания фейковых данных"""
+    """Класс для создания фейковых данных."""
+
     page_size: int = 500
     filmworks_amount: int = 200_000
     genres_amount: int = 120
     persons_amount: int = 100_000
-    filmworks_ids: Union[Set[uuid.uuid4], Tuple[uuid.uuid4]] \
-        = field(default_factory=set)
-    genres_ids: Union[Set[uuid.uuid4], Tuple[uuid.uuid4]] \
-        = field(default_factory=set)
-    persons_ids: Union[Set[uuid.uuid4], Tuple[uuid.uuid4]] \
-        = field(default_factory=set)
+    filmworks_ids: Union[Set[uuid.uuid4], Tuple[uuid.uuid4]] = field(default_factory=set)
+    genres_ids: Union[Set[uuid.uuid4], Tuple[uuid.uuid4]] = field(default_factory=set)
+    persons_ids: Union[Set[uuid.uuid4], Tuple[uuid.uuid4]] = field(default_factory=set)
 
     def get_filmworks(self) -> Tuple[Filmwork]:
         faker = Faker()
@@ -33,10 +30,10 @@ class DataFaker:
                 'creation_date': faker.unique.date_time(),
                 'created': faker.unique.date_time_this_century(),
                 'modified': faker.unique.date_time_this_month(),
-                'type': random.choice(('movie', 'tv_show')),
+                'type': SystemRandom().choice(('movie', 'tv_show')),
                 'file_path': '',
-                'rating': round(random.uniform(0, 10), 1),
-                'id': uuid.uuid4()
+                'rating': round(SystemRandom().uniform(0, 10), 1),
+                'id': uuid.uuid4(),
             }
             ready_data.append(Filmwork(**data))
             self.filmworks_ids.add(data['id'])
@@ -58,7 +55,7 @@ class DataFaker:
                 'description': faker.unique.paragraph(nb_sentences=3),
                 'created': faker.unique.date_time_this_century(),
                 'modified': faker.unique.date_time_this_month(),
-                'id': uuid.uuid4()
+                'id': uuid.uuid4(),
             }
             ready_data.append(Genre(**data))
             self.genres_ids.add(data['id'])
@@ -79,7 +76,7 @@ class DataFaker:
                 'full_name': faker.unique.name(),
                 'created': faker.unique.date_time_this_century(),
                 'modified': faker.unique.date_time_this_month(),
-                'id': uuid.uuid4()
+                'id': uuid.uuid4(),
             }
             ready_data.append(Person(**data))
             self.persons_ids.add(data['id'])
@@ -105,7 +102,7 @@ class DataFaker:
                 'created': faker.unique.date_time_this_century(),
                 'id': uuid.uuid4(),
                 'film_work_id': self.filmworks_ids[i],
-                'genre_id': self.genres_ids[n % self.genres_amount]
+                'genre_id': self.genres_ids[n % self.genres_amount],
             }
             n += 1
             ready_data.append(GenreFilmwork(**data))
@@ -133,7 +130,7 @@ class DataFaker:
                     'created': faker.unique.date_time_this_century(),
                     'id': uuid.uuid4(),
                     'film_work_id': self.filmworks_ids[i],
-                    'person_id': self.persons_ids[n % self.persons_amount]
+                    'person_id': self.persons_ids[n % self.persons_amount],
                 }
                 n += 1
                 ready_data.append(PersonFilmwork(**data))

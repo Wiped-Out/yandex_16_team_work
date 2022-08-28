@@ -5,6 +5,6 @@ repos:
         name: flake8
         description: wemake-python-styleguide enforcement
         entry: flake8
-        args: [ "--config=flake8_setup.cfg" ]
+        args: [ "--config=setup.cfg" ]
         language: python
         types: [ python ]

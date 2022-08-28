@@ -3,29 +3,28 @@ from enum import Enum
 from functools import wraps
 from typing import Optional
 
+from extensions.tracer import _trace
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import Query
 
-from extensions.tracer import _trace
-
 
 class AdditionalActions(str, Enum):
-    _sort_by = "_sort_by"
-    _first = "_first"
+    _sort_by = '_sort_by'
+    _first = '_first'
 
 
 def sqlalchemy_additional_actions():
     def func_wrapper(func):
         @wraps(func)
         def inner(*args, **kwargs):
-            actions = {item.value: kwargs.pop(item.value) if item.value in kwargs and item.value else None
+            actions = {item.value: kwargs.pop(item.value) if item.value in kwargs and item.value else None  # noqa: E501
                        for item in AdditionalActions}
             result: Query = func(*args, **kwargs)
-            model = kwargs["model"]
+            model = kwargs['model']
 
             # Сортировка
             if value := actions[AdditionalActions._sort_by]:
-                if value.startswith("-"):
+                if value.startswith('-'):
                     result.order_by(getattr(model, value).desc())
                 else:
                     result.order_by(getattr(model, value))
@@ -162,7 +161,7 @@ class BaseMainStorage:
     @_trace()
     def get(self, item_id: str):
         return self.db.get(item_id=item_id, model=self.model)
-        
+
     @_trace()
     def delete(self, item_id: str):
         return self.db.delete(item_id=item_id, model=self.model)

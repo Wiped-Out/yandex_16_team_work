@@ -13,6 +13,7 @@ def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10):
     Формула:
         t = start_sleep_time * 2^(n) if t < border_sleep_time
         t = border_sleep_time if t >= border_sleep_time
+
     :param start_sleep_time: начальное время повтора
     :param factor: во сколько раз нужно увеличить время ожидания
     :param border_sleep_time: граничное время ожидания
@@ -46,6 +47,7 @@ def backoff_on_true(start_sleep_time=0.1, factor=2, border_sleep_time=10):
     Формула:
         t = start_sleep_time * 2^(n) if t < border_sleep_time
         t = border_sleep_time if t >= border_sleep_time
+
     :param start_sleep_time: начальное время повтора
     :param factor: во сколько раз нужно увеличить время ожидания
     :param border_sleep_time: граничное время ожидания

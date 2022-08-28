@@ -1,5 +1,5 @@
-from pydantic import BaseSettings
 from dotenv import load_dotenv
+from pydantic import BaseSettings
 
 load_dotenv()
 
@@ -12,13 +12,13 @@ class Settings(BaseSettings):
     API_URL: str
 
     INDEXES_NAMES_MAPPINGS = {
-        "movies": "testdata/indexes_mapping/movies.json",
-        "persons": "testdata/indexes_mapping/persons.json",
-        "genres": "testdata/indexes_mapping/genres.json",
+        'movies': 'testdata/indexes_mapping/movies.json',
+        'persons': 'testdata/indexes_mapping/persons.json',
+        'genres': 'testdata/indexes_mapping/genres.json',
     }
 
     class Config:
-        env_file = ".env"
+        env_file = '.env'
 
 
 settings = Settings()

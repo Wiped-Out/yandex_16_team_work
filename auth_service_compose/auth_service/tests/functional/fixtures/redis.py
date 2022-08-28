@@ -3,9 +3,9 @@ import sys
 import aioredis
 import pytest
 
-sys.path.append("..")
+sys.path.append('..')
 
-from settings import settings
+from settings import settings  # noqa: E402
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ def flush_redis(redis_client: aioredis.Redis):
 @pytest.fixture(scope='session')
 async def redis_client():
     redis = await aioredis.create_redis_pool((
-        settings.REDIS_HOST, settings.REDIS_PORT
+        settings.REDIS_HOST, settings.REDIS_PORT,
     ), minsize=10, maxsize=20)
 
     yield redis

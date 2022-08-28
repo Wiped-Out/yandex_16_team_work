@@ -18,13 +18,13 @@ class OauthService(BaseCacheStorage, BaseMainStorage):
 
     @_trace()
     def create_oauth(self, params: dict):
-        oauth = self.create(**params)
+        self.create(**params)
 
 
 @lru_cache()
 def get_oauth_service(
         cache: CacheStorage = None,
-        main_db: MainStorage = None
+        main_db: MainStorage = None,
 ) -> OauthService:
     cache: CacheStorage = get_cache_db() or cache
     main_db: MainStorage = get_db() or main_db

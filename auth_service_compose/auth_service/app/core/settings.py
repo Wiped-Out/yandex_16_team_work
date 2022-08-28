@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     ENABLE_TRACER: bool
 
     class Config:
-        env_file = ".env"
+        env_file = '.env'
 
 
 # Корень проекта

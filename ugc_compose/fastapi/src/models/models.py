@@ -1,6 +1,5 @@
-from pydantic import UUID4
-
 from models.base import BaseOrjsonModel
+from pydantic import UUID4
 
 
 class FilmBookmark(BaseOrjsonModel):

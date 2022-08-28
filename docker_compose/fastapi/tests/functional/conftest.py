@@ -1,18 +1,19 @@
 import asyncio
 from glob import glob
+
 import pytest
 
 
 def refactor(string: str) -> str:
-    return string.replace("/", ".").replace("\\", ".").replace(".py", "")
+    return string.replace('/', '.').replace('\\', '.').replace('.py', '')
 
 
 pytest_plugins = [
-    refactor(fixture) for fixture in glob("fixtures/*.py") if "__" not in fixture
+    refactor(fixture) for fixture in glob('fixtures/*.py') if '__' not in fixture
 ]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def event_loop():
     loop = asyncio.get_event_loop()
     yield loop
