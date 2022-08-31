@@ -46,10 +46,10 @@ jobs:
 
       - name: mypy
         run: |
-          mypy ./auth_service_compose/auth_service/app --ignore-missing-imports
-          mypy ./docker_compose/app --ignore-missing-imports
-          mypy ./docker_compose/fastapi/src --ignore-missing-imports
-          mypy ./ugc_compose/fastapi/src --ignore-missing-imports
+          mypy ./auth_service_compose/auth_service/app --ignore-missing-imports --implicit-reexport
+          mypy ./docker_compose/app --ignore-missing-imports --implicit-reexport
+          mypy ./docker_compose/fastapi/src --ignore-missing-imports --implicit-reexport
+          mypy ./ugc_compose/fastapi/src --ignore-missing-imports --implicit-reexport
 
   notify:
     needs: linter
