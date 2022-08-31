@@ -7,5 +7,6 @@ db: Optional[AbstractMainStorage] = None
 
 # Функция понадобится при внедрении зависимостей
 async def get_db() -> AbstractMainStorage:
-    assert db is not None
+    if not db:
+        raise
     return db

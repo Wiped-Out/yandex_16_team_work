@@ -97,15 +97,15 @@ class FullTextSearchFilm(BaseFullTextSearchStorage):
 
         if genre_id:
             match_genre_id_rule: dict = {
-                    'nested': {
-                        'path': 'genre',
-                        'query': {
-                            'match': {
-                                'genre.id': genre_id,
-                            },
+                'nested': {
+                    'path': 'genre',
+                    'query': {
+                        'match': {
+                            'genre.id': genre_id,
                         },
                     },
-                }
+                },
+            }
 
             query['query']['bool']['must'].append(match_genre_id_rule)  # type: ignore
 

@@ -2,7 +2,7 @@ import asyncio
 import contextlib
 import time
 from functools import wraps
-from typing import Sequence, TypeVar, Type
+from typing import Sequence, TypeVar
 
 import jwt
 import orjson

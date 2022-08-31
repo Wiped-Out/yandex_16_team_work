@@ -17,5 +17,6 @@ def init_sqlalchemy(app: Flask, storage: BaseSQLAlchemyStorage):
 
 
 def get_db() -> MainStorage:
-    assert db is not None
+    if not db:
+        raise
     return db

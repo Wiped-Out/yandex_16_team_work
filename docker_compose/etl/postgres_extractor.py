@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Tuple, Generator
 
 from models import Genres, Movies, Persons
 from psycopg2.extensions import connection as _connection

@@ -3,6 +3,7 @@ import logging
 import time
 
 import psycopg2 as psycopg2
+from core.config import postgres_dsl, settings
 from elasticsearch import Elasticsearch
 from elasticsearch_db import ElasticSearchManager
 from elasticsearch_loader import ElasticsearchLoader
@@ -10,7 +11,6 @@ from postgres_extractor import PostgresExtractor
 from postgresql_db import PostgreSQLManager
 from psycopg2.extensions import connection as _connection
 from state_controller import StateController
-from core.config import postgres_dsl, settings
 
 # Для выгрузки/загрузки данных по n записей
 PG_PAGE_SIZE = 100

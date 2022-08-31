@@ -33,5 +33,6 @@ def get_oauth() -> OAuth:
 
 
 def get_google_client() -> LocalProxy:
-    assert google is not None
+    if not google:
+        raise
     return google

@@ -10,8 +10,8 @@ from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 set_access_cookies, set_refresh_cookies)
 from models import models
 from pydantic import BaseModel
-from services.base_cache import BaseCacheStorage, CacheStorage
-from services.base_main import BaseMainStorage, MainStorage
+from services.base_cache import BaseCacheStorage
+from services.base_main import BaseMainStorage
 from services.refresh_token import get_refresh_token_service
 
 
