@@ -1,21 +1,19 @@
-import uvicorn
 import logging
 from http import HTTPStatus
 from logging import config as logging_config
 from traceback import format_exception
 
-from fastapi import Request, HTTPException
-from fastapi import FastAPI
-from fastapi.responses import ORJSONResponse
-from fastapi.staticfiles import StaticFiles
-from kafka import KafkaProducer
-from logstash.handler_udp import LogstashHandler
-
-from api.v1 import comments, bookmarks, likes, film_progress
+import uvicorn
+from api.v1 import bookmarks, comments, film_progress, likes
 from core.config import settings
 from core.logger import LOGGING
 from db import db
 from extensions import logstash, sentry
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import ORJSONResponse
+from fastapi.staticfiles import StaticFiles
+from kafka import KafkaProducer
+from logstash.handler_udp import LogstashHandler
 from services.main_db import BaseKafkaStorage
 
 
@@ -30,11 +28,11 @@ def init_logstash():
 
 def init_logger(app: FastAPI):
     logging_config.dictConfig(LOGGING)
-    app.logger = logging.getLogger(__name__)
-    app.logger.setLevel(logging.INFO)
+    app.logger = logging.getLogger(__name__)  # type: ignore
+    app.logger.setLevel(logging.INFO)  # type: ignore
 
     if settings.ENABLE_LOGSTASH:
-        app.logger.addHandler(logstash.logstash_handler)
+        app.logger.addHandler(logstash.logstash_handler)  # type: ignore
 
 
 def init_app() -> FastAPI:
@@ -73,14 +71,15 @@ async def shutdown():
 
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exc: Exception):
-    app.logger.info(f'Error catched \n {format_exception(type(exc), exc, exc.__traceback__)}',
-                    {'request_id': request.headers.get('X-Request-Id')})
+    log_str = f'Error catched \n {format_exception(type(exc), exc, exc.__traceback__)}'
+
+    app.logger.info(log_str, {'request_id': request.headers.get('X-Request-Id')})  # type: ignore
     raise HTTPException(
-        status_code=HTTPStatus.BadRequest, detail='Bad request',
+        status_code=HTTPStatus.BAD_REQUEST, detail='Bad request',
     )
 
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount('/static', StaticFiles(directory='static'), name='static')
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
 app.include_router(comments.router, prefix='/api/v1/comments', tags=['comments'])

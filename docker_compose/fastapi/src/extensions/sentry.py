@@ -1,7 +1,6 @@
 import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-
 from core.config import settings
+from sentry_sdk.integrations.fastapi import FastApiIntegration
 
 
 def init_sentry():

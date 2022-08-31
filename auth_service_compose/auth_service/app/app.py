@@ -5,11 +5,13 @@ from traceback import format_exception
 import redis  # type: ignore
 from core.settings import settings
 from db import cache_db, db
-from extensions import jwt, flask_restx, flask_migrate, tracer, oauth, logstash, sentry
+from extensions import (flask_migrate, flask_restx, jwt, logstash, oauth,
+                        sentry, tracer)
 from extensions.rate_limiter import rate_limit
 from flask import Flask, render_template, request
 from flask_jwt_extended import JWTManager, current_user, jwt_required
 from flask_restx import Api
+from logstash.handler_udp import LogstashHandler
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from schemas.base.responses import REQUEST_ID_REQUIRED
 from schemas.v1 import responses
@@ -131,7 +133,7 @@ def handle_db_exceptions(error: exc.SQLAlchemyError):
 
 
 @app.errorhandler(Exception)
-def handle_db_exceptions(error: Exception):
+def handle_exception(error: Exception):
     app.logger.info(f'Error catched \n {format_exception(type(error), error, error.__traceback__)}')
     return make_error_response(
         status=HTTPStatus.BAD_REQUEST,

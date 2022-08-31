@@ -1,21 +1,20 @@
 import logging
-from logging import config as logging_config
 from http import HTTPStatus
+from logging import config as logging_config
 from traceback import format_exception
 
 import aioredis
 import uvicorn
+from api.v1 import films, genres, persons
+from core.config import settings
+from core.logger import LOGGING
+from db import cache_db, db
 from elasticsearch import AsyncElasticsearch
-from fastapi import FastAPI, Request, HTTPException
+from extensions import logstash, sentry
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from logstash.handler_udp import LogstashHandler
-
-from api.v1 import films, persons, genres
-from core.config import settings
-from core.logger import LOGGING
-from db import db, cache_db
-from extensions import logstash, sentry
 from services.base_cache import BaseRedisStorage
 from services.base_full_text_search import BaseElasticStorage
 
@@ -31,11 +30,11 @@ def init_logstash():
 
 def init_logger(app: FastAPI):
     logging_config.dictConfig(LOGGING)
-    app.logger = logging.getLogger(__name__)
-    app.logger.setLevel(logging.INFO)
+    app.logger = logging.getLogger(__name__)  # type: ignore
+    app.logger.setLevel(logging.INFO)  # type: ignore
 
     if settings.ENABLE_LOGSTASH:
-        app.logger.addHandler(logstash.logstash_handler)
+        app.logger.addHandler(logstash.logstash_handler)  # type: ignore
 
 
 def init_app() -> FastAPI:
@@ -59,10 +58,11 @@ app = init_app()
 
 @app.exception_handler(Exception)
 async def unicorn_exception_handler(request: Request, exc: Exception):
-    app.logger.info(f'Error catched \n {format_exception(type(exc), exc, exc.__traceback__)}',
-                    {'request_id': request.headers.get('X-Request-Id')})
+    log_str = f'Error catched \n {format_exception(type(exc), exc, exc.__traceback__)}'
+
+    app.logger.info(log_str, {'request_id': request.headers.get('X-Request-Id')})  # type: ignore
     raise HTTPException(
-        status_code=HTTPStatus.BadRequest, detail='Bad request',
+        status_code=HTTPStatus.BAD_REQUEST, detail='Bad request',
     )
 
 
@@ -87,7 +87,7 @@ app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
 app.include_router(persons.router, prefix='/api/v1/persons', tags=['persons'])
 app.include_router(genres.router, prefix='/api/v1/genres', tags=['genres'])
 
-app.mount('/static', StaticFiles(directory="static"), name="static")
+app.mount('/static', StaticFiles(directory='static'), name='static')
 
 if __name__ == '__main__':
     uvicorn.run(
