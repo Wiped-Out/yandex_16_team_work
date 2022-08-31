@@ -14,7 +14,7 @@ services:
     networks:
       - backend
 
-  backend:
+  django_admin:
     build:
       context: ./app
     volumes:
@@ -26,6 +26,7 @@ services:
     networks:
       - internal_bridge
       - backend
+
   nginx_async:
     image: nginx
     volumes:
@@ -33,8 +34,9 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - backend_static:/data/static
       - fastapi_static:/data/fastapi_static
+      - nginx_logs:/var/log/nginx/
     depends_on:
-      - backend
+      - django_admin
     ports:
       - 81:81
     restart: always
@@ -59,7 +61,7 @@ services:
     depends_on:
       - postgres
       - elastic
-      - backend
+      - django_admin
     networks:
       - backend
 
@@ -70,7 +72,7 @@ services:
     networks:
       - backend
 
-  fastapi:
+  fastapi_async:
     build:
       context: ./fastapi
     volumes:
@@ -78,11 +80,24 @@ services:
     depends_on:
       - postgres
       - elastic
-      - backend
+      - django_admin
       - redis
     networks:
       - internal_bridge
       - backend
+      - services_network
+
+  filebeat_async:
+    build:
+      context: ./filebeat
+    volumes:
+      - nginx_logs:/var/log/nginx:ro
+    env_file:
+      - ./filebeat/.env
+    depends_on:
+      - fastapi_async
+      - nginx_async
+    networks:
       - services_network
 
 # Указываем Docker, какие именованные тома потребуются сервисам
@@ -92,6 +107,7 @@ volumes:
   esdata:
   redisdata:
   fastapi_static:
+  nginx_logs:
 
 networks:
   backend:

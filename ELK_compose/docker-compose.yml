@@ -1,0 +1,53 @@
+services:
+  logstash:
+    image: logstash:7.10.1
+    env_file:
+      - ./logstash/.env
+    environment:
+      # Так как сейчас вы хотите запустить logstash без Elasticsearch, необходимо отключить встроенный мониторинг, отправляющий данные в ES
+      XPACK_MONITORING_ENABLED: "false"
+    #    ports:
+    #      - "5044:5044/udp"
+    volumes:
+      # Монтируем файл с конфигурацией logstash
+      - ./logstash/logstash.conf:/config/logstash.conf:ro
+    # Запускаем с указанием конфигурационного файла
+    command: logstash -f /config/logstash.conf
+    networks:
+      - services_network
+      - backend
+
+  elastic:
+    image: elasticsearch:7.14.0
+    environment:
+      # Указываем ES запуститься в одном экземпляре
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xms1000m -Xmx1000m"
+    #    ports:
+    #      - 9200:9200
+    volumes:
+      - elk_esdata:/usr/share/elasticsearch/data
+    networks:
+      - backend
+  # Обратите внимание: не стоит использовать для ELK тот же ES, который задействован для полнотекстового поиска в вашем сервисе
+
+  kibana:
+    image: elastic/kibana:7.10.2
+    ports:
+      - "5601:5601"
+    env_file:
+      - kibana/.env
+    depends_on:
+      - elastic
+    networks:
+      - backend
+# Указываем Docker, какие именованные тома потребуются сервисам
+
+volumes:
+  elk_esdata:
+
+
+networks:
+  backend:
+  services_network:
+    external: true

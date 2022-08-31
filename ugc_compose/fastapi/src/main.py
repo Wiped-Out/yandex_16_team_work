@@ -1,20 +1,59 @@
 import uvicorn
-from api.v1 import bookmarks, comments, film_progress, likes
-from core.config import settings
-from db import db
+import logging
+from http import HTTPStatus
+from logging import config as logging_config
+from traceback import format_exception
+
+from fastapi import Request, HTTPException
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from kafka import KafkaProducer
+from logstash.handler_udp import LogstashHandler
+
+from api.v1 import comments, bookmarks, likes, film_progress
+from core.config import settings
+from core.logger import LOGGING
+from db import db
+from extensions import logstash, sentry
 from services.main_db import BaseKafkaStorage
 
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    docs_url='/api/openapi',
-    openapi_url='/api/openapi.json',
-    root_path='/fapi',
-    default_response_class=ORJSONResponse,
-)
+
+def init_logstash():
+    if not settings.ENABLE_LOGSTASH:
+        return
+    logstash.logstash_handler = LogstashHandler(settings.LOGSTASH_HOST,
+                                                settings.LOGSTASH_PORT,
+                                                version=1)
+    logstash.logstash_handler.addFilter(logstash.RequestIdFilter())
+
+
+def init_logger(app: FastAPI):
+    logging_config.dictConfig(LOGGING)
+    app.logger = logging.getLogger(__name__)
+    app.logger.setLevel(logging.INFO)
+
+    if settings.ENABLE_LOGSTASH:
+        app.logger.addHandler(logstash.logstash_handler)
+
+
+def init_app() -> FastAPI:
+    sentry.init_sentry()
+
+    app = FastAPI(
+        title=settings.PROJECT_NAME,
+        docs_url='/api/openapi',
+        openapi_url='/api/openapi.json',
+        root_path='/fapi',
+        default_response_class=ORJSONResponse,
+    )
+
+    init_logstash()
+    init_logger(app=app)
+    return app
+
+
+app = init_app()
 
 
 @app.on_event('startup')
@@ -32,6 +71,16 @@ async def shutdown():
     pass
 
 
+@app.exception_handler(Exception)
+async def unicorn_exception_handler(request: Request, exc: Exception):
+    app.logger.info(f'Error catched \n {format_exception(type(exc), exc, exc.__traceback__)}',
+                    {'request_id': request.headers.get('X-Request-Id')})
+    raise HTTPException(
+        status_code=HTTPStatus.BadRequest, detail='Bad request',
+    )
+
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
 app.include_router(comments.router, prefix='/api/v1/comments', tags=['comments'])

@@ -5,8 +5,8 @@ services:
   postgres:
     build:
       context: ./postgres
-#    ports:
-#      - 5434:5432
+    #    ports:
+    #      - 5434:5432
     env_file:
       - ./postgres/.env
     volumes:
@@ -16,15 +16,7 @@ services:
       - backend
 
 
-  jaeger:
-    image: jaegertracing/all-in-one:1.36.0
-    ports:
-      - "6831:6831/udp"
-      - "16686:16686"
-    networks:
-      - backend
-
-  flask:
+  flask_auth:
     build:
       context: ./auth_service/app
     depends_on:
@@ -36,6 +28,7 @@ services:
     networks:
       - backend
       - internal_bridge
+      - services_network
 
   nginx_auth:
     image: nginx:1.23.0
@@ -43,8 +36,9 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - flask_static:/data/static
+      - nginx_logs:/var/log/nginx/
     depends_on:
-      - flask
+      - flask_auth
     ports:
       - 80:80
     restart: always
@@ -59,11 +53,32 @@ services:
     networks:
       - backend
 
+  jaeger:
+    image: jaegertracing/all-in-one:1.36.0
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+    networks:
+      - backend
+
+  filebeat_auth:
+    build:
+      context: ./filebeat
+    volumes:
+      - nginx_logs:/var/log/nginx:ro
+    env_file:
+      - ./filebeat/.env
+    depends_on:
+      - flask_auth
+      - nginx_auth
+    networks:
+      - services_network
 # Указываем Docker, какие именованные тома потребуются сервисам
 volumes:
   auth_db:
   redisdata:
   flask_static:
+  nginx_logs:
 
 networks:
   backend:

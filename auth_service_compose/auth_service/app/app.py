@@ -1,9 +1,11 @@
+import logging
 from http import HTTPStatus
+from traceback import format_exception
 
 import redis  # type: ignore
 from core.settings import settings
 from db import cache_db, db
-from extensions import flask_migrate, flask_restx, jwt, oauth, tracer
+from extensions import jwt, flask_restx, flask_migrate, tracer, oauth, logstash, sentry
 from extensions.rate_limiter import rate_limit
 from flask import Flask, render_template, request
 from flask_jwt_extended import JWTManager, current_user, jwt_required
@@ -17,6 +19,23 @@ from sqlalchemy import exc
 from utils.utils import (log_activity, make_error_response,
                          register_blueprints, register_namespaces)
 from werkzeug import exceptions
+
+
+def init_logstash():
+    if not settings.ENABLE_LOGSTASH:
+        return
+    logstash.logstash_handler = LogstashHandler(settings.LOGSTASH_HOST,
+                                                settings.LOGSTASH_PORT,
+                                                version=1)
+    logstash.logstash_handler.addFilter(logstash.RequestIdFilter())
+
+
+def init_logger(app: Flask):
+    app.logger = logging.getLogger(__name__)
+    app.logger.setLevel(logging.INFO)
+
+    if settings.ENABLE_LOGSTASH:
+        app.logger.addHandler(logstash.logstash_handler)
 
 
 def init_cache_db():
@@ -56,6 +75,7 @@ def init_migration(app: Flask, sqlalchemy):
 
 
 def init_app(name: str) -> Flask:
+    sentry.init_sentry()
     app = Flask(name)
 
     register_blueprints(app)
@@ -67,6 +87,7 @@ def init_app(name: str) -> Flask:
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = settings.JWT_ACCESS_TOKEN_EXPIRES
     app.config['JWT_REFRESH_TOKEN_EXPIRES'] = settings.JWT_REFRESH_TOKEN_EXPIRES
 
+    init_logstash()
     init_api(app=app)
     init_oauth(app=app)
 
@@ -79,13 +100,15 @@ def init_app(name: str) -> Flask:
 
     init_tracer(app=app)
 
+    init_logger(app=app)
+
     with app.app_context():
         init_jwt(app=app)
 
     return app
 
 
-app = init_app(__name__)
+app = init_app('flask_auth')
 
 
 @app.before_request
@@ -101,6 +124,15 @@ def before_request_callback():
 @app.errorhandler(exc.SQLAlchemyError)
 def handle_db_exceptions(error: exc.SQLAlchemyError):
     db.sqlalchemy.session.rollback()
+    return make_error_response(
+        status=HTTPStatus.BAD_REQUEST,
+        msg=responses.BAD_REQUEST,
+    )
+
+
+@app.errorhandler(Exception)
+def handle_db_exceptions(error: Exception):
+    app.logger.info(f'Error catched \n {format_exception(type(error), error, error.__traceback__)}')
     return make_error_response(
         status=HTTPStatus.BAD_REQUEST,
         msg=responses.BAD_REQUEST,
