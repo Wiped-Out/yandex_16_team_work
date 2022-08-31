@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Generator
 
 from models import Genres, Movies, Persons
 from psycopg2.extensions import connection as _connection
@@ -14,7 +14,7 @@ class PostgresExtractor:
     pg_sc: StateController
     page_size: int = 500
 
-    def extract_movies(self) -> Tuple[Movies]:
+    def extract_movies(self):
         with self.pgconn.cursor(name='etl_{id}'.format(id=id(self))) as cur:
             sql_query = """
             SELECT
@@ -104,10 +104,9 @@ class PostgresExtractor:
                                     self.pg_sc.timestamp,
                                     self.pg_sc.state))
             while results := cur.fetchmany(self.page_size):
-                yield tuple(Movies(*i)
-                            for i in results)
+                yield tuple(Movies(*i) for i in results)
 
-    def extract_persons(self) -> Tuple[Persons]:
+    def extract_persons(self):
         with self.pgconn.cursor(name='etl_{id}'.format(id=id(self))) as cur:
             sql_query = """
             SELECT
@@ -123,10 +122,9 @@ class PostgresExtractor:
             cur.execute(sql_query, (self.pg_sc.timestamp,
                                     self.pg_sc.state))
             while results := cur.fetchmany(self.page_size):
-                yield tuple(Persons(*i)
-                            for i in results)
+                yield tuple(Persons(*i) for i in results)
 
-    def extract_genres(self) -> Tuple[Genres]:
+    def extract_genres(self):
         with self.pgconn.cursor(name='etl_{id}'.format(id=id(self))) as cur:
             sql_query = """
             SELECT

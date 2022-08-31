@@ -79,7 +79,7 @@ class BaseFullTextSearchStorage:
             model,
             index: str,
     ):
-        query = {
+        query: dict = {
             'query': {
                 'match_all': {},
             },

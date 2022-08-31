@@ -69,15 +69,10 @@ class JWTService(BaseCacheStorage, BaseMainStorage):
 
 
 @lru_cache()
-def get_jwt_service(
-        cache: CacheStorage = None,
-        main_db: MainStorage = None,
-) -> JWTService:
-    cache: CacheStorage = get_cache_db() or cache
-    main_db: MainStorage = get_db() or main_db
+def get_jwt_service() -> JWTService:
     jwt_service = JWTService(
-        cache=cache,
-        db=main_db,
+        cache=get_cache_db(),
+        db=get_db(),
         db_model=models.RefreshToken,
     )
     return jwt_service

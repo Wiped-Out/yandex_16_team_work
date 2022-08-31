@@ -20,6 +20,8 @@ class ElasticSearchManager:
         self.connection = Elasticsearch(self.url)
 
     def __enter__(self) -> Elasticsearch:
+        if not self.connection:
+            raise
         return self.connection
 
     def __exit__(self, error: Exception, value: object, traceback: object):

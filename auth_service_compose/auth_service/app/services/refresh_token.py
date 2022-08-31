@@ -23,26 +23,22 @@ class RefreshTokenService(BaseCacheStorage, BaseMainStorage):
     db_model = models.RefreshToken
 
     @_trace()
-    def get_refresh_tokens(self, user_id: str) -> list[cache_model]:
+    def get_refresh_tokens(self, user_id: str):
         db_refresh_tokens = self.filter_by(user_id=user_id, sort_by='to')
         return [self.cache_model(**refresh_token.to_dict()) for refresh_token in db_refresh_tokens]
 
     @_trace()
-    def create_refresh_token(self, params: dict) -> cache_model:
+    def create_refresh_token(self, params: dict):
         refresh_token = self.create(**params)
         return self.cache_model(**refresh_token.to_dict())
 
 
 @lru_cache()
 def get_refresh_token_service(
-        cache: CacheStorage = None,
-        main_db: MainStorage = None,
 ) -> RefreshTokenService:
-    cache: CacheStorage = get_cache_db() or cache
-    main_db: MainStorage = get_db() or main_db
     refresh_token_service = RefreshTokenService(
-        cache=cache,
-        db=main_db,
+        cache=get_cache_db(),
+        db=get_db(),
         db_model=models.RefreshToken,
     )
     return refresh_token_service

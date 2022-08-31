@@ -25,4 +25,4 @@ class LikesService(MainStorage):
 def get_likes_service(
         main_db: AbstractMainStorage = Depends(get_db),
 ):
-    return LikesService(db=main_db)
+    return LikesService(db=main_db)  # type: ignore

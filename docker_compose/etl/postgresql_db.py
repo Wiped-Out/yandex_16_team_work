@@ -26,5 +26,6 @@ class PostgreSQLManager:
         return self.connection
 
     def __exit__(self, error: Exception, value: object, traceback: object):
-        self.connection.commit()
-        self.connection.close()
+        if self.connection:
+            self.connection.commit()
+            self.connection.close()

@@ -27,7 +27,7 @@ class ElasticsearchLoader:
 
         while len(ready_data) > 0:
             if self.page_size * 2 > len(ready_data):
-                ready_data, list_to_load = (), ready_data
+                ready_data, list_to_load = [], ready_data
             else:
                 ready_data = ready_data[self.page_size * 2:]
                 list_to_load = (ready_data[:self.page_size * 2])

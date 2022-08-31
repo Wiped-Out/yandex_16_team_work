@@ -23,7 +23,7 @@ class LogsService(BaseCacheStorage, BaseMainStorage):
     cache_model = CacheLog
 
     @_trace()
-    def create_log(self, **params) -> cache_model:
+    def create_log(self, **params):
         log = self.create(**params)
         return self.cache_model(**log.to_dict())
 
@@ -52,15 +52,10 @@ class LogsService(BaseCacheStorage, BaseMainStorage):
 
 
 @lru_cache()
-def get_logs_service(
-        cache: CacheStorage = None,
-        main_db: MainStorage = None,
-) -> LogsService:
-    cache: CacheStorage = get_cache_db() or cache
-    main_db: MainStorage = get_db() or main_db
+def get_logs_service() -> LogsService:
     logs_service = LogsService(
-        cache=cache,
-        db=main_db,
+        cache=get_cache_db(),
+        db=get_db(),
         db_model=models.Log,
     )
     return logs_service

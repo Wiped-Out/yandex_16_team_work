@@ -45,11 +45,7 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
         }
 
     @_trace()
-    def get_role(
-            self,
-            role_id: str,
-            base_url: str,
-    ) -> cache_model:
+    def get_role(self, role_id: str, base_url: str):
         cache_key = base_url
         role = self.get_one_item_from_cache(cache_key=cache_key, model=self.cache_model)
         if not role:
@@ -64,21 +60,16 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
         self.update(item_id=role_id, **params)
 
     @_trace()
-    def create_role(self, params: dict) -> cache_model:
+    def create_role(self, params: dict):
         role = self.create(**params)
         return self.cache_model(**role.to_dict())
 
 
 @lru_cache()
-def get_role_service(
-        cache: CacheStorage = None,
-        main_db: MainStorage = None,
-) -> RoleService:
-    cache: CacheStorage = get_cache_db() or cache
-    main_db: MainStorage = get_db() or main_db
+def get_role_service() -> RoleService:
     role_service = RoleService(
-        cache=cache,
-        db=main_db,
+        cache=get_cache_db(),
+        db=get_db(),
         db_model=models.Role,
     )
     return role_service

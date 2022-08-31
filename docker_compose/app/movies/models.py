@@ -47,7 +47,7 @@ class Genre(UUIDMixin, TimeStampedMixin):
         db_table = 'content\".\"genre'
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        indexes = [] + TimeStampedMixin.Meta.indexes
+        indexes: list = [] + TimeStampedMixin.Meta.indexes
 
     def __str__(self):
         return self.name
@@ -72,7 +72,7 @@ class Person(UUIDMixin, TimeStampedMixin):
         db_table = 'content\".\"person'
         verbose_name = 'Человек'
         verbose_name_plural = 'Люди'
-        indexes = [] + TimeStampedMixin.Meta.indexes
+        indexes: list = [] + TimeStampedMixin.Meta.indexes
 
     def __str__(self):
         return self.full_name

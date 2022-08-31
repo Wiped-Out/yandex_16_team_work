@@ -111,5 +111,5 @@ def set_jwt_callbacks():
         }
 
 
-def get_jwt_manager() -> JWTManager:
+def get_jwt_manager() -> Optional[JWTManager]:
     return jwt_manager

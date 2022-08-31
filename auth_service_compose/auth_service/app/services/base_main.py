@@ -41,15 +41,15 @@ def sqlalchemy_additional_actions():
 
 class MainStorage(ABC):
     @abstractmethod
-    def get(self, **kwargs):
+    def get(self, item_id: str, model, **kwargs):
         pass
 
     @abstractmethod
-    def create(self, **kwargs):
+    def create(self, model, need_commit: bool = True, **kwargs):
         pass
 
     @abstractmethod
-    def update(self, **kwargs):
+    def update(self, item_id: str, model, **kwargs):
         pass
 
     @abstractmethod
@@ -61,7 +61,7 @@ class MainStorage(ABC):
         pass
 
     @abstractmethod
-    def delete(self, **kwargs):
+    def delete(self, item_id: str, model, **kwargs):
         pass
 
     @abstractmethod
@@ -77,15 +77,15 @@ class MainStorage(ABC):
         pass
 
     @abstractmethod
-    def paginate(self, *args, **kwargs):
+    def paginate(self, query: Query, page: int, per_page: int, **kwargs):
         pass
 
     @abstractmethod
-    def count(self, *args, **kwargs):
+    def count(self, query: Query, **kwargs):
         pass
 
     @abstractmethod
-    def like(self, *args, **kwargs):
+    def like(self, model, query: Query, field, pattern: str, **kwargs):
         pass
 
     @abstractmethod

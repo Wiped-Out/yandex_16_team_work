@@ -46,13 +46,10 @@ jobs:
 
       - name: mypy
         run: |
-          mypy ./auth_service_compose/auth_service/app/
-          mypy ./docker_compose/app/
-          mypy ./docker_compose/etl/
-          mypy ./docker_compose/fastapi/src/
-          mypy ./fake_data_to_postgres/
-          mypy ./ugc_compose/fake_data_kafka_producer/
-          mypy ./ugc_compose/fastapi/src/
+          mypy ./auth_service_compose/auth_service/app --ignore-missing-imports
+          mypy ./docker_compose/app --ignore-missing-imports
+          mypy ./docker_compose/fastapi/src --ignore-missing-imports
+          mypy ./ugc_compose/fastapi/src --ignore-missing-imports
 
   notify:
     needs: linter

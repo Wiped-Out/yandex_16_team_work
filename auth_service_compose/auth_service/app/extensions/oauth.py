@@ -5,7 +5,7 @@ from core.settings import settings
 from flask import Flask
 from werkzeug.local import LocalProxy
 
-oauth: Optional[OAuth] = OAuth()
+oauth: OAuth = OAuth()
 google: Optional[LocalProxy] = None
 
 
@@ -33,4 +33,5 @@ def get_oauth() -> OAuth:
 
 
 def get_google_client() -> LocalProxy:
+    assert google is not None
     return google

@@ -48,15 +48,10 @@ class UserRolesService(BaseCacheStorage, BaseMainStorage):
 
 
 @lru_cache()
-def get_user_roles_service(
-        cache: CacheStorage = None,
-        main_db: MainStorage = None,
-) -> UserRolesService:
-    cache: CacheStorage = get_cache_db() or cache
-    main_db: MainStorage = get_db() or main_db
+def get_user_roles_service() -> UserRolesService:
     role_service = UserRolesService(
-        cache=cache,
-        db=main_db,
+        cache=get_cache_db(),
+        db=get_db(),
         db_model=None,
     )
     return role_service

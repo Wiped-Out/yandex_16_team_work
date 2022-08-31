@@ -2,8 +2,8 @@ import json
 from abc import ABC, abstractmethod
 
 from extensions.tracer import _trace
-from redis import Redis
-from redis.client import Pipeline
+from redis import Redis  # type: ignore
+from redis.client import Pipeline  # type: ignore
 
 
 class CachePipeline(ABC):

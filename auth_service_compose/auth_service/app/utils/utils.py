@@ -33,7 +33,7 @@ def save_activity(user: User, action=None):
 
 def register_blueprints(app: Flask):
     modules = glob.glob(join('views', '*.py'))
-    modules = tuple(map(lambda x: x.replace('/', '.'), modules))  # noqa: C417
+    modules = list(map(lambda x: x.replace('/', '.'), modules))  # noqa: C417
     for item in modules:
         if not item.endswith('__init__.py'):
             name = item.split('.')[1]

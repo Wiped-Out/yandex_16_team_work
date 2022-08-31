@@ -25,4 +25,4 @@ class BookmarksService(MainStorage):
 def get_bookmarks_service(
         main_db: AbstractMainStorage = Depends(get_db),
 ):
-    return BookmarksService(db=main_db)
+    return BookmarksService(db=main_db)  # type: ignore

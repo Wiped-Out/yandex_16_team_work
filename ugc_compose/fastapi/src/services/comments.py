@@ -34,4 +34,4 @@ class CommentsService(MainStorage):
 def get_comments_service(
         main_db: AbstractMainStorage = Depends(get_db),
 ):
-    return CommentsService(db=main_db)
+    return CommentsService(db=main_db)  # type: ignore

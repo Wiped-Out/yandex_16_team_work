@@ -64,4 +64,4 @@ class FilmworkAdmin(admin.ModelAdmin):
     def get_genres(self, obj):
         return ', '.join(genre.name for genre in obj.genres.all())
 
-    get_genres.short_description = 'Жанры фильма'
+    get_genres.short_description = 'Жанры фильма'  # type: ignore

@@ -8,6 +8,6 @@ mimetypes.add_type('application/javascript', '.js', True)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('__debug__/', include(debug_toolbar.urls)),
+    path('__debug__/', include(debug_toolbar.urls)),  # type: ignore
     path('api/', include('movies.api.urls')),
 ]

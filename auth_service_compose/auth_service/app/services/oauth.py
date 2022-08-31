@@ -22,15 +22,10 @@ class OauthService(BaseCacheStorage, BaseMainStorage):
 
 
 @lru_cache()
-def get_oauth_service(
-        cache: CacheStorage = None,
-        main_db: MainStorage = None,
-) -> OauthService:
-    cache: CacheStorage = get_cache_db() or cache
-    main_db: MainStorage = get_db() or main_db
+def get_oauth_service() -> OauthService:
     oauth_service = OauthService(
-        cache=cache,
-        db=main_db,
+        cache=get_cache_db(),
+        db=get_db(),
         db_model=models.Oauth,
     )
     return oauth_service

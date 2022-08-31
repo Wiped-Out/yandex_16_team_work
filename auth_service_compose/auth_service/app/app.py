@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-import redis
+import redis  # type: ignore
 from core.settings import settings
 from db import cache_db, db
 from extensions import flask_migrate, flask_restx, jwt, oauth, tracer
@@ -71,7 +71,7 @@ def init_app(name: str) -> Flask:
     init_oauth(app=app)
 
     init_db()
-    db.init_sqlalchemy(app=app, storage=db.db)
+    db.init_sqlalchemy(app=app, storage=db.db)  # type: ignore
 
     init_cache_db()
 
@@ -110,7 +110,7 @@ def handle_db_exceptions(error: exc.SQLAlchemyError):
 @app.errorhandler(exceptions.HTTPException)
 def handle_bad_request(error: exceptions.HTTPException):
     return make_error_response(
-        status=error.code,
+        status=error.code if error.code else -100,
         msg=error.__str__(),
     )
 

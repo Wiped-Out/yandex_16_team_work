@@ -5,7 +5,7 @@ from kafka import KafkaProducer
 
 class AbstractMainStorage(ABC):
     @abstractmethod
-    def send(self, **kwargs):
+    def send(self, topic: str, value: bytes, key: bytes):
         pass
 
 

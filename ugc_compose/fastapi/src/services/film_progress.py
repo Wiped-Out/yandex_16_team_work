@@ -31,4 +31,4 @@ class FilmProgressService(MainStorage):
 def get_film_progress_service(
         main_db: AbstractMainStorage = Depends(get_db),
 ):
-    return FilmProgressService(db=main_db)
+    return FilmProgressService(db=main_db)  # type: ignore

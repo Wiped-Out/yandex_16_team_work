@@ -20,7 +20,7 @@ class UserService(BaseCacheStorage, BaseMainStorage):
     cache_model = CacheUser
 
     @_trace()
-    def create_user(self, params: dict) -> cache_model:
+    def create_user(self, params: dict):
         user = self.create(
             need_commit=False,
             login=params['login'],
@@ -54,11 +54,7 @@ class UserService(BaseCacheStorage, BaseMainStorage):
         }
 
     @_trace()
-    def get_user(
-            self,
-            user_id: str,
-            base_url: str,
-    ) -> cache_model:
+    def get_user(self, user_id: str, base_url: str):
         cache_key = base_url
 
         user = self.get_one_item_from_cache(
@@ -80,15 +76,10 @@ class UserService(BaseCacheStorage, BaseMainStorage):
 
 
 @lru_cache()
-def get_user_service(
-        cache: CacheStorage = None,
-        main_db: MainStorage = None,
-) -> UserService:
-    cache: CacheStorage = get_cache_db() or cache
-    main_db: MainStorage = get_db() or main_db
+def get_user_service() -> UserService:
     user_service = UserService(
-        cache=cache,
-        db=main_db,
+        cache=get_cache_db(),
+        db=get_db(),
         db_model=models.User,
     )
     return user_service

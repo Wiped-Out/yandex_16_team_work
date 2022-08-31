@@ -31,7 +31,7 @@ class FullTextSearchFilm(BaseFullTextSearchStorage):
                 index=self.index, model=self.model, fields=['title'],
             )
 
-        query = {
+        query: dict = {
             'query': {
                 'bool': {
                     'must': [],
@@ -87,7 +87,7 @@ class FullTextSearchFilm(BaseFullTextSearchStorage):
             count = await self.full_text_search.count(index=self.index, body=query)
             return count['count']
 
-        query = {
+        query: dict = {  # type: ignore
             'query': {
                 'bool': {
                     'must': [],
@@ -96,8 +96,7 @@ class FullTextSearchFilm(BaseFullTextSearchStorage):
         }
 
         if genre_id:
-            query['query']['bool']['must'].append(
-                {
+            match_genre_id_rule: dict = {
                     'nested': {
                         'path': 'genre',
                         'query': {
@@ -106,15 +105,16 @@ class FullTextSearchFilm(BaseFullTextSearchStorage):
                             },
                         },
                     },
-                },
-            )
+                }
+
+            query['query']['bool']['must'].append(match_genre_id_rule)  # type: ignore
 
         count = await self.full_text_search.count(index=self.index, body=query)
 
         return count['count']
 
     async def get_films_for_person_query(self, person_id: str) -> dict:
-        query = {
+        query: dict = {
             'query': {
                 'bool': {
                     'should': [],
