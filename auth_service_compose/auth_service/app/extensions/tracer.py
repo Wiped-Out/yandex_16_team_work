@@ -25,7 +25,7 @@ def configure_tracer() -> None:
         ),
     )
 
-    trace.get_tracer_provider().add_span_processor(
+    trace.get_tracer_provider().add_span_processor(  # type: ignore
         BatchSpanProcessor(
             JaegerExporter(
                 agent_host_name=settings.JAEGER_HOST,
