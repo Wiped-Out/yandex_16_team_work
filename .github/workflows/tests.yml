@@ -51,6 +51,9 @@ jobs:
           mypy ./docker_compose/fastapi/src --ignore-missing-imports --implicit-reexport --namespace-packages
           mypy ./ugc_compose/fastapi/src --ignore-missing-imports --implicit-reexport --namespace-packages
 
+        env:
+          ARGS: "-av"
+
   notify:
     needs: linter
     runs-on: ubuntu-latest
