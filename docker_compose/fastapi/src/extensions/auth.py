@@ -2,7 +2,7 @@ import uuid
 
 from core.config import settings
 from fastapi import Depends, HTTPException, Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPBearer
 from models.auth import AuthUser
 from services.auth_integration import get_auth_service
 
