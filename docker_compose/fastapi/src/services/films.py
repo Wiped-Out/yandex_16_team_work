@@ -36,9 +36,9 @@ class FilmsService(BaseFilmService):
     ) -> List[Film]:
 
         if search:
-            cache_key = f'{base_url}_{search=}_{page_size=}_{page=}'
+            cache_key = f'{base_url}_search={search}_page_size={page_size}_page={page}'
         else:
-            cache_key = f'{base_url}_{sort_param=}_{page_size=}_{page=}'
+            cache_key = f'{base_url}_sort_param={sort_param}_page_size={page_size}_page{page}'
 
         films = await self.get_items_from_cache(cache_key=cache_key, model=Film)
 

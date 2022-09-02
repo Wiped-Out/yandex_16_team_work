@@ -16,7 +16,7 @@ class GenreService(BaseGenreService):
             base_url: str,
     ) -> Optional[Genre]:
 
-        cache_key = f'{base_url}_{genre_id=}'
+        cache_key = f'{base_url}_genre_id={genre_id}'
         genre = await self.get_one_item_from_cache(cache_key=cache_key, model=Genre)
 
         if not genre:
@@ -36,7 +36,7 @@ class GenresService(BaseGenreService):
             base_url: str,
     ) -> List[Genre]:
 
-        cache_key = f'{base_url}_{page_size=}_{page=}'
+        cache_key = f'{base_url}_page_size={page_size}_page={page}'
         genres = await self.get_items_from_cache(cache_key=cache_key, model=Genre)
 
         if not genres:
