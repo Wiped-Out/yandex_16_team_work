@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from models.base import BaseOrjsonModel
 from pydantic import BaseModel
@@ -22,12 +22,12 @@ class Film(BaseOrjsonModel):
 
     imdb_rating: float
 
-    genre: list[GenreInFilm]
+    genre: List[GenreInFilm]
 
-    actors: list[PersonInFilm]
-    writers: list[PersonInFilm]
-    directors: list[PersonInFilm]
+    actors: List[PersonInFilm]
+    writers: List[PersonInFilm]
+    directors: List[PersonInFilm]
 
-    actors_names: list[str]
-    writers_names: list[str]
-    directors_names: list[str]
+    actors_names: List[str]
+    writers_names: List[str]
+    directors_names: List[str]

@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import List
 
 from api.answers.v1 import answers
 from extensions.auth import security
@@ -71,14 +72,14 @@ async def films_by_person(
 
 @router.get(
     path='/{person_id}',
-    response_model=list[Person],
+    response_model=List[Person],
     description="Get person's full name, role and films where person was involved",
 )
 async def get_person(
         person_id: str, request: Request,
         person_service: PersonsService = Depends(get_persons_service),
         auth_user: AuthUser = Depends(security),
-) -> list[Person]:
+) -> List[Person]:
     persons = await person_service.get_persons_by_id(
         person_id=person_id, base_url=request.url.path,
     )

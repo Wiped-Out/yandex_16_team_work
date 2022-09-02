@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from elasticsearch import NotFoundError
 from models.film import Film
@@ -24,7 +24,7 @@ class FullTextSearchFilm(BaseFullTextSearchStorage):
             genre_id: Optional[str],
             page: int,
             page_size: int,
-    ) -> list[Film]:
+    ) -> List[Film]:
         if search:
             return await self.get_items_by_search(
                 search=search, page_size=page_size, page=page,
@@ -141,7 +141,7 @@ class FullTextSearchFilm(BaseFullTextSearchStorage):
             person_id: str,
             page: int,
             page_size: int,
-    ) -> list[Film]:
+    ) -> List[Film]:
 
         query = await self.get_films_for_person_query(person_id=person_id)
 
@@ -189,7 +189,7 @@ class FullTextSearchPerson(BaseFullTextSearchStorage):
             search: str,
             page: int,
             page_size: int,
-    ) -> list[Person]:
+    ) -> List[Person]:
 
         doc = await self.search(
             search=search,

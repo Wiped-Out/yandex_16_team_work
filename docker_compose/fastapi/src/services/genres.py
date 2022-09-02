@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Optional, List
+from typing import List, Optional
 
 from db.cache_db import get_cache_db
 from db.db import get_db
