@@ -117,9 +117,11 @@ app = init_app('flask_auth')
 def before_request_callback():
     request_id = request.headers.get('X-Request-Id')
     if not request_id:
-        return make_error_response(msg=REQUEST_ID_REQUIRED,
-                                   status=HTTPStatus.BAD_REQUEST)
-    if result := rate_limit():
+        return make_error_response(msg=REQUEST_ID_REQUIRED, status=HTTPStatus.BAD_REQUEST)
+
+    result = rate_limit()
+
+    if result:
         return result
 
 

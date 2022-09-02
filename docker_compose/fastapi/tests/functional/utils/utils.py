@@ -62,8 +62,11 @@ def backoff_on_true(start_sleep_time=0.1, factor=2, border_sleep_time=10):
                 t = t * factor
                 t = t if t < border_sleep_time else border_sleep_time
                 time.sleep(t)
-                if result := await func(*args, **kwargs):
+
+                result = await func(*args, **kwargs)
+                if result:
                     return result
+
             raise TimeoutError
 
         return inner

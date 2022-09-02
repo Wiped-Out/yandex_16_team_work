@@ -102,7 +102,8 @@ class PostgresExtractor:
                                     self.pg_sc.timestamp,
                                     self.pg_sc.timestamp,
                                     self.pg_sc.state))
-            while results := cur.fetchmany(self.page_size):
+            results = cur.fetchmany(self.page_size)
+            while results:
                 yield tuple(Movies(*i) for i in results)
 
     def extract_persons(self):
