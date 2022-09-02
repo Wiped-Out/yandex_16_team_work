@@ -12,7 +12,7 @@ from services.base import (AsyncCacheStorage, AsyncFullTextSearchStorage,
 class FilmService(BaseFilmService):
     async def get_film_by_id(self, film_id: str, base_url: str) -> Optional[Film]:
 
-        cache_key = f'{base_url}_{film_id=}'
+        cache_key = f'{base_url}_film_id={film_id}'
         film = await self.get_one_item_from_cache(cache_key=cache_key, model=Film)
 
         if not film:

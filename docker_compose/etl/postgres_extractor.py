@@ -139,6 +139,6 @@ class PostgresExtractor:
 
             cur.execute(sql_query, (self.pg_sc.timestamp,
                                     self.pg_sc.state))
-            while results := cur.fetchmany(self.page_size):
-                yield tuple(Genres(*i)
-                            for i in results)
+            results = cur.fetchmany(self.page_size)
+            while results:
+                yield tuple(Genres(*i) for i in results)
