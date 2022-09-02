@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Optional
+from typing import Optional, List
 
 from db.cache_db import get_cache_db
 from db.db import get_db
@@ -34,7 +34,7 @@ class GenresService(BaseGenreService):
             page: int,
             page_size: int,
             base_url: str,
-    ) -> list[Genre]:
+    ) -> List[Genre]:
 
         cache_key = f'{base_url}_{page_size=}_{page=}'
         genres = await self.get_items_from_cache(cache_key=cache_key, model=Genre)

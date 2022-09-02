@@ -1,4 +1,4 @@
-from functools import lru_cache
+from functools import lru_cache  # noqa: E999
 
 from db.cache_db import get_cache_db
 from db.db import get_db
@@ -39,7 +39,7 @@ class UserService(BaseCacheStorage, BaseMainStorage):
     ):
         query = self.get_query()
 
-        cache_key = f'{base_url}?{page=}&{per_page=}'
+        cache_key = f'{base_url}?page={page}&per_page={per_page}'
         users = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
         if not users:
             paginated_users = self.paginate(query=query, page=page, per_page=per_page)

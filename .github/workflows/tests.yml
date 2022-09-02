@@ -26,7 +26,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8==5.0.4
           pip install mypy
-          pip3 install datetime
           pip install -r ./auth_service_compose/auth_service/app/requirements.txt
           pip install -r ./docker_compose/app/requirements.txt
           pip install -r ./docker_compose/etl/requirements.txt

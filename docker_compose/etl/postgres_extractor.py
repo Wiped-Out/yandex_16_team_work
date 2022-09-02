@@ -121,7 +121,8 @@ class PostgresExtractor:
 
             cur.execute(sql_query, (self.pg_sc.timestamp,
                                     self.pg_sc.state))
-            while results := cur.fetchmany(self.page_size):
+            results = cur.fetchmany(self.page_size)
+            while results:
                 yield tuple(Persons(*i) for i in results)
 
     def extract_genres(self):

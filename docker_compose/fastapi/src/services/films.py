@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Optional
+from typing import Optional, List
 
 from db.cache_db import get_cache_db
 from db.db import get_db
@@ -33,7 +33,7 @@ class FilmsService(BaseFilmService):
             sort_param: Optional[str] = None,
             genre_id: Optional[str] = None,
             search: Optional[str] = None,
-    ) -> list[Film]:
+    ) -> List[Film]:
 
         if search:
             cache_key = f'{base_url}_{search=}_{page_size=}_{page=}'

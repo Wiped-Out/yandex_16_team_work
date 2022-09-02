@@ -23,7 +23,8 @@ def sqlalchemy_additional_actions():
             model = kwargs['model']
 
             # Сортировка
-            if value := actions[AdditionalActions._sort_by]:
+            value = actions[AdditionalActions._sort_by]
+            if value:
                 if value.startswith('-'):
                     result.order_by(getattr(model, value).desc())
                 else:
