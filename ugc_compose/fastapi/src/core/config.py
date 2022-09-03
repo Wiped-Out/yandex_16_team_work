@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     KAFKA_HOST: str
     KAFKA_PORT: int
 
+    MONGO_HOST: str
+    MONGO_PORT: int
+    MONGO_USER: str
+    MONGO_PASSWORD: str
+
     LOGSTASH_HOST: str
     LOGSTASH_PORT: int
     ENABLE_LOGSTASH: bool

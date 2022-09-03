@@ -1,5 +1,8 @@
+from typing import List
+
+from pydantic import UUID4, Field
+
 from models.base import BaseOrjsonModel
-from pydantic import UUID4
 
 
 class FilmBookmark(BaseOrjsonModel):
@@ -23,3 +26,12 @@ class UserComment(BaseOrjsonModel):
     film_id: UUID4
     comment: str
     created_at: int
+
+
+class UserReview(BaseOrjsonModel):
+    user_id: UUID4
+    film_id: UUID4
+    text: str
+    created_at: int
+    likes: List[UUID4] = Field(default=[])
+    dislikes: List[UUID4] = Field(default=[])
