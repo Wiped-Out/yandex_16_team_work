@@ -65,7 +65,8 @@ async def startup():
             api_version=(0, 11, 5),
         ),
     )
-    MONGODB_URL = f'mongodb://{settings.MONGO_USER}:{settings.MONGO_PASSWORD}@{settings.MONGO_HOST}:{settings.MONGO_PORT}'
+    MONGODB_URL = f'''mongodb://{settings.MONGO_USER}:{settings.MONGO_PASSWORD}
+                               @{settings.MONGO_HOST}:{settings.MONGO_PORT}'''
     client = AsyncIOMotorClient(MONGODB_URL, uuidRepresentation='standard')
     secondary_db.db = BaseMongoStorage(db=client.film_reviews)
 

@@ -33,7 +33,12 @@ class ReviewsService(SecondaryStorage):
     ):
         if reaction in ('like', 'dislike'):
             reaction_field = reaction + 's'
-            await self.update(collection='reviews', id=review_id, update_field=reaction_field, data=user_id)
+            await self.update(
+                collection='reviews',
+                id=review_id,
+                update_field=reaction_field,
+                data=user_id
+            )
 
 
 @lru_cache()

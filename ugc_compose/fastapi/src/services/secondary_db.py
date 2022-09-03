@@ -5,7 +5,6 @@ from typing import Any
 from bson.objectid import ObjectId
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from pydantic import UUID4
 
 
 class AbstractSecondaryStorage(ABC):
@@ -28,12 +27,17 @@ class BaseMongoStorage(AbstractSecondaryStorage):
         except Exception as e:
             logger.error(e)
         else:
-            logger.info(await self.db.get_collection(collection).find_one({"_id": new_item.inserted_id}))
+            logger.info(
+                await self.db.get_collection(collection).find_one({"_id": new_item.inserted_id})
+            )
             return str(new_item.inserted_id)
 
     async def update(self, collection: str, id: str, update_field: str, data: uuid.uuid4) -> None:
         try:
-            await self.db.get_collection(collection).update_one({"_id": ObjectId(id)}, {"$push": {update_field: data}})
+            await self.db.get_collection(collection).update_one(
+                {"_id": ObjectId(id)},
+                {"$push": {update_field: data}}
+            )
         except Exception as e:
             logger.error(e)
         logger.info(await self.db.get_collection(collection).find_one({"_id": ObjectId(id)}))
