@@ -1,4 +1,4 @@
-import uuid
+import uuid  # noqa: E999
 from functools import lru_cache
 
 from db.cache_db import get_cache_db
@@ -29,7 +29,7 @@ class RoleService(BaseCacheStorage, BaseMainStorage):
     ):
         query = self.get_query()
 
-        cache_key = f'{base_url}?{page=}&{per_page=}'
+        cache_key = f'{base_url}?page={page}&per_page={per_page}'
         roles = self.get_items_from_cache(cache_key=cache_key, model=self.cache_model)
         if not roles:
             paginated_roles = self.paginate(query=query, page=page, per_page=per_page)

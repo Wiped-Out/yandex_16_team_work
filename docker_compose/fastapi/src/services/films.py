@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Optional
+from typing import List, Optional
 
 from db.cache_db import get_cache_db
 from db.db import get_db
@@ -12,7 +12,7 @@ from services.base import (AsyncCacheStorage, AsyncFullTextSearchStorage,
 class FilmService(BaseFilmService):
     async def get_film_by_id(self, film_id: str, base_url: str) -> Optional[Film]:
 
-        cache_key = f'{base_url}_{film_id=}'
+        cache_key = f'{base_url}_film_id={film_id}'
         film = await self.get_one_item_from_cache(cache_key=cache_key, model=Film)
 
         if not film:
@@ -33,12 +33,12 @@ class FilmsService(BaseFilmService):
             sort_param: Optional[str] = None,
             genre_id: Optional[str] = None,
             search: Optional[str] = None,
-    ) -> list[Film]:
+    ) -> List[Film]:
 
         if search:
-            cache_key = f'{base_url}_{search=}_{page_size=}_{page=}'
+            cache_key = f'{base_url}_search={search}_page_size={page_size}_page={page}'
         else:
-            cache_key = f'{base_url}_{sort_param=}_{page_size=}_{page=}'
+            cache_key = f'{base_url}_sort_param={sort_param}_page_size={page_size}_page{page}'
 
         films = await self.get_items_from_cache(cache_key=cache_key, model=Film)
 

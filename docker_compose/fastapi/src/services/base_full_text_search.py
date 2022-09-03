@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
@@ -103,7 +103,7 @@ class BaseFullTextSearchStorage:
     async def search(
             self,
             search: str,
-            fields: list[str],
+            fields: List[str],
             index: str,
             page: int,
             page_size: int,
@@ -133,12 +133,12 @@ class BaseFullTextSearchStorage:
     async def get_items_by_search(
             self,
             search: str,
-            fields: list[str],
+            fields: List[str],
             index: str,
             model,
             page: int,
             page_size: int,
-    ) -> list:
+    ) -> List:
         doc = await self.search(
             search=search,
             fields=fields,

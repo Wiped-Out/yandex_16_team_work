@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import List
 
 from db.cache_db import get_cache_db
 from db.db import get_db
@@ -15,8 +16,8 @@ class PersonsService(BaseSearchPersonService):
             page: int,
             page_size: int,
             base_url: str,
-    ) -> list[Person]:
-        cache_key = f'{base_url}_{search=}_{page_size=}_{page=}'
+    ) -> List[Person]:
+        cache_key = f'{base_url}_search={search}_page_size={page_size}_page={page}'
         persons = await self.get_items_from_cache(cache_key=cache_key, model=Person)
 
         if not persons:
@@ -35,9 +36,9 @@ class PersonsService(BaseSearchPersonService):
             self,
             person_id: str,
             base_url: str,
-    ) -> list[Person]:
+    ) -> List[Person]:
 
-        cache_key = f'{base_url}_{person_id=}'
+        cache_key = f'{base_url}_person_id={person_id}'
         persons = await self.get_items_from_cache(
             cache_key=cache_key,
             model=self.model,

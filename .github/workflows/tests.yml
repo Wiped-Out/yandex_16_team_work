@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.9", ]
+        python-version: [ 3.7, 3.8, 3.9 ]
 
     steps:
       - uses: actions/checkout@v3
@@ -50,6 +50,9 @@ jobs:
           mypy ./docker_compose/app --ignore-missing-imports --implicit-reexport --namespace-packages
           mypy ./docker_compose/fastapi/src --ignore-missing-imports --implicit-reexport --namespace-packages
           mypy ./ugc_compose/fastapi/src --ignore-missing-imports --implicit-reexport --namespace-packages
+
+        env:
+          ARGS: "-av"
 
   notify:
     needs: linter

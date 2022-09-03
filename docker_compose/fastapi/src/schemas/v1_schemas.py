@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 from pydantic.types import UUID4
@@ -13,7 +13,7 @@ class Person(BaseModel):
     uuid: UUID4
     full_name: str
     role: str
-    film_ids: list[UUID4]
+    film_ids: List[UUID4]
 
 
 class FilmMainPage(BaseModel):

@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 from core.config import settings
 from fastapi import Depends, HTTPException, Request
@@ -15,7 +16,7 @@ class JWTBearer(HTTPBearer):
             self, request: Request,
             auth_service=Depends(get_auth_service),
     ) -> AuthUser:
-        credentials: HTTPAuthorizationCredentials = await super(
+        credentials: Optional[HTTPAuthorizationCredentials] = await super(
             JWTBearer, self,
         ).__call__(request)  # type: ignore
         if settings.NO_JWT:
