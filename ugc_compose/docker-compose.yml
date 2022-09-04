@@ -32,6 +32,7 @@ services:
       - fastapi_static:/app/src/static
     depends_on:
       - kafka
+      - mongodb
     networks:
       - internal_bridge
       - backend
@@ -116,8 +117,19 @@ services:
       - nginx_ugc
     networks:
       - services_network
-# Указываем Docker, какие именованные тома потребуются сервисам
 
+  mongodb:
+    image: mongo
+    restart: unless-stopped
+    volumes:
+      # optional to preserve database after container is deleted.
+      - mongodb_data:/data/db
+    env_file:
+      - ./mongodb/.env
+    ports:
+      - 27017:27017
+
+# Указываем Docker, какие именованные тома потребуются сервисам
 volumes:
   fastapi_static:
   kafka_data:
@@ -129,6 +141,8 @@ volumes:
   clickhouse-node3_data:
   clickhouse-node4_data:
   nginx_logs:
+  mongodb_data:
+
 
 networks:
   backend:
