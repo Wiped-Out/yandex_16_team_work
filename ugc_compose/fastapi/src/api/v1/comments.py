@@ -1,9 +1,10 @@
 from http import HTTPStatus
 
-from extensions.auth import security
-from fastapi import APIRouter, Depends, Response
-from models.auth import AuthUser
+from fastapi import APIRouter, Depends
 from pydantic import UUID4
+
+from extensions.auth import security
+from models.auth import AuthUser
 from services.comments import CommentsService, get_comments_service
 
 router = APIRouter()
@@ -12,6 +13,7 @@ router = APIRouter()
 @router.post(
     path='/{film_id}',
     description='Post comment',
+    status_code=HTTPStatus.CREATED
 )
 async def add_comment_to_film(
         film_id: UUID4,
@@ -24,5 +26,3 @@ async def add_comment_to_film(
         film_id=film_id,
         comment=comment,
     )
-
-    return Response(status_code=HTTPStatus.CREATED)

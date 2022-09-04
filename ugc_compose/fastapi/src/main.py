@@ -65,8 +65,8 @@ async def startup():
             api_version=(0, 11, 5),
         ),
     )
-    MONGODB_URL = f'''mongodb://{settings.MONGO_USER}:{settings.MONGO_PASSWORD}
-                               @{settings.MONGO_HOST}:{settings.MONGO_PORT}'''
+    MONGODB_URL = f'mongodb://{settings.MONGO_USER}:{settings.MONGO_PASSWORD}' \
+                  f'@{settings.MONGO_HOST}:{settings.MONGO_PORT}'
     client = AsyncIOMotorClient(MONGODB_URL, uuidRepresentation='standard')
     secondary_db.db = BaseMongoStorage(db=client.film_reviews)
 
@@ -89,13 +89,11 @@ async def unicorn_exception_handler(request: Request, exc: Exception):
 app.mount('/static', StaticFiles(directory='static'), name='static')
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
-
 app.include_router(reviews.router, prefix='/api/v1/reviews', tags=['reviews'])
 app.include_router(comments.router, prefix='/api/v1/comments', tags=['comments'])
 app.include_router(bookmarks.router, prefix='/api/v1/bookmarks', tags=['bookmarks'])
 app.include_router(likes.router, prefix='/api/v1/likes', tags=['likes'])
 app.include_router(film_progress.router, prefix='/api/v1/film_progress', tags=['film_progress'])
-
 
 if __name__ == '__main__':
     uvicorn.run(

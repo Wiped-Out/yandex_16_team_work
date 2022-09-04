@@ -1,10 +1,11 @@
 from http import HTTPStatus
 
-from extensions.auth import security
-from fastapi import APIRouter, Depends, Response
-from models.auth import AuthUser
+from fastapi import APIRouter, Depends
 from pydantic import UUID4
-from services.reviews import ReviewsService, get_reviews_service
+
+from extensions.auth import security
+from models.auth import AuthUser
+from services.reviews import ReviewsService, get_reviews_service, ReactionType
 
 router = APIRouter()
 
@@ -12,6 +13,7 @@ router = APIRouter()
 @router.post(
     path='/{film_id}',
     description='Post review',
+    status_code=HTTPStatus.CREATED
 )
 async def add_review_to_film(
         film_id: UUID4,
@@ -25,23 +27,22 @@ async def add_review_to_film(
         text=text
     )
 
-    return Response(content=review_id, status_code=HTTPStatus.CREATED)
+    return {'id': review_id}
 
 
 @router.post(
     path='/reaction/{review_id}',
-    description='Post reaction on review'
+    description='Post reaction on review',
+    status_code=HTTPStatus.CREATED
 )
 async def add_reaction_to_review(
-    review_id: str,
-    reaction: str,
-    reviews_service: ReviewsService = Depends(get_reviews_service),
-    auth_user: AuthUser = Depends(security),
+        review_id: str,
+        reaction: ReactionType,
+        reviews_service: ReviewsService = Depends(get_reviews_service),
+        auth_user: AuthUser = Depends(security),
 ):
     await reviews_service.add_reaction(
         user_id=auth_user.uuid,
         review_id=review_id,
         reaction=reaction
     )
-
-    return Response(status_code=HTTPStatus.CREATED)

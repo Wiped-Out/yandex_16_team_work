@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 from bson.objectid import ObjectId
-from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
@@ -21,27 +20,14 @@ class BaseMongoStorage(AbstractSecondaryStorage):
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
 
-    async def create(self, collection: str, item: Any) -> Optional[str]:
-        try:
-            new_item = await self.db.get_collection(collection).insert_one(item.dict())
-        except Exception as e:
-            logger.error(e)
-        else:
-            logger.info(
-                await self.db.get_collection(collection).find_one({"_id": new_item.inserted_id})
-            )
-            return str(new_item.inserted_id)
-        return None
+    async def create(self, collection: str, item: Any) -> str:
+        new_item = await self.db.get_collection(collection).insert_one(item.dict())
+
+        return str(new_item.inserted_id)
 
     async def update(self, collection: str, id: str, update_field: str, data: uuid.UUID) -> None:
-        try:
-            await self.db.get_collection(collection).update_one(
-                {"_id": ObjectId(id)},
-                {"$push": {update_field: data}}
-            )
-        except Exception as e:
-            logger.error(e)
-        logger.info(await self.db.get_collection(collection).find_one({"_id": ObjectId(id)}))
+        await self.db.get_collection(collection).update_one({"_id": ObjectId(id)},
+                                                            {"$push": {update_field: data}})
 
 
 class SecondaryStorage:

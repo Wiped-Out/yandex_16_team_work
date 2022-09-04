@@ -1,13 +1,19 @@
 import time
 import uuid
+from enum import Enum
 from functools import lru_cache
 from typing import Optional
 
-from db.secondary_db import get_db
 from fastapi import Depends
-from models.models import UserReview
 
+from db.secondary_db import get_db
+from models.models import UserReview
 from services.secondary_db import AbstractSecondaryStorage, SecondaryStorage
+
+
+class ReactionType(str, Enum):
+    like: str = 'like'
+    dislike: str = 'dislike'
 
 
 class ReviewsService(SecondaryStorage):
@@ -30,16 +36,15 @@ class ReviewsService(SecondaryStorage):
             self,
             user_id: uuid.UUID,
             review_id: str,
-            reaction: str
+            reaction: ReactionType
     ) -> None:
-        if reaction in ('like', 'dislike'):
-            reaction_field = reaction + 's'
-            await self.update(
-                collection='reviews',
-                id=review_id,
-                update_field=reaction_field,
-                data=user_id
-            )
+        reaction_field = f'{reaction}s'
+        await self.update(
+            collection='reviews',
+            id=review_id,
+            update_field=reaction_field,
+            data=user_id
+        )
 
 
 @lru_cache()
