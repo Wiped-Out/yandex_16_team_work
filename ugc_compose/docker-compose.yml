@@ -119,15 +119,17 @@ services:
       - services_network
 
   mongodb:
-    image: mongo
+    image: mongo:6.0.1
     restart: unless-stopped
     volumes:
       # optional to preserve database after container is deleted.
       - mongodb_data:/data/db
     env_file:
       - ./mongodb/.env
-    ports:
-      - 27017:27017
+    #    ports:
+    #      - 27017:27017
+    networks:
+      - backend
 
 # Указываем Docker, какие именованные тома потребуются сервисам
 volumes:
