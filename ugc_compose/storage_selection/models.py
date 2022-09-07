@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import UUID4, BaseModel
+from pydantic import BaseModel
 
 
 class FilmLike(BaseModel):

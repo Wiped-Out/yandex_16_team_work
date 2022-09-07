@@ -2,7 +2,6 @@ import asyncio
 import json
 import random
 import time
-from http import client
 from typing import List
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase

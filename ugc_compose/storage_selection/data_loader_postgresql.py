@@ -3,7 +3,7 @@ import json
 import time
 import uuid
 from datetime import datetime
-from typing import IO, Dict, List
+from typing import IO
 
 import asyncpg
 
