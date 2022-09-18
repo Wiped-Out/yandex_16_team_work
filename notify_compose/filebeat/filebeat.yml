@@ -1,0 +1,13 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    tags: [ nginx_notify ]
+    paths:
+      - /var/log/nginx/*
+    json:
+      keys_under_root: true
+      add_error_key: true
+
+output.logstash:
+  enabled: true
+  hosts: [ "${LOGSTASH_HOST}:${LOGSTASH_PORT}" ]

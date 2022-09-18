@@ -1,0 +1,4 @@
+setup.cfg
+*.md
+Dockerfile
+.env.sample

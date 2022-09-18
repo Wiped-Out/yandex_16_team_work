@@ -1,0 +1,79 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.9.22
+    #    ports:
+    #      - 5672:5672
+    #      - 15672:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+    networks:
+      - backend
+
+  fastapi_notify:
+    build:
+      context: ./fastapi
+    volumes:
+      - fastapi_static:/app/src/static
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - internal_bridge
+      - backend
+      - services_network
+
+  nginx_notify:
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - fastapi_static:/data/fastapi_static
+      - nginx_logs:/var/log/nginx/
+    depends_on:
+      - fastapi_notify
+    ports:
+      - 83:83
+    restart: always
+    networks:
+      - internal_bridge
+      - services_network
+
+  filebeat_notify:
+    build:
+      context: ./filebeat
+    volumes:
+      - nginx_logs:/var/log/nginx:ro
+    env_file:
+      - ./filebeat/.env
+    depends_on:
+      - fastapi_notify
+      - nginx_notify
+    networks:
+      - services_network
+
+  mongodb:
+    image: mongo:6.0.1
+    restart: unless-stopped
+    volumes:
+      # optional to preserve database after container is deleted.
+      - mongodb_data:/data/db
+    env_file:
+      - ./mongodb/.env
+    #    ports:
+    #      - 27017:27017
+    networks:
+      - backend
+
+# Указываем Docker, какие именованные тома потребуются сервисам
+volumes:
+  fastapi_static:
+  nginx_logs:
+  mongodb_data:
+  rabbitmq_data:
+
+
+networks:
+  backend:
+  internal_bridge:
+  services_network:
+    external: true
