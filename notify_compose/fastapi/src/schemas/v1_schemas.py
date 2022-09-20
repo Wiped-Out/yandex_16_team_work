@@ -22,7 +22,7 @@ class Notification(BaseModel):
     id: UUID4
     template_id: UUID4
     priority: int
-    notification_type: int
+    notification_type: str
     user_ids: list[UUID4]
     status: str
     created_at: datetime
