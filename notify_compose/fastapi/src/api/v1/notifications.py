@@ -1,24 +1,12 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-from pydantic.types import UUID4
-from datetime import datetime
 from services.notifications import NotificationsService, get_notifications_service
 from schemas.v1_schemas import Notification
+from models.models import AddNotification
+from pydantic import UUID4
 
 router = APIRouter()
-
-
-class AddNotification(BaseModel):
-    id: UUID4
-    template_id: UUID4
-    priority: int
-    type: int
-    user_ids: list[UUID4]
-    status: str
-    created_at: datetime
-    before: datetime
 
 
 @router.post(
@@ -29,8 +17,8 @@ async def add_notification(
         notification: AddNotification,
         notifications_service: NotificationsService = Depends(get_notifications_service),
 ):
-    # todo
-    pass
+    await notifications_service.add_notification(notification=notification)
+    return {"message": "Notification added"}
 
 
 @router.get(
@@ -41,8 +29,8 @@ async def add_notification(
 async def get_notifications(
         notifications_service: NotificationsService = Depends(get_notifications_service),
 ):
-    # todo
-    pass
+    notifications_db = await notifications_service.get_notifications()
+    return [Notification(**notification.dict()) for notification in notifications_db]
 
 
 @router.get(
@@ -51,11 +39,13 @@ async def get_notifications(
     response_model=Optional[Notification],
 )
 async def get_notification(
-        notification_id: str,
+        notification_id: UUID4,
         notifications_service: NotificationsService = Depends(get_notifications_service),
 ):
-    # todo
-    pass
+    notification = await notifications_service.get_notification(notification_id=notification_id)
+    if not notification:
+        return None
+    return Notification(**notification.dict())
 
 
 @router.delete(
@@ -63,8 +53,8 @@ async def get_notification(
     description='Delete notification',
 )
 async def delete_notification(
-        notification_id: str,
+        notification_id: UUID4,
         notifications_service: NotificationsService = Depends(get_notifications_service),
 ):
-    # todo
-    pass
+    await notifications_service.delete_notification(notification_id=notification_id)
+    return {"message": "Notification deleted"}

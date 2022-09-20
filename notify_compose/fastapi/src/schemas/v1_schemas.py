@@ -8,7 +8,7 @@ class TemplateFieldItem(BaseModel):
     url: str
     body: dict
     headers: dict
-    result_pattern: str
+    fetch_pattern: str
 
 
 class Template(BaseModel):
@@ -22,7 +22,7 @@ class Notification(BaseModel):
     id: UUID4
     template_id: UUID4
     priority: int
-    type: int
+    notification_type: int
     user_ids: list[UUID4]
     status: str
     created_at: datetime

@@ -59,7 +59,7 @@ async def startup():
     MONGODB_URL = f'mongodb://{settings.MONGO_USER}:{settings.MONGO_PASSWORD}' \
                   f'@{settings.MONGO_HOST}:{settings.MONGO_PORT}'
     client = AsyncIOMotorClient(MONGODB_URL, uuidRepresentation='standard')
-    db.db = BaseMongoStorage(db=client.film_reviews)
+    db.db = BaseMongoStorage(db=client[settings.MONGO_DB_NAME])
 
 
 @app.on_event('shutdown')

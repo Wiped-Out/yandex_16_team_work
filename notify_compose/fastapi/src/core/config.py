@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     MONGO_PORT: int
     MONGO_USER: str
     MONGO_PASSWORD: str
+    MONGO_DB_NAME: str
 
     LOGSTASH_HOST: str
     LOGSTASH_PORT: int

@@ -2,23 +2,10 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 from services.templates import TemplatesService, get_templates_service
-from pydantic import BaseModel
 from schemas.v1_schemas import Template
+from models.models import AddTemplate
 
 router = APIRouter()
-
-
-class TemplateFieldItem(BaseModel):
-    name: str
-    url: str
-    body: dict
-    headers: dict
-
-
-class AddTemplate(BaseModel):
-    body: str
-    type: str
-    fields: list[TemplateFieldItem]
 
 
 @router.post(
@@ -41,8 +28,8 @@ async def add_template(
 async def get_templates(
         templates_service: TemplatesService = Depends(get_templates_service),
 ):
-    # todo
-    pass
+    templates = await templates_service.get_templates()
+    return [Template(**template.dict()) for template in templates]
 
 
 @router.get(
@@ -54,8 +41,10 @@ async def get_template(
         template_id: str,
         templates_service: TemplatesService = Depends(get_templates_service),
 ):
-    # todo
-    pass
+    template = await templates_service.get_template(template_id=template_id)
+    if not template:
+        return None
+    return Template(**template.dict())
 
 
 @router.delete(
@@ -63,7 +52,8 @@ async def get_template(
     description='Delete template',
 )
 async def delete_template(
+        template_id: str,
         templates_service: TemplatesService = Depends(get_templates_service),
 ):
-    # todo
-    pass
+    await templates_service.delete_template(template_id=template_id)
+    return {"message": "Template deleted"}

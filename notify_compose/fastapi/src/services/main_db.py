@@ -1,8 +1,7 @@
-import uuid
 from abc import ABC, abstractmethod
 from typing import Any, Optional
+from uuid import UUID
 
-from bson.objectid import ObjectId
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
@@ -12,7 +11,15 @@ class AbstractMainStorage(ABC):
         pass
 
     @abstractmethod
-    def update(self, collection: str, id: str, update_field: str, data: uuid.UUID):
+    def get_all(self, collection: str):
+        pass
+
+    @abstractmethod
+    def get_one(self, collection: str, uuid: UUID):
+        pass
+
+    @abstractmethod
+    def delete(self, collection: str, uuid: UUID):
         pass
 
 
@@ -25,17 +32,28 @@ class BaseMongoStorage(AbstractMainStorage):
 
         return str(new_item.inserted_id)
 
-    async def update(self, collection: str, id: str, update_field: str, data: uuid.UUID) -> None:
-        await self.db.get_collection(collection).update_one({"_id": ObjectId(id)},
-                                                            {"$push": {update_field: data}})
+    async def get_all(self, collection: str) -> list[dict]:
+        return [item async for item in self.db.get_collection(collection).find()]
+
+    async def get_one(self, collection: str, uuid: UUID):
+        return await self.db.get_collection(collection).find_one({"id": uuid})
+
+    async def delete(self, collection: str, uuid: UUID):
+        await self.db.get_collection(collection).delete_one({"id": uuid})
 
 
-class SecondaryStorage:
+class MainStorage:
     def __init__(self, db: BaseMongoStorage):
         self.db = db
 
     async def create(self, collection: str, item: Any) -> Optional[str]:
         return await self.db.create(collection=collection, item=item)
 
-    async def update(self, collection: str, id: str, update_field: str, data: uuid.UUID) -> None:
-        await self.db.update(collection=collection, id=id, update_field=update_field, data=data)
+    async def get_all(self, collection: str) -> list[dict]:
+        return await self.db.get_all(collection=collection)
+
+    async def get_one(self, collection: str, uuid: UUID):
+        return await self.db.get_one(collection=collection, uuid=uuid)
+
+    async def delete(self, collection: str, uuid: UUID):
+        await self.db.delete(collection=collection, uuid=uuid)
