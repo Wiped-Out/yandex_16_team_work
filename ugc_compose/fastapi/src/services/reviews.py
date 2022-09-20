@@ -4,9 +4,8 @@ from enum import Enum
 from functools import lru_cache
 from typing import Optional
 
-from fastapi import Depends
-
 from db.secondary_db import get_db
+from fastapi import Depends
 from models.models import UserReview
 from services.secondary_db import AbstractSecondaryStorage, SecondaryStorage
 

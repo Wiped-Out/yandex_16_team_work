@@ -2,7 +2,6 @@ import json
 import time
 
 import pymongo
-
 from config import settings
 
 MONGODB_URL = f'mongodb://{settings.MONGODB_HOST}:{settings.MONGODB_PORT}'

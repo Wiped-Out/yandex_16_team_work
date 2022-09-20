@@ -4,20 +4,17 @@ from logging import config as logging_config
 from traceback import format_exception
 
 import uvicorn
+from api.v1 import templates, notifications
+from core.config import settings
+from core.logger import LOGGING
+from db import db
+from extensions import logstash, sentry
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
-from kafka import KafkaProducer
 from logstash.handler_udp import LogstashHandler
 from motor.motor_asyncio import AsyncIOMotorClient
-
-from api.v1 import bookmarks, comments, film_progress, likes, reviews
-from core.config import settings
-from core.logger import LOGGING
-from db import db, secondary_db
-from extensions import logstash, sentry
-from services.main_db import BaseKafkaStorage
-from services.secondary_db import BaseMongoStorage
+from services.main_db import BaseMongoStorage
 
 
 def init_logstash():
@@ -59,16 +56,10 @@ app = init_app()
 
 @app.on_event('startup')
 async def startup():
-    db.db = BaseKafkaStorage(
-        db=KafkaProducer(
-            bootstrap_servers=[f'{settings.KAFKA_HOST}:{settings.KAFKA_PORT}'],
-            api_version=(0, 11, 5),
-        ),
-    )
     MONGODB_URL = f'mongodb://{settings.MONGO_USER}:{settings.MONGO_PASSWORD}' \
                   f'@{settings.MONGO_HOST}:{settings.MONGO_PORT}'
     client = AsyncIOMotorClient(MONGODB_URL, uuidRepresentation='standard')
-    secondary_db.db = BaseMongoStorage(db=client.film_reviews)
+    db.db = BaseMongoStorage(db=client.film_reviews)
 
 
 @app.on_event('shutdown')
@@ -89,11 +80,8 @@ async def unicorn_exception_handler(request: Request, exc: Exception):
 app.mount('/static', StaticFiles(directory='static'), name='static')
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
-app.include_router(reviews.router, prefix='/api/v1/reviews', tags=['reviews'])
-app.include_router(comments.router, prefix='/api/v1/comments', tags=['comments'])
-app.include_router(bookmarks.router, prefix='/api/v1/bookmarks', tags=['bookmarks'])
-app.include_router(likes.router, prefix='/api/v1/likes', tags=['likes'])
-app.include_router(film_progress.router, prefix='/api/v1/film_progress', tags=['film_progress'])
+app.include_router(templates.router, prefix='/api/v1/templates', tags=['templates'])
+app.include_router(notifications.router, prefix='/api/v1/notifications', tags=['notifications'])
 
 if __name__ == '__main__':
     uvicorn.run(

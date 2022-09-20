@@ -1,10 +1,9 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends
-from pydantic import UUID4
-
 from extensions.auth import security
+from fastapi import APIRouter, Depends
 from models.auth import AuthUser
+from pydantic import UUID4
 from services.bookmarks import BookmarksService, get_bookmarks_service
 
 router = APIRouter()

@@ -1,25 +1,41 @@
+import uuid
 from abc import ABC, abstractmethod
+from typing import Any, Optional
 
-from kafka import KafkaProducer
+from bson.objectid import ObjectId
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
 class AbstractMainStorage(ABC):
     @abstractmethod
-    def send(self, topic: str, value: bytes, key: bytes):
+    def create(self, collection: str, item: Any):
+        pass
+
+    @abstractmethod
+    def update(self, collection: str, id: str, update_field: str, data: uuid.UUID):
         pass
 
 
-class BaseKafkaStorage(AbstractMainStorage):
-    def __init__(self, db: KafkaProducer):
+class BaseMongoStorage(AbstractMainStorage):
+    def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
 
-    def send(self, topic: str, value: bytes, key: bytes):
-        self.db.send(topic=topic, value=value, key=key)
+    async def create(self, collection: str, item: Any) -> str:
+        new_item = await self.db.get_collection(collection).insert_one(item.dict())
+
+        return str(new_item.inserted_id)
+
+    async def update(self, collection: str, id: str, update_field: str, data: uuid.UUID) -> None:
+        await self.db.get_collection(collection).update_one({"_id": ObjectId(id)},
+                                                            {"$push": {update_field: data}})
 
 
-class MainStorage:
-    def __init__(self, db: BaseKafkaStorage):
+class SecondaryStorage:
+    def __init__(self, db: BaseMongoStorage):
         self.db = db
 
-    def send(self, topic: str, value: bytes, key: bytes):
-        self.db.send(topic=topic, value=value, key=key)
+    async def create(self, collection: str, item: Any) -> Optional[str]:
+        return await self.db.create(collection=collection, item=item)
+
+    async def update(self, collection: str, id: str, update_field: str, data: uuid.UUID) -> None:
+        await self.db.update(collection=collection, id=id, update_field=update_field, data=data)

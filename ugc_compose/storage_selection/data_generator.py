@@ -1,10 +1,9 @@
 import json
 import random
 
+from config import settings
 from faker import Faker
 from faker.providers.lorem.ru_RU import Provider as lorem
-
-from config import settings
 from models import FilmBookmark, FilmLike, UserReview
 
 fake = Faker()
