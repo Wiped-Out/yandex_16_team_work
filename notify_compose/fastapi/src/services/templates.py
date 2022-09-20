@@ -34,4 +34,4 @@ class TemplatesService(MainStorage):
 def get_templates_service(
         db: AbstractMainStorage = Depends(get_db),
 ) -> TemplatesService:
-    return TemplatesService(db=db)  # type: ignore
+    return TemplatesService(db=db)

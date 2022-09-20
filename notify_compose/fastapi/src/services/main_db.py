@@ -43,7 +43,7 @@ class BaseMongoStorage(AbstractMainStorage):
 
 
 class MainStorage:
-    def __init__(self, db: BaseMongoStorage):
+    def __init__(self, db: AbstractMainStorage):
         self.db = db
 
     async def create(self, collection: str, item: Any) -> Optional[str]:

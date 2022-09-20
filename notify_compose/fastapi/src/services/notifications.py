@@ -34,4 +34,4 @@ class NotificationsService(MainStorage):
 def get_notifications_service(
         db: AbstractMainStorage = Depends(get_db),
 ) -> NotificationsService:
-    return NotificationsService(db=db)  # type: ignore
+    return NotificationsService(db=db)
