@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import IO
 
 import asyncpg
-
 from config import settings
 
 dsl = {

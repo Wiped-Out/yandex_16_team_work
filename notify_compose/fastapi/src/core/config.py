@@ -12,13 +12,11 @@ class Settings(BaseSettings):
     JWT_PUBLIC_KEY: str
     NO_JWT: bool
 
-    KAFKA_HOST: str
-    KAFKA_PORT: int
-
     MONGO_HOST: str
     MONGO_PORT: int
     MONGO_USER: str
     MONGO_PASSWORD: str
+    MONGO_DB_NAME: str
 
     LOGSTASH_HOST: str
     LOGSTASH_PORT: int

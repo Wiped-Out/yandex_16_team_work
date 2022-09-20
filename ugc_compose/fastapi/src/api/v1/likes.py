@@ -1,10 +1,9 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends
-from pydantic import UUID4
-
 from extensions.auth import security
+from fastapi import APIRouter, Depends
 from models.auth import AuthUser
+from pydantic import UUID4
 from services.likes import LikesService, get_likes_service
 
 router = APIRouter()

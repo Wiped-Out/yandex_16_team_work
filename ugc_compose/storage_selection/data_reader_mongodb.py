@@ -4,9 +4,8 @@ import random
 import time
 from typing import List
 
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-
 from config import settings
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 MONGODB_URL = f'mongodb://{settings.MONGODB_HOST}:{settings.MONGODB_PORT}'
 

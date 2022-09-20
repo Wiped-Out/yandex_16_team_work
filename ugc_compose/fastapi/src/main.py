@@ -4,18 +4,17 @@ from logging import config as logging_config
 from traceback import format_exception
 
 import uvicorn
+from api.v1 import bookmarks, comments, film_progress, likes, reviews
+from core.config import settings
+from core.logger import LOGGING
+from db import db, secondary_db
+from extensions import logstash, sentry
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from kafka import KafkaProducer
 from logstash.handler_udp import LogstashHandler
 from motor.motor_asyncio import AsyncIOMotorClient
-
-from api.v1 import bookmarks, comments, film_progress, likes, reviews
-from core.config import settings
-from core.logger import LOGGING
-from db import db, secondary_db
-from extensions import logstash, sentry
 from services.main_db import BaseKafkaStorage
 from services.secondary_db import BaseMongoStorage
 

@@ -1,8 +1,7 @@
 from typing import List
 
-from pydantic import UUID4, Field
-
 from models.base import BaseOrjsonModel
+from pydantic import UUID4, Field
 
 
 class FilmBookmark(BaseOrjsonModel):

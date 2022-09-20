@@ -5,7 +5,6 @@ import time
 from typing import List
 
 import asyncpg
-
 from config import settings
 
 dsl = {

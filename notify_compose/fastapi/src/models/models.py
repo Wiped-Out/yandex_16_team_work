@@ -1,37 +1,52 @@
-from typing import List
-
-from pydantic import UUID4, Field
-
 from models.base import BaseOrjsonModel
+from datetime import datetime
+from uuid import uuid4
+from pydantic import Field, UUID4
 
 
-class FilmBookmark(BaseOrjsonModel):
-    user_id: UUID4
-    film_id: UUID4
+class AddNotification(BaseOrjsonModel):
+    template_id: UUID4
+    priority: int
+    notification_type: str
+    user_ids: list[UUID4]
+    status: str
 
 
-class FilmLike(BaseOrjsonModel):
-    user_id: UUID4
-    film_id: UUID4
+class Notification(BaseOrjsonModel):
+    id: UUID4 = Field(default_factory=uuid4)
+    template_id: UUID4
+    priority: int
+    notification_type: str
+    user_ids: list[UUID4]
+    status: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    before: datetime = Field(default_factory=datetime.utcnow)
 
 
-class FilmProgress(BaseOrjsonModel):
-    user_id: UUID4
-    film_id: UUID4
-    stamp: int
+class TemplateFieldItem(BaseOrjsonModel):
+    name: str
+    url: str
+    body: dict
+    headers: dict
+    fetch_pattern: str
 
 
-class UserComment(BaseOrjsonModel):
-    user_id: UUID4
-    film_id: UUID4
-    comment: str
-    created_at: int
+class Template(BaseOrjsonModel):
+    id: UUID4 = Field(default_factory=uuid4)
+    body: str
+    template_type: str
+    fields: list[TemplateFieldItem]
 
 
-class UserReview(BaseOrjsonModel):
-    user_id: UUID4
-    film_id: UUID4
-    text: str
-    created_at: int
-    likes: List[UUID4] = Field(default=[])
-    dislikes: List[UUID4] = Field(default=[])
+class AddTemplateFieldItem(BaseOrjsonModel):
+    name: str
+    url: str
+    body: dict
+    headers: dict
+    fetch_pattern: str
+
+
+class AddTemplate(BaseOrjsonModel):
+    body: str
+    template_type: str
+    fields: list[AddTemplateFieldItem]

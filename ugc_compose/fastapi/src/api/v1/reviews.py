@@ -1,11 +1,10 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends
-from pydantic import UUID4
-
 from extensions.auth import security
+from fastapi import APIRouter, Depends
 from models.auth import AuthUser
-from services.reviews import ReviewsService, get_reviews_service, ReactionType
+from pydantic import UUID4
+from services.reviews import ReactionType, ReviewsService, get_reviews_service
 
 router = APIRouter()
 
