@@ -1,6 +1,11 @@
-from pydantic import BaseModel
 from datetime import datetime
+
+from pydantic import BaseModel
 from pydantic.types import UUID4
+
+
+class Created(BaseModel):
+    id: UUID4
 
 
 class TemplateFieldItem(BaseModel):

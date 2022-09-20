@@ -1,30 +1,35 @@
+from http import HTTPStatus
 from typing import Optional
 
 from fastapi import APIRouter, Depends
-from services.notifications import NotificationsService, get_notifications_service
-from schemas.v1_schemas import Notification
-from models.models import AddNotification
 from pydantic import UUID4
+
+from models.models import AddNotification
+from schemas.v1_schemas import Notification, Created
+from services.notifications import NotificationsService, get_notifications_service
 
 router = APIRouter()
 
 
 @router.post(
     path='',
-    description='Add notification'
+    description='Add notification',
+    response_model=Created,
+    status_code=HTTPStatus.CREATED
 )
 async def add_notification(
         notification: AddNotification,
         notifications_service: NotificationsService = Depends(get_notifications_service),
 ):
-    await notifications_service.add_notification(notification=notification)
-    return {"message": "Notification added"}
+    item_id = await notifications_service.add_notification(notification=notification)
+    return Created(id=item_id)
 
 
 @router.get(
     path='',
     description='Get notifications',
     response_model=list[Notification],
+    status_code=HTTPStatus.OK
 )
 async def get_notifications(
         notifications_service: NotificationsService = Depends(get_notifications_service),
@@ -37,6 +42,7 @@ async def get_notifications(
     path='/{notification_id}',
     description='Get notification by id',
     response_model=Optional[Notification],
+    status_code=HTTPStatus.OK
 )
 async def get_notification(
         notification_id: UUID4,
@@ -51,10 +57,10 @@ async def get_notification(
 @router.delete(
     path='/{notification_id}',
     description='Delete notification',
+    status_code=HTTPStatus.NO_CONTENT
 )
 async def delete_notification(
         notification_id: UUID4,
         notifications_service: NotificationsService = Depends(get_notifications_service),
 ):
     await notifications_service.delete_notification(notification_id=notification_id)
-    return {"message": "Notification deleted"}
