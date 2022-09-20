@@ -14,7 +14,7 @@ class TemplateFieldItem(BaseModel):
 class Template(BaseModel):
     id: UUID4
     body: str
-    type: str
+    template_type: str
     fields: list[TemplateFieldItem]
 
 
