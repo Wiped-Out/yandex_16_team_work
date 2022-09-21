@@ -22,19 +22,11 @@ class HTTPTypeEnum(str, Enum):
     DELETE = 'delete'
 
 
-class AddNotification(BaseOrjsonModel):
-    template_id: UUID4
-    priority: int
-    notification_type: NotificationTypeEnum
-    user_ids: list[UUID4]
-    status: str
-
-
 class Notification(BaseOrjsonModel):
     id: UUID4 = Field(default_factory=uuid4)
     template_id: UUID4
     priority: int
-    notification_type: NotificationTypeEnum
+    notification_type: str
     user_ids: list[UUID4]
     status: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -55,18 +47,3 @@ class Template(BaseOrjsonModel):
     body: str
     template_type: TemplateTypeEnum
     fields: list[TemplateFieldItem]
-
-
-class AddTemplateFieldItem(BaseOrjsonModel):
-    name: str
-    url: str
-    body: dict
-    headers: dict
-    fetch_pattern: str
-    http_type: HTTPTypeEnum
-
-
-class AddTemplate(BaseOrjsonModel):
-    body: str
-    template_type: TemplateTypeEnum
-    fields: list[AddTemplateFieldItem]

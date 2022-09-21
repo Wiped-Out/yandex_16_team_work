@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import time
 from functools import wraps
+from http import HTTPStatus
 from typing import Sequence, TypeVar
 
 import jwt
@@ -44,9 +45,9 @@ def decode_jwt(token: str):
         time_now = int(time.time())
         if time_now - decoded['exp'] < 600:
             return decoded
-        raise HTTPException(status_code=404, detail=str(e)) from e
+        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail=str(e)) from e
     except jwt.exceptions.PyJWTError as e:
-        raise HTTPException(status_code=404, detail=str(e)) from e
+        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail=str(e)) from e
 
 
 def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10):

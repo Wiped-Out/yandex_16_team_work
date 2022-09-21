@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from pydantic.types import UUID4
 
-from models.models import NotificationTypeEnum, TemplateTypeEnum
+from models.models import NotificationTypeEnum, TemplateTypeEnum, HTTPTypeEnum
 
 
 class Created(BaseModel):
@@ -16,6 +16,7 @@ class TemplateFieldItem(BaseModel):
     body: dict
     headers: dict
     fetch_pattern: str
+    http_type: HTTPTypeEnum
 
 
 class Template(BaseModel):
