@@ -1,4 +1,40 @@
 services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.4.9
+    env_file:
+      - ./zookeeper/.env
+    #    ports:
+    #      - 22181:2181
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    networks:
+      - backend
+
+  notify_kafka_pipeline:
+    image: confluentinc/cp-kafka:5.4.9
+    depends_on:
+      - zookeeper
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+      - kafka_logs:/var/lib/kafka/logs
+    #    ports:
+    #      - 29092:29092
+    env_file:
+      - ./kafka/.env
+    networks:
+      - backend
+      - services_network
+
+  kafka_worker:
+    build:
+      context: ./kafka_worker
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - backend
+      - internal_bridge
   rabbitmq:
     image: rabbitmq:3.9.22
     #    ports:
@@ -68,6 +104,10 @@ services:
 volumes:
   fastapi_static:
   nginx_logs:
+  kafka_data:
+  kafka_logs:
+  zookeeper_data:
+  zookeeper_logs:
   mongodb_data:
   rabbitmq_data:
 

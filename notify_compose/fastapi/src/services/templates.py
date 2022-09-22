@@ -11,7 +11,7 @@ class TemplatesService(MainStorage):
     collection: str = 'templates'
 
     async def add_template(self, template: AddTemplate):
-        await self.create(
+        return await self.create(
             collection=self.collection,
             item=Template(**template.dict()),
         )
@@ -27,7 +27,7 @@ class TemplatesService(MainStorage):
         return Template(**item)
 
     async def delete_template(self, template_id: UUID4):
-        await self.delete(collection=self.collection, uuid=template_id)
+        return await self.delete(collection=self.collection, uuid=template_id)
 
 
 @lru_cache()

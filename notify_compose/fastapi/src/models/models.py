@@ -1,9 +1,10 @@
+from datetime import datetime
 from enum import Enum
+from uuid import uuid4
+
+from pydantic import Field, UUID4
 
 from models.base import BaseOrjsonModel
-from datetime import datetime
-from uuid import uuid4
-from pydantic import Field, UUID4
 
 
 class TemplateTypeEnum(str, Enum):
@@ -22,12 +23,20 @@ class HTTPTypeEnum(str, Enum):
     DELETE = 'delete'
 
 
+class NotificationStatusEnum(str, Enum):
+    created = 'created'
+    in_progress = 'in_progress'
+    failed = 'failed'
+    finished = 'finished'
+
+
 class AddNotification(BaseOrjsonModel):
     template_id: UUID4
     priority: int
     notification_type: NotificationTypeEnum
     user_ids: list[UUID4]
-    status: str
+    status: NotificationStatusEnum
+    before: datetime
 
 
 class Notification(BaseOrjsonModel):
@@ -36,9 +45,9 @@ class Notification(BaseOrjsonModel):
     priority: int
     notification_type: NotificationTypeEnum
     user_ids: list[UUID4]
-    status: str
+    status: NotificationStatusEnum
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    before: datetime = Field(default_factory=datetime.utcnow)
+    before: datetime
 
 
 class TemplateFieldItem(BaseOrjsonModel):

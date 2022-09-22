@@ -8,6 +8,11 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
+    KAFKA_HOST: str
+    KAFKA_PORT: int
+    GENERATE_PASSWORD_TOPIC: str
+    EMAIL_CONFIRMATION_TOPIC: str
+
     REDIS_HOST: str
     REDIS_PORT: int
 

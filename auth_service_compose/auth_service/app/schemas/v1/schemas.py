@@ -29,3 +29,11 @@ class JWT(BaseModel):
 
 class JWTRefresh(BaseModel):
     access_token: str
+
+
+class Password(BaseModel):
+    password: str
+
+
+class ConfirmURL(BaseModel):
+    url: str

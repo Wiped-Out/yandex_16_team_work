@@ -3,7 +3,7 @@ from enum import Enum
 from models.base import BaseOrjsonModel
 from datetime import datetime
 from uuid import uuid4
-from pydantic import Field, UUID4
+from pydantic import Field, UUID4, validator
 
 
 class TemplateTypeEnum(str, Enum):
@@ -13,6 +13,13 @@ class TemplateTypeEnum(str, Enum):
 
 class NotificationTypeEnum(str, Enum):
     email = 'email'
+
+
+class NotificationStatusEnum(str, Enum):
+    created = 'created'
+    in_progress = 'in_progress'
+    failed = 'failed'
+    finished = 'finished'
 
 
 class HTTPTypeEnum(str, Enum):
@@ -26,11 +33,11 @@ class Notification(BaseOrjsonModel):
     id: UUID4 = Field(default_factory=uuid4)
     template_id: UUID4
     priority: int
-    notification_type: str
+    notification_type: NotificationTypeEnum
     user_ids: list[UUID4]
-    status: str
+    status: NotificationStatusEnum
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    before: datetime = Field(default_factory=datetime.utcnow)
+    before: datetime
 
 
 class TemplateFieldItem(BaseOrjsonModel):

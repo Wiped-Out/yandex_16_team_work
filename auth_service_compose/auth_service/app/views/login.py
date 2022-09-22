@@ -29,6 +29,12 @@ def login():
             save_activity(user, action=ActionsEnum.login)
             return response
 
+        if not user.email_is_confirmed:
+            return render_template('login.html',
+                                   message='Почта не подтверждена',
+                                   form=form, title='Авторизация',
+                                   oauth_google_login_url='/oauth2/google/login')
+
         return render_template('login.html',
                                message='Неправильный логин или пароль',
                                form=form, title='Авторизация',

@@ -57,7 +57,11 @@ class JWTLogin(Resource):
                 msg=responses.PROBLEMS_WITH_USER,
                 status=HTTPStatus.BAD_REQUEST,
             )
-
+        elif user.email_is_confirmed:
+            return make_error_response(
+                msg=responses.EMAIL_IS_NOT_CONFIRMED,
+                status=HTTPStatus.BAD_REQUEST,
+            )
         refresh_token = jwt_service.create_refresh_token(user=user)
 
         token = jwt_service.create_access_token(user=user)

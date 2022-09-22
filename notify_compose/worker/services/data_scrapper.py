@@ -17,9 +17,10 @@ class AbstractAsyncScrapper(ABC):
 
 
 class AsyncScrapper(AbstractAsyncScrapper, AutoLoginRequests):
-    def __init__(self, items: list[TemplateFieldItem], ready_data: Optional[dict] = None):
-        self.items = items
-        self.ready_data = ready_data if ready_data is not None else dict()
+    def __init__(self, items: list[TemplateFieldItem], ready_data: Optional[dict] = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.items: list[TemplateFieldItem] = items
+        self.ready_data: dict = ready_data if ready_data is not None else dict()
 
     async def scrape(self, item: TemplateFieldItem) -> TemplateFieldItem:
         item = TemplateFieldItem(**(await replace_in_json(item=item.dict(),
