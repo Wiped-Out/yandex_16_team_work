@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from core.config import settings
 from models.models import Notification, NotificationTypeEnum, NotificationStatusEnum
 from pydantic import UUID4, Field
 
@@ -11,7 +12,7 @@ class NotificationTemplate(Notification):
 
 
 class EmailConfirmationTemplate(NotificationTemplate):
-    template_id: UUID4 = 'a87944ff-cf6c-49e6-a7d8-84f89c41c3e8'
+    template_id: UUID4 = settings.EMAIL_CONFIRMATION_TEMPLATE_UUID
     priority: int = 10
     notification_type: NotificationTypeEnum = NotificationTypeEnum.email
     user_ids: list[UUID4] = Field(default_factory=list)
@@ -26,7 +27,7 @@ class EmailConfirmationTemplate(NotificationTemplate):
 
 
 class PasswordGenerationTemplate(EmailConfirmationTemplate):
-    template_id: UUID4 = '3e7f1f76-533b-441c-95a3-a559e53f9ffc'
+    template_id: UUID4 = settings.EMAIL_CONFIRMATION_TEMPLATE_UUID
 
 
 topics_to_notify_template = {

@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     TOPICS_NAMES: list
     NOTIFY_API_ENDPOINT: str
 
+    EMAIL_CONFIRMATION_TEMPLATE_UUID: str
+    PASSWORD_GENERATION_TEMPLATE_UUID: str
+
     class Config:
         env_file = '.env'
 

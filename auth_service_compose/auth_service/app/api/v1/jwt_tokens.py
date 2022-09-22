@@ -57,7 +57,7 @@ class JWTLogin(Resource):
                 msg=responses.PROBLEMS_WITH_USER,
                 status=HTTPStatus.BAD_REQUEST,
             )
-        elif user.email_is_confirmed:
+        elif not user.email_is_confirmed:
             return make_error_response(
                 msg=responses.EMAIL_IS_NOT_CONFIRMED,
                 status=HTTPStatus.BAD_REQUEST,
