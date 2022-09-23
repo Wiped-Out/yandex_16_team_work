@@ -1,19 +1,32 @@
+import uuid
 from functools import lru_cache  # noqa: E999
 
-from db.cache_db import get_cache_db
-from db.db import get_db
-from extensions.tracer import _trace
-from models import models
 from pydantic import BaseModel
 from pydantic.types import UUID4
+
+from core.settings import settings
+from db.cache_db import get_cache_db
+from db.db import get_db, get_notify_pipeline
+from extensions.tracer import _trace
+from models import models
 from services.base_cache import BaseCacheStorage
 from services.base_main import BaseMainStorage
+from utils.utils import generate_password
 
 
 class CacheUser(BaseModel):
     id: UUID4
     login: str
     email: str
+
+
+class ConfirmID(BaseModel):
+    _id: UUID4
+    user_id: UUID4
+
+
+class EventModel(BaseModel):
+    user_id: UUID4
 
 
 class UserService(BaseCacheStorage, BaseMainStorage):
@@ -25,6 +38,7 @@ class UserService(BaseCacheStorage, BaseMainStorage):
             need_commit=False,
             login=params['login'],
             email=params['email'],
+            email_is_confirmed=params['email_is_confirmed']
         )
         user.set_password(params['password'])
         self.db.commit()
@@ -73,6 +87,51 @@ class UserService(BaseCacheStorage, BaseMainStorage):
         user_db = self.get(item_id=user_id)
         user_db.set_password(password)
         self.db.commit()
+
+    @_trace()
+    def generate_password(self, user_id: str):
+        password = generate_password()
+        self.get(item_id=user_id).set_password(password)
+        return password
+
+    @_trace()
+    def create_confirm_id(self, user_id: str) -> str:
+        key = str(uuid.uuid4())
+        self.put_one_item_to_cache(cache_key=key, item=ConfirmID(_id=key, user_id=user_id), expire=600)
+        return key
+
+    @_trace()
+    def confirm_email(self, confirm_id: str) -> bool:
+        item = self.get_one_item_from_cache(cache_key=confirm_id, model=ConfirmID)
+        if not item:
+            return False
+        user = self.get(item_id=item.user_id)
+        user.email_is_confirmed = True
+        return True
+
+    @_trace()
+    def get_event_model(self, user_id: str, **kwargs):
+        return EventModel(user_id=user_id, **kwargs)
+
+    @_trace()
+    def generate_password_event(self, user_id: str):
+        notify_pipeline = get_notify_pipeline()
+
+        key = str(uuid.uuid4()).encode('utf-8')
+
+        value = self.get_event_model(user_id=user_id).json().encode('utf-8')
+
+        notify_pipeline.send(topic=settings.GENERATE_PASSWORD_TOPIC, key=key, value=value)
+
+    @_trace()
+    def confirm_email_event(self, user_id: str):
+        notify_pipeline = get_notify_pipeline()
+
+        key = str(uuid.uuid4()).encode('utf-8')
+
+        value = self.get_event_model(user_id=user_id).json().encode('utf-8')
+
+        notify_pipeline.send(topic=settings.EMAIL_CONFIRMATION_TOPIC, key=key, value=value)
 
 
 @lru_cache()

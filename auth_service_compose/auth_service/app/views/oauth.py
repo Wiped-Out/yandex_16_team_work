@@ -32,10 +32,12 @@ def oauth_register(provider):
         email=email, _first=True,
     ):
         return make_response(redirect('/login'))
-
+    password = generate_password()
     user = user_service.create_user(params={'login': login,
                                             'email': email,
-                                            'password': generate_password()})
+                                            'password': password,
+                                            'email_is_confirmed': True})
+    user_service.generate_password_event(user_id=user.id)
     oauth_service.create_oauth(params={
         'user_id': user.id,
         'type': getattr(OAuthEnum, provider),

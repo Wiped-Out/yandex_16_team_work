@@ -13,3 +13,4 @@ USER_DONT_EXIST = 'User do not exists'
 CANT_FIND_USER = "Can't find user"
 BAD_REQUEST = 'Bad request'
 CANT_FIND_ROLE = "Can't find role"
+EMAIL_IS_NOT_CONFIRMED = 'EMAIL IS NOT CONFIRMED'

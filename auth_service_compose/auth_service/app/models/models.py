@@ -60,7 +60,7 @@ class User(sqlalchemy.Model, IdMixin, SerializerMixin):
     login = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=False)
     password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     email = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-
+    email_is_confirmed = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False, default=False)
     roles = sqlalchemy.relation(
         'Role',
         secondary=user_roles,

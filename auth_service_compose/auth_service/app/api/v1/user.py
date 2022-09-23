@@ -5,14 +5,14 @@ import werkzeug.exceptions
 from api.v1.__base__ import base_url
 from extensions.jwt import jwt_parser
 from extensions.pagination import PaginatedResponse, pagination_parser
-from flask import Response, jsonify, request
+from flask import Response, jsonify, request, url_for
 from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, Resource, fields, reqparse
 from schemas.v1 import responses, schemas
 from services.user import get_user_service
 from services.user_roles import get_user_roles_service
 from sqlalchemy.exc import IntegrityError
-from utils.utils import log_activity, make_error_response
+from utils.utils import log_activity, make_error_response, required_role_level
 
 user = Namespace('User', path=f'{base_url}/users', description='')
 
@@ -30,6 +30,18 @@ HighestRoleLevel = user.model('HighestRoleLevel',
                                   'level': fields.Integer,
                               },
                               )
+
+GeneratePassword = user.model('GeneratePassword',
+                              {
+                                  'password': fields.String
+                              },
+                              )
+
+ConfirmURL = user.model('ConfirmURL',
+                        {
+                            'url': fields.String
+                        },
+                        )
 
 NestedUser = user.model('NestedUser',
                         {
@@ -230,6 +242,43 @@ class UserHighestRole(Resource):
         highest_role = user_roles_service.get_highest_role(user_id=user_id)
         return Response(
             response=schemas.Role(**highest_role.dict()).json(),
+            status=HTTPStatus.OK,
+            content_type='application/json',
+        )
+
+
+@user.expect(jwt_parser)
+@user.route('/<user_id>/password')
+class UserPassword(Resource):
+    @log_activity()
+    @jwt_required()
+    @required_role_level(level=10)
+    @user.response(code=int(HTTPStatus.OK), description=' ', model=GeneratePassword)
+    def get(self, user_id: str):
+        user_service = get_user_service()
+
+        password = user_service.generate_password(user_id=user_id)
+        return Response(
+            response=schemas.Password(password=password).json(),
+            status=HTTPStatus.OK,
+            content_type='application/json',
+        )
+
+
+@user.expect(jwt_parser)
+@user.route('/<user_id>/confirm_url')
+class GetUserConfirmURL(Resource):
+    @log_activity()
+    @jwt_required()
+    @required_role_level(level=10)
+    @user.response(code=int(HTTPStatus.OK), description=' ', model=ConfirmURL)
+    def get(self, user_id: str):
+        user_service = get_user_service()
+
+        confirm_url = url_for('confirm.confirm_email', confirm_id=user_service.create_confirm_id(user_id=user_id),
+                              _external=True)
+        return Response(
+            response=schemas.ConfirmURL(url=confirm_url).json(),
             status=HTTPStatus.OK,
             content_type='application/json',
         )

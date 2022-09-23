@@ -96,6 +96,8 @@ def init_app(name: str) -> Flask:
     init_db()
     db.init_sqlalchemy(app=app, storage=db.db)  # type: ignore
 
+    db.notify_pipeline = db.init_pipeline()
+
     init_cache_db()
 
     init_migration(app=app, sqlalchemy=db.sqlalchemy)
@@ -128,6 +130,7 @@ def before_request_callback():
 @app.errorhandler(exc.SQLAlchemyError)
 def handle_db_exceptions(error: exc.SQLAlchemyError):
     db.sqlalchemy.session.rollback()
+    app.logger.info(f'Error catched \n {format_exception(type(error), error, error.__traceback__)}')
     return make_error_response(
         status=HTTPStatus.BAD_REQUEST,
         msg=responses.BAD_REQUEST,

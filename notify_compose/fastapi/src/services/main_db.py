@@ -28,9 +28,9 @@ class BaseMongoStorage(AbstractMainStorage):
         self.db = db
 
     async def create(self, collection: str, item: Any) -> str:
-        new_item = await self.db.get_collection(collection).insert_one(item.dict())
+        await self.db.get_collection(collection).insert_one(item.dict())
 
-        return str(new_item.inserted_id)
+        return str(item.id)
 
     async def get_all(self, collection: str) -> list[dict]:
         return [item async for item in self.db.get_collection(collection).find()]
