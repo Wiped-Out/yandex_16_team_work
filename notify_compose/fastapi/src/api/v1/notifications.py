@@ -7,6 +7,12 @@ from pydantic import UUID4
 from schemas.v1_schemas import Created, Notification
 from services.notifications import (NotificationsService,
                                     get_notifications_service)
+
+from fastapi import APIRouter, Depends
+from pydantic import UUID4
+from schemas.v1_schemas import Created, Notification
+from services.notifications import (NotificationsService,
+                                    get_notifications_service)
 from services.queue_producer import QueueService, get_queue_service
 
 router = APIRouter()

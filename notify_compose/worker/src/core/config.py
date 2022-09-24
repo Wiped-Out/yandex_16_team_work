@@ -4,6 +4,8 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+    MAILJET_API_KEY: str
+    MAILJET_SECRET_KEY: str
 
     RABBIT_HOST: str
     RABBIT_PORT: int

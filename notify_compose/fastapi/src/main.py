@@ -4,6 +4,11 @@ from logging import config as logging_config
 from traceback import format_exception
 
 import uvicorn
+from api.v1 import notifications, templates
+from core.config import settings
+from core.logger import LOGGING
+from db import db
+from extensions import logstash, sentry
 from aio_pika import connect
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import ORJSONResponse
@@ -18,6 +23,8 @@ from db import db, queue
 from extensions import logstash, sentry
 from services.main_db import BaseMongoStorage
 from services.queue import BaseRabbitQueue
+
+from fastapi import FastAPI, HTTPException, Request
 
 
 def init_logstash():

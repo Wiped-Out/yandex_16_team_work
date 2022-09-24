@@ -1,9 +1,9 @@
 from datetime import datetime
 
+from models.models import (HTTPTypeEnum, NotificationStatusEnum,
+                           NotificationTypeEnum, TemplateTypeEnum)
 from pydantic import BaseModel
 from pydantic.types import UUID4
-
-from models.models import NotificationTypeEnum, TemplateTypeEnum, HTTPTypeEnum, NotificationStatusEnum
 
 
 class Created(BaseModel):

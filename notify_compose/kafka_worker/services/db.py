@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from kafka import KafkaProducer, KafkaConsumer
+from kafka import KafkaConsumer, KafkaProducer
 
 
 class AbstractMainProducer(ABC):

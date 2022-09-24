@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 from core.config import settings
-from models.models import Notification, NotificationTypeEnum, NotificationStatusEnum
+from models.models import (Notification, NotificationStatusEnum,
+                           NotificationTypeEnum)
 from pydantic import UUID4, Field
 
 

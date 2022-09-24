@@ -1,12 +1,12 @@
 from http import HTTPStatus
 from typing import Optional
 
-from fastapi import APIRouter, Depends
-from pydantic import UUID4
-
 from models.models import AddTemplate
-from schemas.v1_schemas import Template, Created
+from pydantic import UUID4
+from schemas.v1_schemas import Created, Template
 from services.templates import TemplatesService, get_templates_service
+
+from fastapi import APIRouter, Depends
 
 router = APIRouter()
 

@@ -4,8 +4,7 @@ import re
 from typing import Any
 
 import orjson
-
-from notify_compose.worker.services.result_fetcher import fetch_functions, MatchingError
+from services.result_fetcher import MatchingError, fetch_functions
 
 
 def orjson_dumps(v, *, default):
