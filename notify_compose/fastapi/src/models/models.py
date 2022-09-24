@@ -2,9 +2,8 @@ from datetime import datetime
 from enum import Enum
 from uuid import uuid4
 
-from pydantic import Field, UUID4
-
 from models.base import BaseOrjsonModel
+from pydantic import UUID4, Field
 
 
 class TemplateTypeEnum(str, Enum):

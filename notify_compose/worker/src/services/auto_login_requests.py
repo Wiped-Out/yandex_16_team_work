@@ -1,7 +1,7 @@
 from functools import wraps
 
-from notify_compose.worker.core.settings import JWTBearerUser, user
-from notify_compose.worker.services.requests import AsyncRequest, AIOHTTPClient, BaseRequest
+from core.config import JWTBearerUser, user
+from services.requests import AIOHTTPClient, AsyncRequest, BaseRequest
 
 
 class AuthorizationError(Exception):

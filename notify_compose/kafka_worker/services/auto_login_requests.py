@@ -1,7 +1,7 @@
 from functools import wraps
 
 from core.config import JWTBearerUser, user
-from services.requests import AsyncRequest, AIOHTTPClient, BaseRequest
+from services.requests import AIOHTTPClient, AsyncRequest, BaseRequest
 
 
 class AuthorizationError(Exception):

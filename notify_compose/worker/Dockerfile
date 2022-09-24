@@ -4,5 +4,4 @@ WORKDIR /worker
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-
-CMD sleep 60 && python main.py
+CMD cd src && sleep 60 && python main.py

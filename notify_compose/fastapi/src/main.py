@@ -4,17 +4,18 @@ from logging import config as logging_config
 from traceback import format_exception
 
 import uvicorn
-from api.v1 import templates, notifications
+from api.v1 import notifications, templates
 from core.config import settings
 from core.logger import LOGGING
 from db import db
 from extensions import logstash, sentry
-from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from logstash.handler_udp import LogstashHandler
 from motor.motor_asyncio import AsyncIOMotorClient
 from services.main_db import BaseMongoStorage
+
+from fastapi import FastAPI, HTTPException, Request
 
 
 def init_logstash():

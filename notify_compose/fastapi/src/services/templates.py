@@ -1,10 +1,12 @@
 from functools import lru_cache
-from models.models import Template, AddTemplate
 from typing import Optional
-from services.main_db import MainStorage, AbstractMainStorage
-from pydantic import UUID4
-from fastapi import Depends
+
 from db.db import get_db
+from models.models import AddTemplate, Template
+from pydantic import UUID4
+from services.main_db import AbstractMainStorage, MainStorage
+
+from fastapi import Depends
 
 
 class TemplatesService(MainStorage):

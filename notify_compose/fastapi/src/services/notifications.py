@@ -1,10 +1,12 @@
 from functools import lru_cache
-from models.models import Notification, AddNotification
 from typing import Optional
-from services.main_db import MainStorage, AbstractMainStorage
+
 from db.db import get_db
-from fastapi import Depends
+from models.models import AddNotification, Notification
 from pydantic import UUID4
+from services.main_db import AbstractMainStorage, MainStorage
+
+from fastapi import Depends
 
 
 class NotificationsService(MainStorage):

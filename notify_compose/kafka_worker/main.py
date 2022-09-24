@@ -1,12 +1,12 @@
 import asyncio
 
-from kafka import KafkaConsumer, KafkaProducer
-
 from core.config import settings
 from core.notify_templates import topics_to_notify_template
 from db import db
 from services.db import BaseKafkaStorage, MainStorage
 from services.event_handler import EventService
+
+from kafka import KafkaConsumer, KafkaProducer
 
 
 async def startup():

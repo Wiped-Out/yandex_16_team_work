@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from models.models import TemplateFieldItem
-from notify_compose.worker.services.auto_login_requests import AutoLoginRequests
-from notify_compose.worker.utils.utils import replace_in_json, fetch_result
+from services.auto_login_requests import AutoLoginRequests
+from utils.utils import fetch_result, replace_in_json
 
 
 class AbstractAsyncScrapper(ABC):

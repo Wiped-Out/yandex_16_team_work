@@ -1,9 +1,9 @@
+from datetime import datetime
 from enum import Enum
+from uuid import uuid4
 
 from models.base import BaseOrjsonModel
-from datetime import datetime
-from uuid import uuid4
-from pydantic import Field, UUID4, validator
+from pydantic import UUID4, Field, validator
 
 
 class TemplateTypeEnum(str, Enum):
@@ -54,3 +54,21 @@ class Template(BaseOrjsonModel):
     body: str
     template_type: TemplateTypeEnum
     fields: list[TemplateFieldItem]
+
+
+class EmailSender(BaseOrjsonModel):
+    Email: str
+    Name: str
+
+
+class EmailReceiver(BaseOrjsonModel):
+    Email: str
+    Name: str
+
+
+class EmailMessage(BaseOrjsonModel):
+    From: EmailSender
+    To: list[EmailReceiver]
+    Subject: str
+    TextPart: str
+    HTMLPart: str
