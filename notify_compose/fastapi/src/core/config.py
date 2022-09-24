@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     MONGO_PASSWORD: str
     MONGO_DB_NAME: str
 
+    RABBIT_HOST: str
+    RABBIT_PORT: int
+    RABBIT_USER: str
+    RABBIT_PASSWORD: str
+    RABBIT_MAX_PRIORITY: int
+
     LOGSTASH_HOST: str
     LOGSTASH_PORT: int
     ENABLE_LOGSTASH: bool

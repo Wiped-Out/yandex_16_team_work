@@ -35,8 +35,11 @@ services:
     networks:
       - backend
       - internal_bridge
+
   rabbitmq:
-    image: rabbitmq:3.9.22
+    image: rabbitmq:3.10.7-management
+    env_file:
+      - ./rabbitmq/.env
     #    ports:
     #      - 5672:5672
     #      - 15672:15672

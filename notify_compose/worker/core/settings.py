@@ -1,8 +1,17 @@
 import os
+
 from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
+
+    RABBIT_HOST: str
+    RABBIT_PORT: int
+    RABBIT_USER: str
+    RABBIT_PASSWORD: str
+    RABBIT_MAX_PRIORITY: int
+    RABBIT_QUEUE_NAME: str = 'email'
+
     class Config:
         env_file = '.env'
 

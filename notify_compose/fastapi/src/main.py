@@ -4,17 +4,20 @@ from logging import config as logging_config
 from traceback import format_exception
 
 import uvicorn
-from api.v1 import templates, notifications
-from core.config import settings
-from core.logger import LOGGING
-from db import db
-from extensions import logstash, sentry
+from aio_pika import connect
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 from logstash.handler_udp import LogstashHandler
 from motor.motor_asyncio import AsyncIOMotorClient
+
+from api.v1 import notifications, templates
+from core.config import settings
+from core.logger import LOGGING
+from db import db, queue
+from extensions import logstash, sentry
 from services.main_db import BaseMongoStorage
+from services.queue import BaseRabbitQueue
 
 
 def init_logstash():
@@ -60,6 +63,14 @@ async def startup():
                   f'@{settings.MONGO_HOST}:{settings.MONGO_PORT}'
     client = AsyncIOMotorClient(MONGODB_URL, uuidRepresentation='standard')
     db.db = BaseMongoStorage(db=client[settings.MONGO_DB_NAME])
+
+    connection = await connect(
+        host=settings.RABBIT_HOST,
+        port=settings.RABBIT_PORT,
+        login=settings.RABBIT_USER,
+        password=settings.RABBIT_PASSWORD
+    )
+    queue.queue = await BaseRabbitQueue.init(connection)
 
 
 @app.on_event('shutdown')
