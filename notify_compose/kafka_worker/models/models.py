@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 
 from models.base import BaseOrjsonModel
-from pydantic import UUID4, Field, validator
+from pydantic import UUID4, Field
 
 
 class NotificationTypeEnum(str, Enum):

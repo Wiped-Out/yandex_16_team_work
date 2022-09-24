@@ -2,11 +2,10 @@ import uuid
 from typing import Optional
 
 from core.config import settings
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from models.auth import AuthUser
 from services.auth_integration import get_auth_service
-
-from fastapi import Depends, HTTPException, Request
 
 
 class JWTBearer(HTTPBearer):

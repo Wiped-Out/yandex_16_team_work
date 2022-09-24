@@ -9,10 +9,9 @@ import jwt
 import orjson
 from aiohttp import ClientConnectorError
 from core.config import settings
+from fastapi import HTTPException
 from fastapi_pagination import Page, Params
 from pydantic import conint
-
-from fastapi import HTTPException
 
 T = TypeVar('T')
 

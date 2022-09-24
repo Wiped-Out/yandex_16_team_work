@@ -1,6 +1,5 @@
 import json
 from abc import ABC, abstractmethod
-from functools import lru_cache
 from typing import Any
 
 from aio_pika import DeliveryMode, Message

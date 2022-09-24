@@ -16,71 +16,82 @@ class HTTPResponse:
 class AIOHTTPManager:
     """Контекстный менеджер для работы с AIOHTTP"""
 
-    async def get_session(self):
+    def __init__(self):
         self.session = aiohttp.ClientSession()
 
     async def __aenter__(self) -> aiohttp.ClientSession:
-        await self.get_session()
         return self.session
 
-    async def __aexit__(self, error: Exception, value: object, traceback: object):
+    async def __aexit__(self, error: Exception, value: object, traceback: object):  # noqa: WPS110
         await self.session.close()
 
 
 class AsyncRequest(ABC):
     @abstractmethod
-    async def get(self,
-                  url: str,
-                  body: Optional[dict] = None,
-                  query: Optional[dict] = None,
-                  headers: Optional[dict] = None,
-                  **kwargs):
-        pass
+    async def get(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
+        pass  # noqa: WPS420
 
     @abstractmethod
-    async def post(self,
-                   url: str,
-                   body: Optional[dict] = None,
-                   query: Optional[dict] = None,
-                   headers: Optional[dict] = None,
-                   **kwargs):
-        pass
+    async def post(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
+        pass  # noqa: WPS420
 
     @abstractmethod
-    async def delete(self,
-                     url: str,
-                     body: Optional[dict] = None,
-                     query: Optional[dict] = None,
-                     headers: Optional[dict] = None,
-                     **kwargs):
-        pass
+    async def delete(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
+        pass  # noqa: WPS420
 
     @abstractmethod
-    async def put(self,
-                  url: str,
-                  body: Optional[dict] = None,
-                  query: Optional[dict] = None,
-                  headers: Optional[dict] = None,
-                  **kwargs):
-        pass
+    async def put(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
+        pass  # noqa: WPS420
 
     @abstractmethod
-    async def patch(self,
-                    url: str,
-                    body: Optional[dict] = None,
-                    query: Optional[dict] = None,
-                    headers: Optional[dict] = None,
-                    **kwargs):
-        pass
+    async def patch(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
+        pass  # noqa: WPS420
 
 
 class AIOHTTPClient(AsyncRequest):
-    async def get(self,
-                  url: str,
-                  body: Optional[dict] = None,
-                  query: Optional[dict] = None,
-                  headers: Optional[dict] = None,
-                  **kwargs):
+    async def get(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
         async with AIOHTTPManager() as session:
             async with session.get(url, params=query, json=body, headers=headers) as response:
                 return HTTPResponse(
@@ -89,12 +100,14 @@ class AIOHTTPClient(AsyncRequest):
                     status=response.status,
                 )
 
-    async def post(self,
-                   url: str,
-                   body: Optional[dict] = None,
-                   query: Optional[dict] = None,
-                   headers: Optional[dict] = None,
-                   **kwargs):
+    async def post(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
         async with AIOHTTPManager() as session:
             async with session.post(url, params=query, json=body, headers=headers) as response:
                 return HTTPResponse(
@@ -103,12 +116,14 @@ class AIOHTTPClient(AsyncRequest):
                     status=response.status,
                 )
 
-    async def delete(self,
-                     url: str,
-                     body: Optional[dict] = None,
-                     query: Optional[dict] = None,
-                     headers: Optional[dict] = None,
-                     **kwargs):
+    async def delete(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
         async with AIOHTTPManager() as session:
             async with session.delete(url, params=query, json=body, headers=headers) as response:
                 return HTTPResponse(
@@ -117,12 +132,14 @@ class AIOHTTPClient(AsyncRequest):
                     status=response.status,
                 )
 
-    async def put(self,
-                  url: str,
-                  body: Optional[dict] = None,
-                  query: Optional[dict] = None,
-                  headers: Optional[dict] = None,
-                  **kwargs):
+    async def put(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
         async with AIOHTTPManager() as session:
             async with session.put(url, params=query, json=body, headers=headers) as response:
                 return HTTPResponse(
@@ -131,12 +148,14 @@ class AIOHTTPClient(AsyncRequest):
                     status=response.status,
                 )
 
-    async def patch(self,
-                    url: str,
-                    body: Optional[dict] = None,
-                    query: Optional[dict] = None,
-                    headers: Optional[dict] = None,
-                    **kwargs):
+    async def patch(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
         async with AIOHTTPManager() as session:
             async with session.patch(url, params=query, json=body, headers=headers) as response:
                 return HTTPResponse(
@@ -149,62 +168,82 @@ class AIOHTTPClient(AsyncRequest):
 class BaseRequest:
     client: AsyncRequest = AIOHTTPClient()
 
-    async def get(self,
-                  url: str,
-                  body: Optional[dict] = None,
-                  query: Optional[dict] = None,
-                  headers: Optional[dict] = None,
-                  **kwargs):
-        return await self.client.get(url=url,
-                                     body=body,
-                                     query=query,
-                                     headers=headers,
-                                     **kwargs)
+    async def get(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
+        return await self.client.get(
+            url=url,
+            body=body,
+            query=query,
+            headers=headers,
+            **kwargs,
+        )
 
-    async def post(self,
-                   url: str,
-                   body: Optional[dict] = None,
-                   query: Optional[dict] = None,
-                   headers: Optional[dict] = None,
-                   **kwargs):
-        return await self.client.post(url=url,
-                                      body=body,
-                                      query=query,
-                                      headers=headers,
-                                      **kwargs)
+    async def post(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
+        return await self.client.post(
+            url=url,
+            body=body,
+            query=query,
+            headers=headers,
+            **kwargs,
+        )
 
-    async def delete(self,
-                     url: str,
-                     body: Optional[dict] = None,
-                     query: Optional[dict] = None,
-                     headers: Optional[dict] = None,
-                     **kwargs):
-        return await self.client.delete(url=url,
-                                        body=body,
-                                        query=query,
-                                        headers=headers,
-                                        **kwargs)
+    async def delete(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
+        return await self.client.delete(
+            url=url,
+            body=body,
+            query=query,
+            headers=headers,
+            **kwargs,
+        )
 
-    async def put(self,
-                  url: str,
-                  body: Optional[dict] = None,
-                  query: Optional[dict] = None,
-                  headers: Optional[dict] = None,
-                  **kwargs):
-        return await self.client.put(url=url,
-                                     body=body,
-                                     query=query,
-                                     headers=headers,
-                                     **kwargs)
+    async def put(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
+        return await self.client.put(
+            url=url,
+            body=body,
+            query=query,
+            headers=headers,
+            **kwargs,
+        )
 
-    async def patch(self,
-                    url: str,
-                    body: Optional[dict] = None,
-                    query: Optional[dict] = None,
-                    headers: Optional[dict] = None,
-                    **kwargs):
-        return await self.client.patch(url=url,
-                                       body=body,
-                                       query=query,
-                                       headers=headers,
-                                       **kwargs)
+    async def patch(  # noqa: WPS211
+            self,
+            url: str,
+            body: Optional[dict] = None,
+            query: Optional[dict] = None,
+            headers: Optional[dict] = None,
+            **kwargs,
+    ):
+        return await self.client.patch(
+            url=url,
+            body=body,
+            query=query,
+            headers=headers,
+            **kwargs,
+        )

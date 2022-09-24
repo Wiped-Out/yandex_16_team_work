@@ -1,4 +1,5 @@
 from functools import wraps
+from http import HTTPStatus
 
 from core.config import JWTBearerUser, user
 from services.requests import AIOHTTPClient, AsyncRequest, BaseRequest
@@ -8,26 +9,32 @@ class AuthorizationError(Exception):
     pass
 
 
-def auto_authorize(user: JWTBearerUser, async_client: AsyncRequest = AIOHTTPClient()):
+def auto_authorize(
+        user: JWTBearerUser,
+        async_client: AsyncRequest = AIOHTTPClient(),
+):
     def func_wrapper(func):
         @wraps(func)
         async def inner(*args, **kwargs):
             headers = kwargs.get('headers', dict())
             headers['Authorization'] = f'Bearer {user.TOKEN}'
             kwargs['headers'] = headers
-            result = await func(*args, **kwargs)
-            if result.status == 401:
-                result = await async_client.post(url=user.REFRESH_URL,
-                                                 headers={'Authorization': f"Bearer {user.REFRESH_TOKEN}"})
 
-                if result.status == 200:
-                    user.TOKEN = result.body['token']
+            response = await func(*args, **kwargs)
+            if response.status == 401:
+                response = await async_client.post(
+                    url=user.REFRESH_URL,
+                    headers={'Authorization': f'Bearer {user.REFRESH_TOKEN}'},
+                )
+
+                if response.status == HTTPStatus.OK:
+                    user.TOKEN = response.body['token']
                 else:
                     raise AuthorizationError('Authorization failed')
 
                 kwargs['headers']['Authorization'] = f'Bearer {user.TOKEN}'
-                result = await func(*args, **kwargs)
-            return result
+                response = await func(*args, **kwargs)
+            return response
 
         return inner
 

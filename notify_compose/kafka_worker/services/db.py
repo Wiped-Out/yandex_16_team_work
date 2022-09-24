@@ -12,15 +12,15 @@ class AbstractMainProducer(ABC):
 class AbstractMainConsumer(ABC):
     @abstractmethod
     async def subscribe(self, topics: list):
-        pass
+        pass  # noqa: WPS420
 
     @abstractmethod
     async def consume(self):
-        pass
+        pass  # noqa: WPS420
 
     @abstractmethod
     async def close(self):
-        pass
+        pass  # noqa: WPS420
 
 
 class AbstractStorage(AbstractMainProducer, AbstractMainConsumer):

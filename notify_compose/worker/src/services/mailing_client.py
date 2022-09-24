@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from mailjet_rest import Client
 from models.models import EmailMessage
 

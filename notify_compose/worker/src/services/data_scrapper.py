@@ -24,7 +24,7 @@ class AsyncScrapper(AbstractAsyncScrapper, AutoLoginRequests):
 
     async def scrape(self, item: TemplateFieldItem) -> TemplateFieldItem:
         item = TemplateFieldItem(**(await replace_in_json(item=item.dict(),
-                                                          pattern=",start,(.*?),end,",
+                                                          pattern=',start,(.*?),end,',
                                                           replace_from=self.ready_data)))
         method = getattr(self, item.http_type)
         response = await method(url=item.url, body=item.body, headers=item.headers)

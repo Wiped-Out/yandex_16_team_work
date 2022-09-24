@@ -3,7 +3,6 @@ from functools import lru_cache
 from db.queue import get_queue
 from fastapi import Depends
 from models.models import AddNotification
-
 from services.queue import AbstractQueue, BaseQueue
 
 
