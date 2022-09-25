@@ -9,7 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from core.config import settings
 from db import db
-from models.models import NotificationTypeEnum, Notification, Template
+from models.models import Notification, NotificationTypeEnum, Template
 from providers import mailing
 from services.data_scrapper import AsyncScrapper
 from services.mailing_client import MailJetMailingClient
@@ -80,8 +80,6 @@ if __name__ == '__main__':
         help='transport'
     )
     args = parser.parse_args()
-
-    print('Args:', args.queue_name, args.transport)
 
     startup()
     asyncio.run(main())
