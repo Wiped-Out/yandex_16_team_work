@@ -2,8 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from models.models import TemplateFieldItem
-from services.auto_login_requests import AutoLoginRequests
 from utils.utils import fetch_result, replace_in_json
+
+from services.auto_login_requests import AutoLoginRequests
 
 
 class AbstractAsyncScrapper(ABC):
