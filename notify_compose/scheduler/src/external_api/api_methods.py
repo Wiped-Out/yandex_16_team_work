@@ -1,7 +1,5 @@
 from aiohttp import ClientSession
 from core.config import settings
-from uuid import uuid4, UUID
-from random import SystemRandom
 from datetime import datetime
 
 
@@ -14,16 +12,8 @@ async def add_notification() -> int:
                 data={'template_id': settings.TEMPLATE_UUID,
                       'priority': priority,
                       'notification_type': 'email',
-                      'user_ids': await generate_user_ids(),
+                      'user_ids': settings.USER_IDS,
                       'status': 'created',
                       'before': datetime.now()}
         ) as response:
             return response.status
-
-
-async def generate_user_ids() -> list[UUID]:
-    # todo позже айди юзеров будут получаться из ручек других сервисов (UGC)
-    user_ids = []
-    for _ in range(SystemRandom().randint(1, 100)):
-        user_ids.append(uuid4())
-    return user_ids
