@@ -20,7 +20,7 @@ async def add_template(
         template: AddTemplate,
         templates_service: TemplatesService = Depends(get_templates_service),  # noqa: WPS404, B008
 ):
-    item_id = await templates_service.add_notification(template=template)
+    item_id = await templates_service.add_template(template=template)
     return Created(id=item_id)
 
 
