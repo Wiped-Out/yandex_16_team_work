@@ -112,6 +112,7 @@ services:
       - fastapi_notify
     networks:
       - services_network
+      - backend
 
 # Указываем Docker, какие именованные тома потребуются сервисам
 volumes:
