@@ -23,7 +23,7 @@ async def index_fetcher(body: dict, pattern_item: str) -> Any:
     return body[index]
 
 
-async def model_fethcer(body: dict, pattern_item: str) -> Any:
+async def model_fetcher(body: dict, pattern_item: str) -> Any:
     re_result = re.findall('model:(.*?)', pattern_item)
     if not re_result:
         raise MatchingError
@@ -31,4 +31,4 @@ async def model_fethcer(body: dict, pattern_item: str) -> Any:
         return DotWiz(body)
 
 
-fetch_functions = (key_fetcher, index_fetcher)
+fetch_functions = (key_fetcher, index_fetcher, model_fetcher)

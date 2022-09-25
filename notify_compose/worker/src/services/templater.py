@@ -7,12 +7,12 @@ from models.models import Template
 class AbstractTemplater(ABC):
     @staticmethod
     @abstractmethod
-    async def render(self, item: Template, data: dict):
+    async def render(item: Template, data: dict):
         pass
 
 
 class Templater(AbstractTemplater):
     @staticmethod
-    async def render(self, item: Template, data: dict) -> str:
+    async def render(item: Template, data: dict) -> str:
         template = Environment(loader=BaseLoader, enable_async=True).from_string(item.body)
         return await template.render_async(**data)

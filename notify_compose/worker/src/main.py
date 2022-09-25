@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import json
+from enum import Enum
 
 from aio_pika import connect
 from aio_pika.abc import AbstractIncomingMessage
@@ -9,19 +10,21 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from core.config import settings
 from db import db
-from models.models import (EmailMessage, EmailReceiver, EmailSender,
-                           Notification, NotificationTypeEnum, Template,
-                           TemplateTypeEnum)
+from models.models import (Notification, NotificationTypeEnum, Template)
 from providers import mailing
 from services.data_scrapper import AsyncScrapper
-from services.mailing import MailingService
-from services.mailing_client import MailJetMailingClient
+from services.mailing_client import MailJetMailingClient, get_mailing_service
 from services.main_db import BaseMongoStorage
 from services.templater import Templater
 
 
+class TransportGetFunctionsEnum(Enum):
+    email = get_mailing_service
+
+
 async def on_message(message: AbstractIncomingMessage) -> None:
     async with message.process():
+        transport = args.transport.value()
         # get messasge data from RabbitMQ
         data = json.loads(message.body.decode('utf-8'))
 
@@ -31,37 +34,10 @@ async def on_message(message: AbstractIncomingMessage) -> None:
         template = Template(**(await db.db.find(settings.TEMPLATES_COLLECTION,
                                                 template_id=notification.template_id)))
         scrapper = AsyncScrapper(items=template.fields, ready_data={"user_id": data['user_id']})
-        ready_data = scrapper.get_result()
-        ready_template = Templater.render(template, ready_data)
+        ready_data = await scrapper.get_result()
+        ready_template = await Templater.render(item=template, data=ready_data)
 
-        scrapper = AsyncScrapper(
-            items={
-                'name': 'user',
-                'url': 'http://nginx_auth:80/api/users/,start,user_id,end,',
-                'body': {},
-                'headers': {},
-                'fetch_result': ""
-            },
-            ready_data={"user_id": data['user_id']}
-        )
-        ready_user_data = scrapper.get_result()
-
-        mailer = MailingService()
-        mailer.send_email(messages=[
-            EmailMessage(
-                From=EmailSender(
-                    Email=settings.SENDER_EMAIL,
-                    Name=settings.SENDER_NAME
-                ),
-                To=EmailReceiver(
-                    Email=ready_user_data['email'],
-                    Name=ready_user_data['login']
-                ),
-                Subject=template.subject,
-                TextPart=ready_template if template.template_type is TemplateTypeEnum.plain else "",
-                HTMLPart=ready_template if template.template_type is TemplateTypeEnum.html else ""
-            )
-        ])
+        await transport.send(ready_template=ready_template, template=template, user=ready_data.get('user'))
 
 
 async def main() -> None:
@@ -110,7 +86,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         'transport',
-        type=str,
+        type=TransportGetFunctionsEnum,
         help='transport'
     )
     args = parser.parse_args()
