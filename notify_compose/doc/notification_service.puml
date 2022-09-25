@@ -25,7 +25,7 @@ System_Boundary(notification_service, "Notification service") {
     ContainerDb(notification_database, "Storage", "MongoDB", "Хранение уведомлений и сопутствующих данных", $sprite="mongodb")
     SystemQueue(notification_RabbitMQ,"RabbitMQ", "Передача сообщений исполнителю")
     Container(notification_sender, "Worker", "Python", "Отправка уведомлений", $sprite="python")
-    Container(adapter, "Service", "Python", "Получение и обработка данных из Kafka и отправка в RabbitMQ", $sprite="python")
+    Container(adapter, "Service", "Python", "Получение и обработка данных из Kafka и отправка в API", $sprite="python")
 }
 
 System_Boundary(other, "Other services") {

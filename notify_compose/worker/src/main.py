@@ -9,11 +9,12 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from core.config import settings
 from db import db
-from models.models import NotificationTypeEnum, Notification, Template
+from models.models import Notification, NotificationTypeEnum, Template
 from providers import mailing
 from services.data_scrapper import AsyncScrapper
 from services.mailing_client import MailJetMailingClient
 from services.main_db import BaseMongoStorage
+from services.templater import Templater
 
 
 async def on_message(message: AbstractIncomingMessage) -> None:
@@ -28,6 +29,7 @@ async def on_message(message: AbstractIncomingMessage) -> None:
                                                 template_id=notification.template_id)))
         scrapper = AsyncScrapper(items=template.fields, ready_data={"user_id": data['user_id']})
         ready_data = scrapper.get_result()
+        ready_template = Templater.render(template, ready_data)
 
 
 async def main() -> None:
@@ -80,8 +82,6 @@ if __name__ == '__main__':
         help='transport'
     )
     args = parser.parse_args()
-
-    print('Args:', args.queue_name, args.transport)
 
     startup()
     asyncio.run(main())
