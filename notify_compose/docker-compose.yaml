@@ -103,6 +103,16 @@ services:
     networks:
       - backend
 
+  scheduler:
+    build:
+      context: ./scheduler
+    env_file:
+      - ./scheduler/.env
+    depends_on:
+      - fastapi_notify
+    networks:
+      - services_network
+
 # Указываем Docker, какие именованные тома потребуются сервисам
 volumes:
   fastapi_static:
