@@ -1,5 +1,6 @@
 from pydantic import BaseModel, UUID4
 from enum import Enum
+from datetime import datetime, timedelta
 
 
 class NotificationTypeEnum(str, Enum):
@@ -22,6 +23,7 @@ class NotificationTemplate(BaseModel):
     priority: int
     notification_type: NotificationTypeEnum
     status: NotificationStatusEnum
+    before: datetime
 
 
 templates = {
@@ -30,5 +32,6 @@ templates = {
         priority=10,
         notification_type=NotificationTypeEnum.email,
         status=NotificationStatusEnum.created,
+        before=datetime.utcnow() + timedelta(days=1),
     )
 }

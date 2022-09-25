@@ -1,6 +1,5 @@
 from aiohttp import ClientSession
 from core.config import settings
-from datetime import datetime
 from templates.templates import NotificationTemplate
 
 
@@ -13,6 +12,6 @@ async def add_notification(notification_template: NotificationTemplate) -> int:
                       'notification_type': notification_template.notification_type,
                       'user_ids': settings.USER_IDS,
                       'status': notification_template.status,
-                      'before': datetime.now()}
+                      'before': notification_template.before}
         ) as response:
             return response.status
