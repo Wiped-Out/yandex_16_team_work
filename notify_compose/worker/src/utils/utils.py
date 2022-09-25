@@ -19,6 +19,7 @@ async def fetch_result(body: dict, pattern: str) -> Any:
             with contextlib.suppress(MatchingError):
                 body = func(body=body, pattern_item=item)
             break
+    return body
 
 
 async def replace_in_json(item: dict, pattern: str, replace_from: dict) -> dict:
