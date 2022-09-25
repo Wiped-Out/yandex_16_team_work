@@ -1,0 +1,61 @@
+@startuml
+
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+
+!include DEVICONS/database.puml
+!include DEVICONS/python.puml
+!include DEVICONS/chrome.puml
+!include DEVICONS/mongodb.puml
+!include <logos/kafka>
+!include FONTAWESOME/users.puml
+
+title СЕРВИС NOTIFICATIONS
+
+Person(admin, "Administator", "Notification admin")
+
+Container(notification_admin_panel, "Admin", "Frontend", "Реализация панели администратора уведомлений", $sprite="chrome")
+
+System_Boundary(notification_service, "Notification service") {
+    Container(notification_scheduler, "Scheduler", "Cron", "Генерация автоматических периодических событий")
+    Container(notification_api, "API", "FastAPI", "Прием событий и создание уведомлений", $sprite="python")
+    ContainerDb(notification_database, "Storage", "MongoDB", "Хранение уведомлений и сопутствующих данных", $sprite="mongodb")
+    SystemQueue(notification_RabbitMQ,"RabbitMQ", "Передача сообщений исполнителю")
+    Container(notification_sender, "Worker", "Python", "Отправка уведомлений", $sprite="python")
+    Container(adapter, "Service", "Python", "Получение и обработка данных из Kafka и отправка в RabbitMQ", $sprite="python")
+}
+
+System_Boundary(other, "Other services") {
+    System(auth, "Auth")
+    System(ugc, "UGC")
+    System(movies_admin, "Movies Admin")
+}
+
+SystemQueue(kafka, "Event Broker", "Kafka", $sprite="kafka")
+
+System(email_service, "Email Service")
+
+
+Rel(admin, notification_admin_panel, "Uses", "https")
+Rel_D(notification_admin_panel, notification_api, "Uses", "https")
+Rel(notification_api, notification_database, "Запись")
+Rel(notification_api, notification_RabbitMQ, "Запись")
+Rel_R(notification_scheduler, notification_api, "")
+Rel_U(notification_sender, notification_RabbitMQ, "Чтение")
+Rel_U(notification_sender, notification_database, "Чтение/Запись")
+
+Rel(auth, kafka, "Запись")
+Rel(ugc, kafka, "Запись")
+Rel(movies_admin, kafka, "Запись")
+Rel_U(adapter, kafka, "Чтение")
+Rel_L(adapter, notification_api, "")
+
+Rel(notification_sender, email_service, "API")
+
+
+SHOW_FLOATING_LEGEND()
+
+@enduml
