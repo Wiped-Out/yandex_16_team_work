@@ -1,4 +1,4 @@
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel, UUID4, Field
 from enum import Enum
 from datetime import datetime, timedelta
 
@@ -20,18 +20,15 @@ class TemplateNamesEnum(str, Enum):
 
 class NotificationTemplate(BaseModel):
     template_id: UUID4
-    priority: int
-    notification_type: NotificationTypeEnum
-    status: NotificationStatusEnum
-    before: datetime
+    priority: int = 10
+    notification_type: NotificationTypeEnum = NotificationTypeEnum.email
+    status: NotificationStatusEnum = NotificationStatusEnum.created
+    before: datetime = Field(default_factory=datetime.utcnow)
+
+    def __post_init__(self):
+        self.before = datetime.utcnow() + timedelta(minutes=10)
 
 
 templates = {
-    TemplateNamesEnum.prolong_subscription: NotificationTemplate(
-        template_id='4e08df28-32b4-4955-9f22-8b39a609f4d8',
-        priority=10,
-        notification_type=NotificationTypeEnum.email,
-        status=NotificationStatusEnum.created,
-        before=datetime.utcnow() + timedelta(days=1),
-    )
+    TemplateNamesEnum.prolong_subscription: NotificationTemplate
 }

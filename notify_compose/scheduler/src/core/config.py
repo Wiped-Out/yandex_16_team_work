@@ -6,7 +6,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     NOTIFY_API_ENDPOINT: str
-    TEMPLATE_UUID: UUID4
+    PROLONG_SUBSCRIPTION_TEMPLATE_UUID: UUID4
 
     USER_IDS: list[UUID4]
 
@@ -15,7 +15,7 @@ class Settings(BaseSettings):
         def parse_env_var(cls, field_name: str, raw_val: str):
             if field_name == 'USER_IDS':
                 return [x for x in raw_val.split(',') if x]
-            return cls.json_loads(raw_val)
+            return cls.json_loads(raw_val)  # type: ignore
 
 
 settings = Settings()

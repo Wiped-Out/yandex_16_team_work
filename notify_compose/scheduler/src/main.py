@@ -16,6 +16,6 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.run_until_complete(
         api_methods.add_notification(
-            notification_template=templates[args.template_name],
+            notification_template=templates[args.template_name](),
         )
     )
