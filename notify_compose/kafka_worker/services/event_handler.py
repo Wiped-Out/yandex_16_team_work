@@ -4,9 +4,7 @@ from typing import Type
 
 from core.config import settings
 from core.notify_templates import NotificationTemplate
-from db.db import get_db
 from services.auto_login_requests import AutoLoginRequests
-from services.db import MainStorage
 
 
 class EventService(AutoLoginRequests):
@@ -23,7 +21,5 @@ class EventService(AutoLoginRequests):
 
 @lru_cache()
 def get_event_service(
-        main_db: MainStorage = None,
 ):
-    main_db = get_db() if main_db is None else main_db
-    return EventService(db=main_db)  # type: ignore
+    return EventService()  # type: ignore
