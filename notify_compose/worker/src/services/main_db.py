@@ -22,6 +22,10 @@ class AbstractMainStorage(ABC):
     def delete(self, collection: str, uuid: UUID):
         pass
 
+    @abstractmethod
+    def find(self, collection: str, **kwargs):
+        pass
+
 
 class BaseMongoStorage(AbstractMainStorage):
     def __init__(self, db: AsyncIOMotorDatabase):
@@ -41,6 +45,9 @@ class BaseMongoStorage(AbstractMainStorage):
     async def delete(self, collection: str, uuid: UUID):
         await self.db.get_collection(collection).delete_one({"id": uuid})
 
+    async def find(self, collection: str, **kwargs):
+        return await self.db.get_collection(collection).find(**kwargs)
+
 
 class MainStorage:
     def __init__(self, db: AbstractMainStorage):
@@ -57,3 +64,6 @@ class MainStorage:
 
     async def delete(self, collection: str, uuid: UUID):
         await self.db.delete(collection=collection, uuid=uuid)
+
+    async def find(self, collection: str, **kwargs):
+        return await self.db.find(collection=collection, **kwargs)

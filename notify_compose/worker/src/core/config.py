@@ -19,24 +19,25 @@ class Settings(BaseSettings):
     MONGO_USER: str
     MONGO_PASSWORD: str
     MONGO_DB_NAME: str
-    MONGO_COLLECTION: str = 'notifications'
+    NOTIFICATIONS_COLLECTION: str = 'notifications'
+    TEMPLATES_COLLECTION: str = 'templates'
 
     class Config:
         env_file = '.env'
 
 
-# class JWTBearerUser(BaseSettings):
-#     REFRESH_URL: str
+class JWTBearerUser(BaseSettings):
+    REFRESH_URL: str
 
-#     TOKEN: str
-#     REFRESH_TOKEN: str
+    TOKEN: str
+    REFRESH_TOKEN: str
 
-#     class Config:
-#         env_file = '.env'
+    class Config:
+        env_file = '.env'
 
 
 # Корень проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 settings = Settings()
-# user = JWTBearerUser()
+user = JWTBearerUser()

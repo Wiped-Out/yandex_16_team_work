@@ -9,20 +9,25 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from core.config import settings
 from db import db
-from models.models import NotificationTypeEnum
+from models.models import NotificationTypeEnum, Notification, Template
 from providers import mailing
+from services.data_scrapper import AsyncScrapper
 from services.mailing_client import MailJetMailingClient
 from services.main_db import BaseMongoStorage
 
 
 async def on_message(message: AbstractIncomingMessage) -> None:
     async with message.process():
-
         # get messasge data from RabbitMQ
         data = json.loads(message.body.decode('utf-8'))
 
         # get notification data from MongoDB
-        notification = await db.db.get_one(settings.MONGO_COLLECTION, data['notification_id'])
+        notification = Notification(**(await db.db.get_one(settings.NOTIFICATIONS_COLLECTION,
+                                                           data['notification_id'])))
+        template = Template(**(await db.db.find(settings.TEMPLATES_COLLECTION,
+                                                template_id=notification.template_id)))
+        scrapper = AsyncScrapper(items=template.fields, ready_data={"user_id": data['user_id']})
+        ready_data = scrapper.get_result()
 
 
 async def main() -> None:
