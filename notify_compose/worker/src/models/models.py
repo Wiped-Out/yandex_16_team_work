@@ -2,8 +2,9 @@ from datetime import datetime
 from enum import Enum
 from uuid import uuid4
 
-from models.base import BaseOrjsonModel
 from pydantic import UUID4, Field
+
+from models.base import BaseOrjsonModel
 
 
 class TemplateTypeEnum(str, Enum):
@@ -51,6 +52,7 @@ class TemplateFieldItem(BaseOrjsonModel):
 
 class Template(BaseOrjsonModel):
     id: UUID4 = Field(default_factory=uuid4)
+    subject: str
     body: str
     template_type: TemplateTypeEnum
     fields: list[TemplateFieldItem]
