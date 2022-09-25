@@ -6,16 +6,11 @@ import json
 
 
 async def add_notification(notification_template: Type[BaseNotificationTemplate]) -> int:
-    template: dict = json.loads(notification_template().json())
-
+    template = notification_template()
+    await template.get_external_data(user_ids=settings.USER_IDS)
     async with ClientSession() as client:
         async with client.post(
                 url=settings.NOTIFY_API_ENDPOINT,
-                json={'template_id': template['template_id'],
-                      'priority': template['priority'],
-                      'notification_type': template['notification_type'],
-                      'user_ids': settings.USER_IDS,
-                      'status': template['status'],
-                      'before': template['before']}
+                json=json.loads(notification_template().json())
         ) as response:
             return response.status
