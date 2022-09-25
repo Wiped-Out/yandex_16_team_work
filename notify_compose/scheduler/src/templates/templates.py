@@ -1,6 +1,7 @@
 from pydantic import BaseModel, UUID4, Field
 from enum import Enum
 from datetime import datetime, timedelta
+from core.config import settings
 
 
 class NotificationTypeEnum(str, Enum):
@@ -19,7 +20,7 @@ class TemplateNamesEnum(str, Enum):
 
 
 class NotificationTemplate(BaseModel):
-    template_id: UUID4
+    template_id: UUID4 = settings.PROLONG_SUBSCRIPTION_TEMPLATE_UUID
     priority: int = 10
     notification_type: NotificationTypeEnum = NotificationTypeEnum.email
     status: NotificationStatusEnum = NotificationStatusEnum.created
