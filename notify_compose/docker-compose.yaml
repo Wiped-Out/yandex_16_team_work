@@ -98,8 +98,8 @@ services:
       - mongodb_data:/data/db
     env_file:
       - ./mongodb/.env
-    ports:
-      - 27017:27017
+    #    ports:
+    #      - 27017:27017
     networks:
       - backend
 
