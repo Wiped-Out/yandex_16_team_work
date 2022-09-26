@@ -247,6 +247,20 @@ services:
     networks:
       - backend
 
+  worker1:
+    build:
+      context: ./worker
+    env_file:
+      - ./worker/.env
+    depends_on:
+      - mongodb
+      - rabbitmq
+      - fastapi_notify
+    networks:
+      - backend
+      - services_network
+
+
 # Указываем Docker, какие именованные тома потребуются сервисам
 volumes:
   fastapi_static:
