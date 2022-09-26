@@ -41,10 +41,13 @@ class UserRolesService(BaseCacheStorage, BaseMainStorage):
     def get_highest_role(self, user_id: str):
         user = self.db.get(item_id=user_id, model=self.user_model)
 
-        if user.roles:
-            return CacheRole(**max(user.roles, key=lambda x: x.level).to_dict())
-        else:
+        if not user.roles:
             return CacheRole(level=0, name='default')
+        max_role = user.roles[0]
+        for role in user.roles:
+            if max_role.level < role.level:
+                max_role = role
+        return CacheRole(**max_role.to_dict())
 
 
 @lru_cache()

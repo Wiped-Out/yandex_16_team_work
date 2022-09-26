@@ -57,6 +57,7 @@ user_roles = sqlalchemy.Table(
 class User(sqlalchemy.Model, IdMixin, SerializerMixin):
     __tablename__ = 'users'
 
+    serialize_rules = ('-roles',)
     login = sqlalchemy.Column(sqlalchemy.String, unique=True, nullable=False)
     password = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     email = sqlalchemy.Column(sqlalchemy.String, nullable=False)
@@ -65,6 +66,7 @@ class User(sqlalchemy.Model, IdMixin, SerializerMixin):
         'Role',
         secondary=user_roles,
         back_populates='users',
+        lazy='subquery'
     )
 
     logs = sqlalchemy.relation('Log')
@@ -117,7 +119,7 @@ class Log(sqlalchemy.Model, UserIdMixin, SerializerMixin):
 
 class Role(sqlalchemy.Model, IdMixin, SerializerMixin):
     __tablename__ = 'roles'
-
+    serialize_rules = ('-users',)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     level = sqlalchemy.Column(sqlalchemy.INTEGER, nullable=False)
 
@@ -125,6 +127,7 @@ class Role(sqlalchemy.Model, IdMixin, SerializerMixin):
         'User',
         secondary=user_roles,
         back_populates='roles',
+        lazy='subquery'
     )
 
 

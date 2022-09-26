@@ -2,38 +2,44 @@ import argparse
 import asyncio
 import json
 from enum import Enum
+from uuid import UUID
 
 from aio_pika import connect
 from aio_pika.abc import AbstractIncomingMessage
 from mailjet_rest import Client
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from core.config import settings
+from core.config import settings, user
 from db import db
 from models.models import (Notification, NotificationTypeEnum, Template)
 from providers import mailing
 from services.data_scrapper import AsyncScrapper
-from services.mailing_client import MailJetMailingClient, get_mailing_service
+from services.mailing import get_mailing_service
+from services.mailing_client import MailJetMailingClient
 from services.main_db import BaseMongoStorage
 from services.templater import Templater
 
+transport_getters = {
+    "email": get_mailing_service
+}
 
-class TransportGetFunctionsEnum(Enum):
-    email = get_mailing_service
+
+class TransportEnum(str, Enum):
+    email = "email"
 
 
 async def on_message(message: AbstractIncomingMessage) -> None:
     async with message.process():
-        transport = args.transport.value()
+        transport = await transport_getters[args.transport.value]()
         # get messasge data from RabbitMQ
         data = json.loads(message.body.decode('utf-8'))
 
         # get notification data from MongoDB
         notification = Notification(**(await db.db.get_one(settings.NOTIFICATIONS_COLLECTION,
-                                                           data['notification_id'])))
-        template = Template(**(await db.db.find(settings.TEMPLATES_COLLECTION,
-                                                template_id=notification.template_id)))
-        scrapper = AsyncScrapper(items=template.fields, ready_data={"user_id": data['user_id']})
+                                                           uuid=UUID(data['notification_id']))))
+        template = Template(**(await db.db.get_one(settings.TEMPLATES_COLLECTION,
+                                                   uuid=notification.template_id)))
+        scrapper = AsyncScrapper(items=template.fields, ready_data={"user_id": data['user_id']}, user=user)
         ready_data = await scrapper.get_result()
         ready_template = await Templater.render(item=template, data=ready_data)
 
@@ -86,7 +92,8 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         'transport',
-        type=TransportGetFunctionsEnum,
+        type=TransportEnum,
+        choices=list(TransportEnum),
         help='transport'
     )
     args = parser.parse_args()

@@ -183,6 +183,7 @@ class UserRoleCreate(Resource):
     @user.response(code=int(HTTPStatus.NO_CONTENT), description=' ')
     @user.response(code=int(HTTPStatus.BAD_REQUEST), description=' ')
     @user.response(code=int(HTTPStatus.CONFLICT), description=' ')
+    @user.expect(user_roles_parser)
     def post(self, user_id: str):
         user_roles_service = get_user_roles_service()
 

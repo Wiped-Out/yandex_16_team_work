@@ -18,23 +18,23 @@ async def fetch_result(body: dict, pattern: str) -> Any:
     for item in pattern.split(', '):
         for func in fetch_functions:
             with contextlib.suppress(MatchingError):
-                body = func(body=body, pattern_item=item)
+                body = await func(body=body, pattern_item=item)
             break
     return body
 
 
-async def replace_in_json(item: dict, pattern: str, replace_from: dict) -> dict:
+async def replace_in_json(item: dict, pattern: str, replace_from: dict, pattern_enclosing: str) -> dict:
     string_like_json = json.dumps(item)
     for matched_item in set(re.findall(pattern, string_like_json)):
         replace_from_key, other_string = await split_first(matched_item, ".")
         replace_to = replace_from.get(replace_from_key)
-        
+
         if replace_to is None:
             continue
 
-        replace_to = await recusivly_resolve_string(object=replace_to, string=other_string)
+        replace_to = await recursivly_resolve_string(object=replace_to, string=other_string)
 
-        string_like_json = string_like_json.replace(matched_item, replace_to)
+        string_like_json = string_like_json.replace(pattern_enclosing % matched_item, replace_to)
 
     return json.loads(string_like_json)
 
@@ -47,7 +47,7 @@ async def split_first(string: str, delimiter: str) -> Tuple[str, str]:
         return string, ''
 
 
-async def recusivly_resolve_string(object: Any, string: str) -> Any:
+async def recursivly_resolve_string(object: Any, string: str) -> Any:
     """
     :param object: any object
     :param string: pattern, that starts with name of attribute and
@@ -83,8 +83,8 @@ async def recusivly_resolve_string(object: Any, string: str) -> Any:
 
         key = key[1:-1] if '"' in key else int(key)
 
-        return await recusivly_resolve_string(object=getattr(object, resolved_attribute)[key],
-                                              string=string)
+        return await recursivly_resolve_string(object=getattr(object, resolved_attribute)[key],
+                                               string=string)
 
-    return await recusivly_resolve_string(object=getattr(object, resolved_attribute),
-                                          string=string)
+    return await recursivly_resolve_string(object=getattr(object, resolved_attribute),
+                                           string=string)

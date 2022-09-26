@@ -1,7 +1,13 @@
-from models.models import EmailMessage
-from services.mailing_client import BaseMailingClient
+from functools import lru_cache
+from typing import Type, Optional
+
+from providers.mailing import get_mailing_client
+from services.mailing_client import BaseMailingClient, AbstractMailingClient
 
 
-class MailingService(BaseMailingClient):
-    async def send_email(self, messages: list[EmailMessage]):
-        await self.send(messages=messages)
+@lru_cache()
+async def get_mailing_service(
+        mailing_client: Optional[Type[AbstractMailingClient]] = None
+):
+    mailing_client = await get_mailing_client() if mailing_client is None else mailing_client
+    return BaseMailingClient(client=mailing_client)  # type: ignore

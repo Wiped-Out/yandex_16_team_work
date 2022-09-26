@@ -34,4 +34,4 @@ class JWTBearerUser(BaseSettings):
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 settings = Settings()
-user = JWTBearerUser()
+user = JWTBearerUser().dict()

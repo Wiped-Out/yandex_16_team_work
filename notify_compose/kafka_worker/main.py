@@ -1,6 +1,6 @@
 import asyncio
 
-from core.config import settings
+from core.config import settings, user
 from core.notify_templates import topics_to_notify_template
 from db import db
 from kafka import KafkaConsumer, KafkaProducer
@@ -24,7 +24,7 @@ async def main():
     await startup()
 
     kafka_service = MainStorage(db=db.db)
-    event_handler_service = EventService()
+    event_handler_service = EventService(user=user)
     try:
         await kafka_service.subscribe(topics=settings.TOPICS_NAMES)
         for message in await kafka_service.consume():

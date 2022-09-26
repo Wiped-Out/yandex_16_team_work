@@ -98,12 +98,10 @@ def required_role_level(level: int):
         @wraps(func)
         def inner(*args, **kwargs):
             if any(role.level >= level for role in current_user.roles):
-                return Response(
-                    response={'msg': 'Role level is not enough'},
-                    status=HTTPStatus.FORBIDDEN,
-                    content_type='application/json',
-                )
-            return func(*args, **kwargs)
+                return func(*args, **kwargs)
+            return make_error_response(msg='Role level is not enough',
+                                       status=HTTPStatus.FORBIDDEN)
+
 
         return inner
 

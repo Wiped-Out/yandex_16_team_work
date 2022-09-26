@@ -80,3 +80,4 @@ class AddTemplate(BaseOrjsonModel):
     body: str
     template_type: TemplateTypeEnum
     fields: list[AddTemplateFieldItem]
+    subject: str

@@ -7,23 +7,27 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 class AbstractMainStorage(ABC):
     @abstractmethod
-    def create(self, collection: str, item: Any):
+    async def create(self, collection: str, item: Any):
         pass
 
     @abstractmethod
-    def get_all(self, collection: str):
+    async def get_all(self, collection: str):
         pass
 
     @abstractmethod
-    def get_one(self, collection: str, uuid: UUID):
+    async def get_one(self, collection: str, uuid: UUID):
         pass
 
     @abstractmethod
-    def delete(self, collection: str, uuid: UUID):
+    async def delete(self, collection: str, uuid: UUID):
         pass
 
     @abstractmethod
-    def find(self, collection: str, **kwargs):
+    async def find(self, collection: str, **kwargs):
+        pass
+
+    @abstractmethod
+    async def find_one(self, collection: str, **kwargs):
         pass
 
 
@@ -46,7 +50,10 @@ class BaseMongoStorage(AbstractMainStorage):
         await self.db.get_collection(collection).delete_one({"id": uuid})
 
     async def find(self, collection: str, **kwargs):
-        return await self.db.get_collection(collection).find(**kwargs)
+        return await self.db.get_collection(collection).find(kwargs)
+
+    async def find_one(self, collection: str, **kwargs):
+        return await self.db.get_collection(collection).find_one(kwargs)
 
 
 class MainStorage:
@@ -67,3 +74,6 @@ class MainStorage:
 
     async def find(self, collection: str, **kwargs):
         return await self.db.find(collection=collection, **kwargs)
+
+    async def find_one(self, collection: str, **kwargs):
+        return await self.db.find_one(collection=collection, **kwargs)

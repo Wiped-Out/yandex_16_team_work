@@ -107,7 +107,6 @@ class JWTLogout(Resource):
 @jwt_tokens.expect(jwt_parser)
 class JWTRefresh(Resource):
     @log_activity()
-    @jwt_tokens.expect(logout_parser)
     @jwt_required(refresh=True)
     @jwt_tokens.response(code=int(HTTPStatus.OK), description=' ', model=_JWTRefresh)
     def post(self):
