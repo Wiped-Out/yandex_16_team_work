@@ -1,0 +1,1 @@
+* * * * * /usr/local/bin/python /app/src/main.py prolong_subscription > /proc/1/fd/1 2>/proc/1/fd/2

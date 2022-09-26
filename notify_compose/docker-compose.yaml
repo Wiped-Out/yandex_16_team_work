@@ -116,6 +116,16 @@ services:
       - backend
       - services_network
 
+  scheduler:
+    build:
+      context: ./scheduler
+    env_file:
+      - ./scheduler/.env
+    depends_on:
+      - fastapi_notify
+    networks:
+      - services_network
+      - backend
 
 # Указываем Docker, какие именованные тома потребуются сервисам
 volumes:
