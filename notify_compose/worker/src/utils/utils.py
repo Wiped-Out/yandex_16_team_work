@@ -1,7 +1,7 @@
 import contextlib
 import json
 import re
-from typing import Any, Tuple
+from typing import Any, Tuple, Optional
 
 import orjson
 
@@ -32,11 +32,18 @@ async def replace_in_json(item: dict, pattern: str, replace_from: dict, pattern_
         if replace_to is None:
             continue
 
-        replace_to = await recursivly_resolve_string(object=replace_to, string=other_string)
+        replace_to = await recursivly_resolve_string(object_=replace_to, string=other_string)
 
         string_like_json = string_like_json.replace(pattern_enclosing % matched_item, replace_to)
 
     return json.loads(string_like_json)
+
+
+async def index(string: str, sub_string: str, default_: Optional[Any] = -1):
+    try:
+        return string.index(sub_string)
+    except ValueError:
+        return default_
 
 
 async def split_first(string: str, delimiter: str) -> Tuple[str, str]:
@@ -47,9 +54,28 @@ async def split_first(string: str, delimiter: str) -> Tuple[str, str]:
         return string, ''
 
 
-async def recursivly_resolve_string(object: Any, string: str) -> Any:
+async def recursivly_key_getter(object_: Any, string: str) -> Any:
     """
-    :param object: any object
+
+    :param object_: any object that supports access by index/key
+    :param string: string of square brackets with keys in it for ex. : [1]["key"][2]
+    not [[1]], only sequence of [] with keys in it
+
+    remark:
+    if your key of a dict should have str type, then close it with double quotes
+    :return:
+    """
+    if not string:
+        return object_
+    index_of_closed = await index(string=string, sub_string=']')
+    key, string = string[1:index_of_closed], string[index_of_closed + 1:]
+    key = key[1:-1] if '"' in key else int(key)
+    return await recursivly_key_getter(object_=object_[key], string=string)
+
+
+async def recursivly_resolve_string(object_: Any, string: str) -> Any:
+    """
+    :param object_: any object
     :param string: pattern, that starts with name of attribute and
                    possibly continue with other attributes with delimiter of dot "."
                    attributes can also have fetching index or key
@@ -62,29 +88,22 @@ async def recursivly_resolve_string(object: Any, string: str) -> Any:
     with string='a'
     return will be [{'b': 1}]
 
-
-
-    remark:
-    if your key of a dict should have str type, then close it with double quotes
     :return:
     """
     if not string:
-        return object
+        return object_
 
-    resolved_attribute, string = split_first(string=string, delimiter='.')
+    resolved_attribute, string = await split_first(string=string, delimiter='.')
 
-    try:
-        index_of_bracket = resolved_attribute.index('[')
-    except ValueError:
-        index_of_bracket = 0
-    if index_of_bracket:
-        resolved_attribute, key = resolved_attribute[:index_of_bracket], \
-                                  resolved_attribute[index_of_bracket + 1: -1]
+    index_of_bracket = await index(string=resolved_attribute, sub_string='[')
+    if index_of_bracket != -1:
+        resolved_attribute, key_string = resolved_attribute[:index_of_bracket], \
+                                         resolved_attribute[index_of_bracket:]
+        object_ = getattr(object_, resolved_attribute) if resolved_attribute else object_
 
-        key = key[1:-1] if '"' in key else int(key)
+        object_ = await recursivly_key_getter(object_=object_, string=key_string)
 
-        return await recursivly_resolve_string(object=getattr(object, resolved_attribute)[key],
-                                               string=string)
+        return await recursivly_resolve_string(object_=object_, string=string)
 
-    return await recursivly_resolve_string(object=getattr(object, resolved_attribute),
+    return await recursivly_resolve_string(object_=getattr(object_, resolved_attribute),
                                            string=string)
