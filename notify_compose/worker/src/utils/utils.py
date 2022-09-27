@@ -58,12 +58,13 @@ async def recursivly_key_getter(object_: Any, string: str) -> Any:
     """
 
     :param object_: any object that supports access by index/key
-    :param string: string of square brackets with keys in it for ex. : [1]["key"][2]
-    not [[1]], only sequence of [] with keys in it
+    :param string: string of square brackets with keys in it for ex. :
+                   [1]["key"][2] not [[1]], only sequence of [] with keys in it
 
-    remark:
-    if your key of a dict should have str type, then close it with double quotes
-    :return:
+
+    remark:  if your key of a dict should have str type, then close it with double quotes
+
+    :return: Any
     """
     if not string:
         return object_
@@ -76,9 +77,9 @@ async def recursivly_key_getter(object_: Any, string: str) -> Any:
 async def recursivly_resolve_string(object_: Any, string: str) -> Any:
     """
     :param object_: any object
-    :param string: pattern, that starts with name of attribute and
-                   possibly continue with other attributes with delimiter of dot "."
-                   attributes can also have fetching index or key
+    :param string: pattern, that starts with name of attribute (or/and sequence of index/key in [] after attribute name) and
+                   possibly continue with other attributes (or/and sequence of index/key in [] after attribute name)
+                   with delimiter of dot "."
 
     if
     object={'a':[{'b':1}] (Lets pretend that different dicts is instances of a some different classes)
@@ -88,7 +89,7 @@ async def recursivly_resolve_string(object_: Any, string: str) -> Any:
     with string='a'
     return will be [{'b': 1}]
 
-    :return:
+    :return: Any
     """
     if not string:
         return object_
