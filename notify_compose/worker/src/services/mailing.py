@@ -1,8 +1,8 @@
 from functools import lru_cache
-from typing import Type, Optional
+from typing import Optional, Type
 
 from providers.mailing import get_mailing_client
-from services.mailing_client import BaseMailingClient, AbstractMailingClient
+from services.mailing_client import AbstractMailingClient, BaseMailingClient
 
 
 @lru_cache()

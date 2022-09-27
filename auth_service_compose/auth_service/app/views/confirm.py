@@ -1,6 +1,5 @@
-from flask import Blueprint, make_response, redirect
-
 from extensions.tracer import _trace
+from flask import Blueprint, make_response, redirect
 from services.user import get_user_service
 
 confirm_view = Blueprint('confirm', __name__, template_folder='templates')

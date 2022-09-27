@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+from functools import lru_cache
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings
@@ -54,4 +55,10 @@ class Settings(BaseSettings):
 # Корень проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-settings = Settings()
+
+@lru_cache()
+def get_settings():
+    return Settings()
+
+
+settings = get_settings()

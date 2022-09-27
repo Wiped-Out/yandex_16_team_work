@@ -1,8 +1,9 @@
+import json
+from typing import Type
+
 from aiohttp import ClientSession
 from core.config import settings
 from templates.templates import BaseNotificationTemplate
-from typing import Type
-import json
 
 
 async def add_notification(notification_template: Type[BaseNotificationTemplate]) -> int:

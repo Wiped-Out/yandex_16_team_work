@@ -1,14 +1,13 @@
 import uuid
 from functools import lru_cache  # noqa: E999
 
-from pydantic import BaseModel
-from pydantic.types import UUID4
-
 from core.settings import settings
 from db.cache_db import get_cache_db
 from db.db import get_db, get_notify_pipeline
 from extensions.tracer import _trace
 from models import models
+from pydantic import BaseModel
+from pydantic.types import UUID4
 from services.base_cache import BaseCacheStorage
 from services.base_main import BaseMainStorage
 from utils.utils import generate_password

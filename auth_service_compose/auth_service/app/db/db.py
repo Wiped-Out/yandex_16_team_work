@@ -1,12 +1,11 @@
 from typing import Optional
 
+from core.settings import settings
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from kafka import KafkaProducer
-
-from core.settings import settings
 from services.base_main import BaseSQLAlchemyStorage, MainStorage
-from services.notify_pipeline import MainProducer, BaseKafkaProducer
+from services.notify_pipeline import BaseKafkaProducer, MainProducer
 
 db: Optional[MainStorage] = None
 sqlalchemy = SQLAlchemy()

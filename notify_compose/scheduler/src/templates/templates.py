@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 from enum import Enum
 
-from pydantic import BaseModel, UUID4, Field
-
 from core.config import settings
+from pydantic import UUID4, BaseModel, Field
 
 
 class NotificationTypeEnum(str, Enum):

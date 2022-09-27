@@ -1,10 +1,9 @@
 import contextlib
 import json
 import re
-from typing import Any, Tuple, Optional
+from typing import Any, Optional, Tuple
 
 import orjson
-
 from services.result_fetcher import MatchingError, fetch_functions
 
 

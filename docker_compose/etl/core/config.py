@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from dotenv import load_dotenv
 from pydantic import BaseSettings, Field
 
@@ -16,6 +18,11 @@ class PostgresDSL(BaseSettings):
     port: int = Field(env='DB_PORT')
 
 
-settings = Settings()
+@lru_cache()
+def get_settings():
+    return Settings()
+
+
+settings = get_settings()
 
 postgres_dsl = PostgresDSL()

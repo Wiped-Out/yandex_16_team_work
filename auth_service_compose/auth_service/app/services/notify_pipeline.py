@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
-from kafka import KafkaProducer
-
 from extensions.tracer import _trace
+from kafka import KafkaProducer
 
 
 class AbstractProducer(ABC):

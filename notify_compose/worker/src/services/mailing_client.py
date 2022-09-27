@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Union
 
+from core.config import settings
 from dotwiz import DotWiz
 from mailjet_rest import Client
-
-from core.config import settings
-from models.models import EmailMessage, Template, EmailReceiver, EmailSender, TemplateTypeEnum
+from models.models import (EmailMessage, EmailReceiver, EmailSender, Template,
+                           TemplateTypeEnum)
 
 
 class AbstractMailingClient(ABC):

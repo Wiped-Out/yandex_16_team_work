@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from dotenv import load_dotenv
 from pydantic import BaseSettings
 
@@ -5,7 +7,6 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-
     MAX_WAITING_TIME: int = 0
 
     MAX_NUMBER_FILMS: int = 100000
@@ -24,4 +25,9 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 
-settings = Settings()
+@lru_cache()
+def get_settings():
+    return Settings()
+
+
+settings = get_settings()

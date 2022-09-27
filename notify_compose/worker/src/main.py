@@ -6,12 +6,11 @@ from uuid import UUID
 
 from aio_pika import connect
 from aio_pika.abc import AbstractIncomingMessage
-from mailjet_rest import Client
-from motor.motor_asyncio import AsyncIOMotorClient
-
 from core.config import settings, user
 from db import db
-from models.models import (Notification, NotificationTypeEnum, Template)
+from mailjet_rest import Client
+from models.models import Notification, NotificationTypeEnum, Template
+from motor.motor_asyncio import AsyncIOMotorClient
 from providers import mailing
 from services.data_scrapper import AsyncScrapper
 from services.mailing import get_mailing_service

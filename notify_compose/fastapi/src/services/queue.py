@@ -10,7 +10,7 @@ from models.models import NotificationTypeEnum
 
 class AbstractQueue(ABC):
     @abstractmethod
-    def publish(self, message: Any, priority: int):
+    def publish(self, queue_name: str, message: Any, priority: int):
         pass
 
 

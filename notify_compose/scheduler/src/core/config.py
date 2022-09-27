@@ -1,5 +1,7 @@
-from pydantic import BaseSettings, UUID4
+from functools import lru_cache
+
 from dotenv import load_dotenv
+from pydantic import UUID4, BaseSettings
 
 load_dotenv()
 
@@ -18,4 +20,9 @@ class Settings(BaseSettings):
             return cls.json_loads(raw_val)  # type: ignore
 
 
-settings = Settings()
+@lru_cache()
+def get_settings():
+    return Settings()
+
+
+settings = get_settings()

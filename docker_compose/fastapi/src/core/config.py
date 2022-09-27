@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 from logging import config as logging_config
 
 from core.logger import LOGGING
@@ -39,4 +40,9 @@ class Settings(BaseSettings):
 # Корень проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-settings = Settings()
+@lru_cache()
+def get_settings():
+    return Settings()
+
+
+settings = get_settings()

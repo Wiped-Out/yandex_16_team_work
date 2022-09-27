@@ -1,6 +1,5 @@
-from flask import Blueprint, make_response, redirect, render_template
-
 from extensions.tracer import _trace
+from flask import Blueprint, make_response, redirect, render_template
 from forms.register_form import RegisterForm
 from services.user import get_user_service
 
